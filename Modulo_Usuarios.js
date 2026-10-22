@@ -310,6 +310,14 @@ function obtenerColumnasUsuarios_() {
       buscar(
         "Supervisor",
         "Supervisores"
+      ),
+
+    accesoWeb:
+      buscar(
+        "Acceso AppWeb",
+        "Acceso Web SIGA",
+        "Acceso SIGA",
+        "Permiso AppWeb"
       )
 
   };
@@ -473,250 +481,71 @@ function usuarioTieneAutorizacion_(valor) {
 // BUSCAR REGISTRO POR CORREO
 // ============================================================================
 
+/**
+ * Busca coincidencias en la hoja Usuarios priorizando el correo verificado.
+ * - Correos (F) tiene prioridad sobre Usuario (A).
+ * - Usuario sólo puede resolver un login institucional cuando Correos está VACÍO.
+ * - Varias filas del mismo nivel => ambiguo; no conceder acceso por azar.
+ * - La columna Autorizado conserva los permisos anteriores del sistema.
+ */
 function obtenerRegistroUsuarioPorCorreo_(correo) {
-
-  correo =
-    normalizarCorreoOGA_(
-      correo
-    );
-
-
-  if (!correo) {
-
-    return null;
-
-  }
-
-
-  if (
-    !esCorreoDominioOGA_(
-      correo
-    )
-  ) {
-
-    return null;
-
-  }
-
-
-  const datos =
-    _getUsuariosData_();
-
-
-  if (
-    !datos ||
-    datos.length < 2
-  ) {
-
-    return null;
-
-  }
-
-
-  const col =
-    obtenerColumnasUsuarios_();
-
-
-  // Empezamos en fila 2.
-  // Fila 1 = encabezados.
-
-  for (
-    let i = 1;
-    i < datos.length;
-    i++
-  ) {
-
-    const fila =
-      datos[i];
-
-
-    // ========================================================
-    // Buscar específicamente en columna "Correos"
-    // ========================================================
-
-    const correos =
-      extraerCorreosUsuarios_(
-        fila[
-          col.correo
-        ]
-      );
-
-
-    const encontrado =
-      correos.some(
-        function (email) {
-
-          return (
-            normalizarCorreoOGA_(
-              email
-            ) === correo
-          );
-
-        }
-      );
-
-
-    if (!encontrado) {
-
-      /*
-       * Compatibilidad:
-       *
-       * Si el campo Usuario alguna vez contiene un correo,
-       * también se permite localizarlo.
-       */
-
-      if (
-        col.usuario !== -1
-      ) {
-
-        const correosUsuario =
-          extraerCorreosUsuarios_(
-            fila[
-              col.usuario
-            ]
-          );
-
-
-        const encontradoUsuario =
-          correosUsuario.some(
-            function (email) {
-
-              return (
-                normalizarCorreoOGA_(
-                  email
-                ) === correo
-              );
-
-            }
-          );
-
-
-        // Google ya verificó correo + dominio Workspace en el callback.
-        // Compatibilidad del padrón institucional: algunos funcionarios tienen
-        // sólo su login (ej. gquevedo), sin correo en la columna Correos.
-        // Nunca asociar por login si existe un correo distinto en la fila;
-        // la columna Autorizado seguirá siendo obligatoria más abajo.
-        const loginGoogle = correo.split('@')[0];
-        const loginFila = String(fila[col.usuario] || '')
-          .trim().toLowerCase();
-        const loginSinCorreo = correos.length === 0 &&
-          loginFila === loginGoogle;
-
-        if (!encontradoUsuario && !loginSinCorreo) {
-          continue;
-        }
-
-      } else {
-
-        continue;
-
-      }
-
-    }
-
-
-    // ========================================================
-    // Registro encontrado
-    // ========================================================
-
-    const valorAutorizado =
-      col.autorizado !== -1
-        ? fila[
-            col.autorizado
-          ]
-        : false;
-
-
-    return {
-
-      fila:
-        i + 1,
-
-
-      usuario:
-        col.usuario !== -1
-          ? String(
-              fila[
-                col.usuario
-              ] || ""
-            ).trim()
-          : "",
-
-
-      correo:
-        correo,
-
-
-      correos:
-        correos,
-
-
-      acceso:
-        col.acceso !== -1
-          ? String(
-              fila[
-                col.acceso
-              ] ?? ""
-            )
-          : "",
-
-
-      autorizado:
-        usuarioTieneAutorizacion_(
-          valorAutorizado
-        ),
-
-
-      autorizado_raw:
-        valorAutorizado,
-
-
-      nombre:
-        col.nombre !== -1
-          ? String(
-              fila[
-                col.nombre
-              ] || correo
-            ).trim()
-          : correo,
-
-
-      resolucion:
-        col.resolucion !== -1
-          ? fila[
-              col.resolucion
-            ]
-          : "",
-
-
-      actas:
-        col.actas !== -1
-          ? fila[
-              col.actas
-            ]
-          : "",
-
-
-      supervisor:
-        col.supervisor !== -1
-          ? fila[
-              col.supervisor
-            ]
-          : "",
-
-
-      raw:
-        fila
-
+  correo = normalizarCorreoOGA_(correo);
+  if (!correo || !esCorreoDominioOGA_(correo)) return null;
+
+  const datos = _getUsuariosData_();
+  if (!datos || datos.length < 2) return null;
+  const col = obtenerColumnasUsuarios_();
+  const loginGoogle = correo.split('@')[0];
+  const exactos = [];
+  const compatibles = [];
+
+  for (let i = 1; i < datos.length; i++) {
+    const fila = datos[i];
+    const correos = extraerCorreosUsuarios_(fila[col.correo]);
+    const usuario = col.usuario === -1 ? '' : String(fila[col.usuario] || '').trim();
+    const usuarioNormalizado = normalizarCorreoOGA_(usuario);
+    const correoExacto = correos.indexOf(correo) !== -1;
+    // No usar Usuario como alias si hay correos distintos en esa fila.
+    const aliasSinCorreo = correos.length === 0 &&
+      (usuarioNormalizado === correo || usuarioNormalizado === loginGoogle);
+
+    if (!correoExacto && !aliasSinCorreo) continue;
+
+    const valorAutorizado = fila[col.autorizado];
+    const registro = {
+      fila: i + 1,
+      usuario: usuario,
+      correo: correo,
+      correos: correos,
+      acceso: col.acceso !== -1 ? String(fila[col.acceso] ?? '') : '',
+      autorizado: usuarioTieneAutorizacion_(valorAutorizado),
+      autorizado_raw: valorAutorizado,
+      // Permiso independiente para SIGA sin otorgar permisos de Agenda.
+      accesoWeb: col.accesoWeb !== -1 &&
+        usuarioTieneAutorizacion_(fila[col.accesoWeb]),
+      accesoWebRaw: col.accesoWeb !== -1 ? fila[col.accesoWeb] : null,
+      nombre: col.nombre !== -1 ? String(fila[col.nombre] || correo).trim() : correo,
+      resolucion: col.resolucion !== -1 ? fila[col.resolucion] : '',
+      actas: col.actas !== -1 ? fila[col.actas] : '',
+      supervisor: col.supervisor !== -1 ? fila[col.supervisor] : '',
+      raw: fila
     };
-
+    (correoExacto ? exactos : compatibles).push(registro);
   }
 
-
-  return null;
-
+  const encontrados = exactos.length ? exactos : compatibles;
+  if (!encontrados.length) return null;
+  if (encontrados.length > 1) {
+    // Fail closed: dos fichas para la misma identidad requieren conciliación.
+    return {
+      ambiguo: true,
+      autorizado: false,
+      correo: correo,
+      filas: encontrados.map(function(r) { return r.fila; })
+    };
+  }
+  return encontrados[0];
 }
-
 
 // ============================================================================
 // GOOGLE AUTH - AUTORIZACIÓN FINAL SIGA
@@ -787,11 +616,21 @@ function obtenerUsuarioAutorizadoGoogle(
 
 
   // ==========================================================
-  // 3. Revisar columna Autorizado
+  // 3. Identificar duplicados y revisar permiso de acceso a SIGA
   // ==========================================================
 
+  if (registro.ambiguo === true) {
+    return {
+      ok: false,
+      estado: "registro_duplicado",
+      msg: "⛔ Hay registros duplicados de esta cuenta en Usuarios. " +
+        "Informática debe revisar las filas " + registro.filas.join(', ') + ".",
+      filas: registro.filas
+    };
+  }
+
   if (
-    registro.autorizado !== true
+    registro.autorizado !== true && registro.accesoWeb !== true
   ) {
 
     return {
@@ -803,13 +642,17 @@ function obtenerUsuarioAutorizadoGoogle(
         "no_autorizado",
 
       msg:
-        "⛔ El usuario existe en SIGA, pero no tiene autorización de acceso.",
+        "⛔ Cuenta registrada (fila " + registro.fila +
+        "), pero sin acceso general a SIGA. Informática debe habilitar " +
+        "Acceso AppWeb o el permiso institucional correspondiente.",
 
       usuario:
         registro.usuario,
 
       correo:
-        registro.correo
+        registro.correo,
+
+      fila: registro.fila
 
     };
 
@@ -842,6 +685,10 @@ function obtenerUsuarioAutorizadoGoogle(
 
     fila:
       registro.fila,
+
+    // Los permisos administrativos de Agenda no se elevan al iniciar sesión.
+    autorizadoModulo: registro.autorizado === true,
+    accesoWeb: registro.accesoWeb === true,
 
     resolucion:
       registro.resolucion,
@@ -965,7 +812,7 @@ function obtenerEstadoUsuario(
 
 
   if (
-    !registro.autorizado
+    (!registro.autorizado && !registro.accesoWeb)
   ) {
 
     return "no_autorizado";
@@ -1036,7 +883,7 @@ function verificarUsuarioAutorizadoConClave(
 
   if (
     !registro ||
-    !registro.autorizado
+    (!registro.autorizado && !registro.accesoWeb)
   ) {
 
     return false;
@@ -1440,6 +1287,32 @@ function QA_PROBAR_USUARIO_GOOGLE_OGA() {
 
   return resultado;
 
+}
+
+
+/**
+ * Diagnóstico sólo lectura para ejecutar desde el editor de Apps Script.
+ * El sufijo _ impide invocarlo desde google.script.run.
+ */
+function QA_DIAGNOSTICO_AUTORIZACION_GOOGLE_OGA_() {
+  const cuentas = ['gquevedo@oga.org.gt', 'eajuchan@oga.org.gt'];
+  const resultados = cuentas.map(function(correo) {
+    const registro = obtenerRegistroUsuarioPorCorreo_(correo);
+    const validacion = obtenerUsuarioAutorizadoGoogle(correo);
+    return {
+      correo: correo,
+      fila: registro && registro.fila || null,
+      filasDuplicadas: registro && registro.ambiguo ? registro.filas : [],
+      autorizadoRaw: registro && !registro.ambiguo ? String(registro.autorizado_raw ?? '') : '',
+      autorizadoInterpretado: registro && !registro.ambiguo ? registro.autorizado : false,
+      accesoWebRaw: registro && !registro.ambiguo ? String(registro.accesoWebRaw ?? '') : '',
+      accesoWebInterpretado: registro && !registro.ambiguo ? registro.accesoWeb : false,
+      estado: validacion.estado,
+      requiereRevision: validacion.ok !== true
+    };
+  });
+  Logger.log(JSON.stringify(resultados, null, 2));
+  return resultados;
 }
 
 
