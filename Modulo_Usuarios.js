@@ -314,6 +314,7 @@ function obtenerColumnasUsuarios_() {
 
     accesoWeb:
       buscar(
+        "SIGA",
         "Acceso AppWeb",
         "Acceso Web SIGA",
         "Acceso SIGA",
@@ -335,6 +336,12 @@ function obtenerColumnasUsuarios_() {
 
   }
 
+
+  // El acceso general depende de SIGA (H).
+  // Autorizado (C) conserva sus permisos administrativos independientes.
+  if (columnas.accesoWeb === -1) {
+    throw new Error('Falta la columna "SIGA" en la hoja Usuarios. No es posible validar el acceso.');
+  }
 
   if (
     columnas.autorizado === -1
@@ -629,9 +636,7 @@ function obtenerUsuarioAutorizadoGoogle(
     };
   }
 
-  if (
-    registro.autorizado !== true && registro.accesoWeb !== true
-  ) {
+  if (registro.accesoWeb !== true) {
 
     return {
 
@@ -642,9 +647,9 @@ function obtenerUsuarioAutorizadoGoogle(
         "no_autorizado",
 
       msg:
-        "⛔ Cuenta registrada (fila " + registro.fila +
-        "), pero sin acceso general a SIGA. Informática debe habilitar " +
-        "Acceso AppWeb o el permiso institucional correspondiente.",
+        "⛔ La cuenta está registrada en Usuarios (fila " + registro.fila +
+        "), pero la columna SIGA no está habilitada. Solicite a Informática " +
+        "la revisión del permiso SIGA sin alterar Autorizado.",
 
       usuario:
         registro.usuario,
@@ -686,7 +691,7 @@ function obtenerUsuarioAutorizadoGoogle(
     fila:
       registro.fila,
 
-    // Los permisos administrativos de Agenda no se elevan al iniciar sesión.
+    // SIGA (H) habilita entrar; Autorizado (C) permanece independiente.
     autorizadoModulo: registro.autorizado === true,
     accesoWeb: registro.accesoWeb === true,
 
@@ -812,7 +817,7 @@ function obtenerEstadoUsuario(
 
 
   if (
-    (!registro.autorizado && !registro.accesoWeb)
+    !registro.accesoWeb
   ) {
 
     return "no_autorizado";
@@ -883,7 +888,7 @@ function verificarUsuarioAutorizadoConClave(
 
   if (
     !registro ||
-    (!registro.autorizado && !registro.accesoWeb)
+    !registro.accesoWeb
   ) {
 
     return false;
