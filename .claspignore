@@ -1,0 +1,20 @@
+# Conservar solo archivos de codigo Apps Script y el manifiesto.
+**/**
+!appsscript.json
+!**/*.gs
+!**/*.js
+!**/*.ts
+!**/*.html
+
+# No enviar copias, credenciales ni dependencias al proyecto Apps Script.
+.git/**
+**/.git/**
+node_modules/**
+**/node_modules/**
+**/RESPALDO_*/**
+**/BACKUP_*/**
+**/RESPALDOS_*/**
+**/backup*/**
+**/backups/**
+
+# Los respaldos deben guardarse fuera del directorio de CLASP.
