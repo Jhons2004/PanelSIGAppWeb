@@ -31,3 +31,29 @@ La App Web da prioridad a la coincidencia exacta del correo en F; el alias de `U
 El diagnóstico de lectura `QA_DIAGNOSTICO_AUTORIZACION_GOOGLE_OGA_` se ejecuta desde el editor de Apps Script para verificar el estado de las cuentas de prueba existentes (sin cambiar datos ni contraseñas). La prueba local simulada validó los permisos de `gquevedo@oga.org.gt` y `eajuchan@oga.org.gt`, pero no sustituye una autenticación OAuth real.
 
 **Despliegue:** `git pull origin main`, copiar el código al proyecto CLASP conservando `.clasp.json` y el manifiesto local, ejecutar `clasp push`, probar `/dev`; publicar una nueva versión si se requiere actualizar `/exec`.
+
+## Corrección de tokens de jefatura — 22-10-2026
+
+**Error corregido:** `WAPP_DUP_adminEmails_ is not defined` al presionar «Solicitar token a jefatura».
+
+- `PRES_18_Duplicate_Evaluation_Service.js` resuelve los destinatarios desde `WAPP_cfg_().DUPLICADOS.ADMIN_EMAILS`, configuración existente por ambiente, sin abrir permisos.
+- `PRES_19_Duplicate_OTP_Service.js` limpia el token pendiente si `MailApp.sendEmail` falla, para permitir reintentar; nunca devuelve el OTP al navegador.
+- Se conservan los límites de vencimiento de 10 minutos, cinco intentos y 60 segundos de espera.
+- Pruebas locales simuladas: 12/12 satisfactorias (destinatario, estado, envío, cuota, cooldown y errores). Falta la prueba real con Gmail/Google Workspace.
+- El manifiesto versionado ya incluye `https://www.googleapis.com/auth/script.send_mail`; comprobar también el manifiesto local de Apps Script.
+
+### Actualización desde PowerShell
+
+```powershell
+$repo = "C:\Users\WINDOWS\Documents\PanelSIGAppWeb_GIT"
+$app = "C:\Users\WINDOWS\Documents\OGA_APPSCRIPTWEBAPP"
+git -C $repo pull --ff-only origin main
+Copy-Item "$repo\PRES_18_Duplicate_Evaluation_Service.js" "$app\" -Force
+Copy-Item "$repo\PRES_19_Duplicate_OTP_Service.js" "$app\" -Force
+Set-Location $app
+clasp status
+clasp push
+clasp open
+```
+
+Probar `/dev` o actualizar una implementación `/exec` versionada después de `clasp push`. Al solicitar una evaluación adicional válida, el código llega a jefatura y el solicitante solo recibe el correo enmascarado.
