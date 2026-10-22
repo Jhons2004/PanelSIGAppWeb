@@ -1,0 +1,25 @@
+<section class="panel active" id="panel-OEC">
+  <h2>1. Registro de acreditación</h2>
+  <p class="lead">
+    Identifique el OEC. El registro se normaliza automáticamente a mayúsculas.
+  </p>
+
+  <div class="search-row">
+    <div class="field search-field">
+      <label>Registro de acreditación *</label>
+      <input
+        id="oecRegistro"
+        autocomplete="off"
+        placeholder="Ej. OGA-LE-001-01"
+        oninput="this.value=this.value.toUpperCase()"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();WAPP_UI_PRES.buscarOEC();}"
+      >
+      <div class="hint">Puede presionar Enter para buscar.</div>
+    </div>
+    <div class="actions search-actions">
+      <button class="primary" onclick="WAPP_UI_PRES.buscarOEC()">Buscar registro</button>
+    </div>
+  </div>
+
+  <div id="oecSummary" class="summary hidden"></div>
+</section>

@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark" data-radius="rounded" data-sidebar-mode="drawer" data-app-mode="normal">
+<head>
+  <base target="_top">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SIGA | Sistema OGA</title>
+  <style>
+    /* ── DESIGN TOKENS ──────────────────────────────────────────── */
+    :root{
+      --topbar-h:72px;
+      --shell-pad:14px;
+      --sidebar-w:260px;
+      --sidebar-w-collapsed:72px;
+      --radius-xl:22px;
+      --radius-lg:18px;
+      --radius-md:14px;
+      --radius-sm:10px;
+
+      --bg:#060e18;
+      --bg-2:#091422;
+      --panel:rgba(10,20,34,.88);
+      --panel-2:rgba(255,255,255,.045);
+      --panel-3:rgba(255,255,255,.08);
+      --line:rgba(255,255,255,.09);
+      --line-2:rgba(255,255,255,.16);
+      --text:#eef4ff;
+      --text-2:#b8c8da;
+      --text-3:#6e8099;
+      --accent:#14b8a6;
+      --accent-2:#3b82f6;
+      --accent-grad:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
+      --shadow:0 20px 54px rgba(0,0,0,.32);
+      --glass:rgba(10,20,34,.72);
+    }
+    html[data-theme="light"]{
+      --bg:#edf3fa;
+      --bg-2:#dfe9f4;
+      --panel:rgba(255,255,255,.85);
+      --panel-2:rgba(15,23,42,.04);
+      --panel-3:rgba(15,23,42,.09);
+      --line:rgba(15,23,42,.09);
+      --line-2:rgba(15,23,42,.16);
+      --text:#0f172a;
+      --text-2:#475569;
+      --text-3:#64748b;
+      --shadow:0 16px 38px rgba(15,23,42,.12);
+      --glass:rgba(255,255,255,.78);
+    }
+    html[data-radius="flat"]{
+      --radius-xl:10px; --radius-lg:8px; --radius-md:6px; --radius-sm:4px;
+    }
+
+    *{ box-sizing:border-box; margin:0; padding:0; }
+    html,body{
+      min-height:100%; width:100%;
+      font-family:"Segoe UI", system-ui, sans-serif;
+      color:var(--text);
+      background:
+        radial-gradient(ellipse 50% 34% at 10% 8%, color-mix(in srgb,var(--accent) 14%,transparent), transparent 70%),
+        radial-gradient(ellipse 38% 26% at 90% 6%, color-mix(in srgb,var(--accent-2) 12%,transparent), transparent 70%),
+        linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
+      overflow-x:hidden;
+    }
+    body::before{
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background-image:radial-gradient(rgba(255,255,255,.035) 1px,transparent 1px);
+      background-size:22px 22px; opacity:.18;
+    }
+
+    /* ── SHELL ──────────────────────────────────────────────────── */
+    .oga-shell{ position:relative; z-index:1; min-height:100vh; display:flex; flex-direction:column; }
+
+    /* ── TOPBAR ─────────────────────────────────────────────────── */
+    .oga-topbar{
+      position:sticky; top:0; z-index:160;
+      height:var(--topbar-h);
+      display:grid; grid-template-columns:auto 1fr auto;
+      align-items:center; gap:12px;
+      padding:0 var(--shell-pad);
+      border-bottom:1px solid var(--line);
+      background:var(--glass);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      box-shadow:0 6px 18px rgba(0,0,0,.14);
+      transition:opacity .25s;
+    }
+    /* En modo login el topbar se oculta completamente */
+    html[data-app-mode="login"] .oga-topbar{ display:none; }
+
+    .oga-top-left,.oga-top-center,.oga-top-right{ display:flex; align-items:center; gap:8px; min-width:0; }
+    .oga-top-center{ justify-content:center; }
+    .oga-top-right{ justify-content:flex-end; }
+
+    /* ── GLASS CHIP BASE ────────────────────────────────────────── */
+    .oga-glass{
+      background:var(--panel-2);
+      border:1px solid var(--line);
+      backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+      transition:transform .18s,background .18s,border-color .18s;
+    }
+    .oga-glass:hover{ background:var(--panel-3); border-color:var(--line-2); transform:translateY(-1px); }
+
+    /* ── ICON BUTTON ────────────────────────────────────────────── */
+    .oga-icon-btn{
+      width:40px; height:40px; border-radius:13px;
+      color:var(--text); cursor:pointer; border:none;
+      display:inline-flex; align-items:center; justify-content:center;
+      font-size:16px; position:relative; overflow:hidden;
+    }
+    .oga-icon-btn::after{ content:''; position:absolute; inset:0; background:var(--accent-grad); opacity:0; transition:opacity .2s; }
+    .oga-icon-btn:hover::after{ opacity:.1; }
+    .oga-icon-btn[aria-expanded="true"]{border-color:color-mix(in srgb,var(--accent) 48%,var(--line));background:color-mix(in srgb,var(--accent) 14%,var(--panel-2));box-shadow:0 8px 22px color-mix(in srgb,var(--accent) 18%,transparent)}
+    .oga-icon-btn svg{ width:18px; height:18px; }
+
+    /* ── BRAND ──────────────────────────────────────────────────── */
+    .oga-brand{ border-radius:999px; padding:8px 14px; display:flex; align-items:center; gap:10px; max-width:320px; }
+    .oga-brand-mark{
+      width:36px; height:36px; border-radius:11px; flex:0 0 auto;
+      background:var(--accent-grad); color:#fff;
+      font-weight:900; font-size:16px;
+      display:grid; place-items:center;
+      box-shadow:0 10px 22px color-mix(in srgb,var(--accent) 28%,transparent);
+    }
+    .oga-brand-title{ font-size:.94rem; font-weight:900; letter-spacing:.18em; text-transform:uppercase; white-space:nowrap; }
+    .oga-brand-sub{ font-size:.7rem; color:var(--text-3); letter-spacing:.07em; text-transform:uppercase; white-space:nowrap; margin-top:3px; }
+
+    /* ── VIEW CHIP ──────────────────────────────────────────────── */
+    .oga-chip{ min-height:38px; padding:0 12px; border-radius:12px; display:inline-flex; align-items:center; gap:8px; }
+    .oga-chip-main{ font-weight:800; font-size:.8rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:180px; }
+
+    /* ── USER PILL ──────────────────────────────────────────────── */
+    .oga-user-menu-wrap{ position:relative; }
+    .oga-user-pill{ min-height:42px; border-radius:999px; padding:0 10px; max-width:260px; display:inline-flex; align-items:center; gap:8px; cursor:pointer; color:var(--text); font:inherit; text-align:left; }
+    .oga-user-pill:focus-visible{ outline:3px solid color-mix(in srgb,var(--accent) 34%,transparent); outline-offset:2px; }
+    .oga-user-avatar{
+      width:28px; height:28px; border-radius:50%; flex:0 0 auto;
+      display:grid; place-items:center;
+      background:var(--accent-grad); color:#fff;
+      font-weight:900; font-size:.76rem;
+    }
+    .oga-user-name{ font-size:.8rem; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .oga-user-role{ font-size:.68rem; color:var(--text-3); margin-top:2px; white-space:nowrap; }
+    .oga-user-chevron{ width:16px; height:16px; flex:0 0 auto; transition:transform .2s ease; }
+    .oga-user-pill[aria-expanded="true"] .oga-user-chevron{ transform:rotate(180deg); }
+    .oga-user-dropdown{
+      position:absolute; top:calc(100% + 10px); right:0; z-index:220;
+      width:min(290px,calc(100vw - 20px)); padding:8px;
+      border:1px solid var(--line); border-radius:16px;
+      background:var(--glass); box-shadow:0 20px 46px rgba(0,0,0,.3);
+      backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+      opacity:0; visibility:hidden; transform:translateY(-7px) scale(.98);
+      transform-origin:top right; pointer-events:none;
+      transition:opacity .18s ease,transform .18s ease,visibility .18s ease;
+    }
+    .oga-user-dropdown.show{ opacity:1; visibility:visible; transform:translateY(0) scale(1); pointer-events:auto; }
+    .oga-user-summary{ padding:10px 11px 12px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+    .oga-user-summary-name{ font-size:.84rem; font-weight:900; overflow-wrap:anywhere; }
+    .oga-user-summary-state{ margin-top:3px; color:var(--text-3); font-size:.72rem; }
+    .oga-user-action{ width:100%; min-height:42px; padding:9px 11px; border:0; border-radius:11px; display:flex; align-items:center; gap:10px; cursor:pointer; color:#fecaca; background:transparent; font:inherit; font-size:.82rem; font-weight:800; text-align:left; }
+    .oga-user-action:hover,.oga-user-action:focus-visible{ background:rgba(239,68,68,.14); outline:none; }
+
+    /* ── MAIN GRID — contenido siempre a ancho completo ─────────── */
+    .oga-main-grid{
+      flex:1; width:100%; max-width:1860px; margin:0 auto;
+      display:block; padding:14px;
+    }
+    html[data-app-mode="login"] .oga-main-grid{
+      display:block; padding:0; max-width:none;
+    }
+    html[data-app-mode="menu"] .oga-main-grid{
+      display:block; padding:14px;
+    }
+
+    /* ── DRAWER DE MÓDULOS — oculto hasta pulsar ☰ ─────────────── */
+    .oga-sidebar{
+      position:fixed;
+      top:calc(var(--topbar-h) + 10px);
+      left:10px;
+      bottom:10px;
+      z-index:191;
+      width:min(318px,calc(100vw - 20px));
+      min-height:0;
+      border:1px solid var(--line);
+      border-radius:var(--radius-xl);
+      background:color-mix(in srgb,var(--glass) 96%,transparent);
+      backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+      box-shadow:0 28px 80px rgba(0,0,0,.38);
+      overflow:hidden;
+      transform:translateX(calc(-100% - 24px));
+      opacity:0;
+      pointer-events:none;
+      transition:transform .28s cubic-bezier(.4,0,.2,1), opacity .22s ease;
+    }
+    .oga-sidebar.mob-show{
+      transform:translateX(0);
+      opacity:1;
+      pointer-events:auto;
+    }
+    html[data-app-mode="login"] .oga-sidebar{ display:none; }
+
+    .oga-sidebar-inner{ padding:10px; display:flex; flex-direction:column; gap:9px; height:100%; overflow:hidden; }
+    .oga-side-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 4px 9px;border-bottom:1px solid var(--line)}
+    .oga-side-head-copy{min-width:0}
+    .oga-side-head-title{font-size:.98rem;font-weight:900;letter-spacing:-.02em}
+    .oga-side-head-sub{display:none}
+    .oga-side-close{flex:0 0 auto}
+    .oga-side-list{ display:flex; flex-direction:column; gap:7px; overflow-y:auto; flex:1; padding-right:2px; }
+    .oga-side-list::-webkit-scrollbar{ width:4px; }
+    .oga-side-list::-webkit-scrollbar-track{ background:transparent; }
+    .oga-side-list::-webkit-scrollbar-thumb{ background:var(--line-2); border-radius:4px; }
+
+    /* ── SIDEBAR ITEM ───────────────────────────────────────────── */
+    .oga-side-item{
+      position:relative; min-height:50px;
+      width:100%; display:flex; align-items:center; gap:10px;
+      text-align:left; padding:8px 10px; border-radius:14px;
+      cursor:pointer; color:var(--text);
+      background:var(--panel-2); border:1px solid var(--line);
+      transition:all .2s ease;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+    }
+    .oga-side-item:hover{ transform:translateY(-1px); border-color:color-mix(in srgb,var(--accent) 30%,var(--line)); background:var(--panel-3); }
+    .oga-side-item.active{
+      border-color:color-mix(in srgb,var(--accent) 50%,var(--line));
+      background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 16%,transparent),color-mix(in srgb,var(--accent-2) 10%,transparent));
+      box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 14%,transparent);
+    }
+    .oga-side-item.active::before{
+      content:''; position:absolute; left:0; top:14%; bottom:14%;
+      width:3px; border-radius:3px; background:var(--accent);
+    }
+    .oga-side-badge{
+      width:34px; height:34px; border-radius:11px; flex:0 0 auto;
+      display:grid; place-items:center;
+      font-size:.68rem; font-weight:900; letter-spacing:.04em;
+      color:#fff; background:var(--accent-grad);
+      box-shadow:0 6px 14px color-mix(in srgb,var(--accent) 22%,transparent);
+      transition:transform .2s;
+    }
+    .oga-side-item:hover .oga-side-badge{ transform:scale(1.08); }
+    .oga-side-label{ font-size:.84rem; font-weight:850; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .oga-side-sub{ display:none; }
+
+    /* ── SIDEBAR BOTTOM ─────────────────────────────────────────── */
+    .oga-side-bottom{ display:none !important; }
+    .oga-mini-card{ padding:10px; border-radius:14px; background:var(--panel-2); border:1px solid var(--line); }
+    .oga-mini-label{ font-size:.65rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.10em; font-weight:900; margin-bottom:4px; }
+    .oga-mini-value{ font-size:.78rem; font-weight:800; line-height:1.4; }
+
+    /* ── CONTENT ────────────────────────────────────────────────── */
+    .oga-content{ min-width:0; }
+    #app-container{ min-height:calc(100vh - var(--topbar-h) - 28px); border-radius:var(--radius-xl); overflow:hidden; }
+    html[data-app-mode="login"] #app-container{ border-radius:0; min-height:100vh; }
+    html[data-app-mode="menu"]  #app-container{ border-radius:var(--radius-xl); }
+    #app-container > .oga-view-wrap{ animation:ogaFadeUp .38s ease-out; }
+
+    @keyframes ogaFadeUp{ from{ opacity:0; transform:translateY(7px); } to{ opacity:1; transform:translateY(0); } }
+    @keyframes ogaSpin{ to{ transform:rotate(360deg); } }
+
+    /* ── OVERLAY ────────────────────────────────────────────────── */
+    #oga-overlay{
+      position:fixed; inset:0; z-index:9999;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px;
+      background:rgba(2,8,15,.66); color:#fff; text-align:center;
+      transition:opacity .22s ease, visibility .22s ease;
+    }
+    #oga-overlay.oculto{ opacity:0; visibility:hidden; pointer-events:none; }
+    .oga-loader{ width:38px; height:38px; border-radius:50%; border:3px solid rgba(255,255,255,.12); border-top-color:#fff; animation:ogaSpin .75s linear infinite; }
+    .oga-overlay-title{ font-size:.96rem; font-weight:900; }
+    .oga-overlay-sub{ font-size:.8rem; color:rgba(255,255,255,.7); }
+
+    /* ── TOAST ──────────────────────────────────────────────────── */
+    #oga-toast{
+      position:fixed; right:16px; bottom:16px; z-index:9998;
+      min-width:240px; max-width:340px; padding:12px 14px;
+      border-radius:14px; border:1px solid rgba(255,255,255,.14);
+      background:rgba(10,20,34,.94); color:#fff;
+      box-shadow:0 18px 36px rgba(0,0,0,.28);
+      transform:translateY(16px); opacity:0; pointer-events:none;
+      transition:all .2s ease;
+    }
+    #oga-toast.show{ transform:translateY(0); opacity:1; }
+    #oga-toast.success{ border-color:rgba(34,197,94,.4); }
+    #oga-toast.error  { border-color:rgba(239,68,68,.44); }
+    #oga-toast.warning{ border-color:rgba(245,158,11,.44); }
+    .oga-toast-title{ font-size:.82rem; font-weight:900; margin-bottom:3px; }
+    .oga-toast-msg  { font-size:.76rem; color:rgba(255,255,255,.8); line-height:1.5; }
+
+    /* ── MOBILE BACKDROP ────────────────────────────────────────── */
+    .oga-side-backdrop,.oga-drawer-backdrop{
+      position:fixed; inset:0; z-index:189;
+      background:rgba(2,8,15,.58);
+      backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+      opacity:0; visibility:hidden; pointer-events:none;
+      transition:all .22s ease;
+    }
+    .oga-side-backdrop.show,.oga-drawer-backdrop.show{ opacity:1; visibility:visible; pointer-events:auto; }
+
+    /* ── APPEARANCE DRAWER ──────────────────────────────────────── */
+    .oga-drawer{
+      position:fixed; top:0; right:0; z-index:190;
+      width:min(400px,96vw); height:100vh;
+      background:var(--glass); border-left:1px solid var(--line);
+      backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+      box-shadow:-16px 0 40px rgba(0,0,0,.22);
+      transform:translateX(100%); transition:transform .25s ease;
+      display:flex; flex-direction:column;
+    }
+    .oga-drawer.show{ transform:translateX(0); }
+    .oga-drawer-head{ padding:16px; border-bottom:1px solid var(--line); display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+    .oga-drawer-title{ font-size:1.04rem; font-weight:900; }
+    .oga-drawer-sub{ font-size:.78rem; color:var(--text-3); margin-top:3px; }
+    .oga-drawer-body{ padding:14px 16px 22px; overflow:auto; display:flex; flex-direction:column; gap:18px; }
+    .oga-section-title{ font-size:.78rem; font-weight:900; letter-spacing:.06em; text-transform:uppercase; margin-bottom:8px; color:var(--text-2); }
+    .oga-row{ display:flex; gap:8px; flex-wrap:wrap; }
+    .oga-choice{ min-width:110px; min-height:38px; padding:0 12px; border-radius:12px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; color:var(--text); border:1px solid var(--line); background:var(--panel-2); font-size:.82rem; }
+    .oga-choice.active{ border-color:color-mix(in srgb,var(--accent) 44%,var(--line)); background:color-mix(in srgb,var(--accent) 13%,transparent); }
+    .oga-radio{ width:14px; height:14px; border-radius:50%; border:2px solid var(--line-2); flex:0 0 auto; }
+    .oga-choice.active .oga-radio{ border-color:var(--accent); box-shadow:inset 0 0 0 3px var(--accent); }
+    .oga-palette-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+    .oga-palette-btn{ border:1px solid var(--line); background:var(--panel-2); color:var(--text); border-radius:14px; padding:10px; text-align:left; cursor:pointer; }
+    .oga-palette-btn.active{ border-color:color-mix(in srgb,var(--accent) 44%,var(--line)); background:color-mix(in srgb,var(--accent) 11%,transparent); }
+    .oga-palette-swatches{ display:flex; gap:6px; margin-bottom:8px; }
+    .oga-palette-swatches span{ width:16px; height:16px; border-radius:50%; display:block; }
+    .oga-palette-name{ font-size:.84rem; font-weight:900; }
+    .oga-palette-desc{ font-size:.72rem; color:var(--text-3); line-height:1.5; margin-top:4px; }
+    .oga-log-list{ display:flex; flex-direction:column; gap:8px; }
+    .oga-log-item{ padding:10px; border-radius:12px; border:1px solid var(--line); background:var(--panel-2); }
+    .oga-log-title{ font-size:.78rem; font-weight:800; }
+    .oga-log-meta { font-size:.7rem; color:var(--text-3); margin-top:3px; }
+
+    /* ── MÓDULO INYECTADO — CONTENCIÓN ─────────────────────────── */
+    .oga-view-wrap{
+      display:block; width:100%; min-height:0;
+      background:transparent;
+      border-radius:var(--radius-xl);
+      overflow:hidden;
+      isolation:isolate;
+    }
+    /* #appRoot del módulo: quitar dimensiones de página completa */
+    .oga-view-wrap #appRoot{
+      min-height:0 !important;
+      height:auto !important;
+      background:transparent !important;
+    }
+    /* .header del módulo: dejar de ser sticky — ya el shell tiene topbar */
+    .oga-view-wrap .header{
+      position:relative !important;
+      top:auto !important;
+      z-index:1 !important;
+      border-radius:var(--radius-xl) var(--radius-xl) 0 0;
+    }
+    /* .tabs del módulo: dejar de ser sticky */
+    .oga-view-wrap .tabs{
+      position:relative !important;
+      top:auto !important;
+      z-index:1 !important;
+    }
+    /* Contenido del módulo sin altura mínima de pantalla completa */
+    .oga-view-wrap .content{
+      min-height:0 !important;
+    }
+    /* Modales y overlays del módulo: fixed al viewport, sobre el shell */
+    .oga-view-wrap .modal,
+    .oga-view-wrap .system-lock-overlay{
+      position:fixed !important;
+      z-index:8000 !important;
+    }
+    .oga-view-wrap .notification{
+      position:fixed !important;
+      z-index:8100 !important;
+      top:calc(var(--topbar-h) + 12px) !important;
+    }
+    /* Asegurar que los estilos * del módulo no rompan el shell */
+    .oga-view-wrap *{
+      text-shadow:none;
+    }
+
+
+
+    /* ═══════════════════════════════════════════════════════════════
+       LOGIN MODE — AISLAMIENTO VISUAL TOTAL
+       El parcial Login.html controla completamente su apariencia.
+       ═══════════════════════════════════════════════════════════════ */
+    html[data-app-mode="login"],
+    html[data-app-mode="login"] body{
+      margin:0 !important;
+      padding:0 !important;
+      width:100% !important;
+      min-height:100% !important;
+      background:#f4f6f8 !important;
+      overflow-x:hidden !important;
+    }
+    html[data-app-mode="login"] body::before{
+      display:none !important;
+    }
+    html[data-app-mode="login"] .oga-shell{
+      min-height:100vh !important;
+      background:#f4f6f8 !important;
+    }
+    html[data-app-mode="login"] .oga-main-grid{
+      display:block !important;
+      width:100% !important;
+      max-width:none !important;
+      min-height:100vh !important;
+      margin:0 !important;
+      padding:0 !important;
+      gap:0 !important;
+    }
+    html[data-app-mode="login"] .oga-content{
+      display:block !important;
+      width:100% !important;
+      min-height:100vh !important;
+      margin:0 !important;
+      padding:0 !important;
+      background:#f4f6f8 !important;
+    }
+    html[data-app-mode="login"] #app-container{
+      display:block !important;
+      width:100% !important;
+      min-height:100vh !important;
+      margin:0 !important;
+      padding:0 !important;
+      border:0 !important;
+      border-radius:0 !important;
+      background:#f4f6f8 !important;
+      overflow:visible !important;
+    }
+    html[data-app-mode="login"] #app-container > .oga-view-wrap,
+    html[data-app-mode="login"] .oga-view-wrap{
+      display:block !important;
+      width:100% !important;
+      min-height:100vh !important;
+      margin:0 !important;
+      padding:0 !important;
+      border:0 !important;
+      border-radius:0 !important;
+      background:#f4f6f8 !important;
+      overflow:visible !important;
+      isolation:auto !important;
+      animation:none !important;
+    }
+    html[data-app-mode="login"] .oga-view-wrap::before,
+    html[data-app-mode="login"] .oga-view-wrap::after{
+      display:none !important;
+    }
+
+    /* ── PLACEHOLDER ────────────────────────────────────────────── */
+    .oga-placeholder{
+      display:flex; flex-direction:column; align-items:center; justify-content:center;
+      gap:16px; min-height:480px; text-align:center; padding:40px 24px;
+    }
+    .oga-placeholder-icon{ font-size:2.8rem; opacity:.55; }
+    .oga-placeholder-title{ font-size:1.3rem; font-weight:900; }
+    .oga-placeholder-sub{ font-size:.88rem; color:var(--text-3); max-width:400px; line-height:1.6; }
+    .oga-placeholder-btn{
+      margin-top:6px; padding:10px 26px; border-radius:999px;
+      font-size:.86rem; font-weight:800; cursor:pointer;
+      background:var(--accent-grad); color:#fff; border:none;
+      box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 24%,transparent);
+      transition:transform .18s,box-shadow .18s;
+    }
+    .oga-placeholder-btn:hover{ transform:translateY(-2px); box-shadow:0 10px 24px color-mix(in srgb,var(--accent) 34%,transparent); }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width:960px){
+      .oga-top-left .oga-chip{ display:none; }
+      .oga-sidebar{ top:var(--topbar-h); left:0; bottom:0; width:min(86vw,318px); border-radius:0 22px 22px 0; }
+    }
+    @media (max-width:640px){
+      .oga-topbar{ gap:6px; padding:0 10px; }
+      .oga-user-pill{ max-width:132px; }
+      .oga-brand-sub{ display:none; }
+      .oga-top-right .oga-chip{ display:none; }
+      .oga-main-grid,html[data-app-mode="menu"] .oga-main-grid{ padding:10px; }
+      .oga-palette-grid{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="oga-shell">
+
+  <!-- ── TOPBAR ─────────────────────────────────────────────── -->
+  <header class="oga-topbar">
+    <div class="oga-top-left">
+      <button class="oga-icon-btn oga-glass" id="ogaSidebarToggle" title="Abrir módulos" aria-label="Abrir menú de módulos" aria-expanded="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="3" y1="6"  x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+      <div class="oga-chip oga-glass">
+        <span class="oga-chip-main" id="ogaCurrentView">Inicio</span>
+      </div>
+    </div>
+
+    <div class="oga-top-center">
+      <div class="oga-brand oga-glass">
+        <div class="oga-brand-mark">O</div>
+        <div>
+          <div class="oga-brand-title">OGA</div>
+          <div class="oga-brand-sub">Oficina Guatemalteca de Acreditación</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="oga-top-right">
+      <div class="oga-chip oga-glass"><span class="oga-chip-main" id="ogaActiveDate">—</span></div>
+      <button class="oga-icon-btn oga-glass" id="ogaFullscreenBtn" title="Pantalla completa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+      </button>
+      <button class="oga-icon-btn oga-glass" id="ogaThemeBtn" title="Modo claro u oscuro">
+        <svg id="ogaThemeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/>
+        </svg>
+      </button>
+      <button class="oga-icon-btn oga-glass" id="ogaAppearanceBtn" title="Paletas y apariencia" style="font-size:15px;">🎨</button>
+      <div class="oga-user-menu-wrap" id="ogaUserMenuWrap">
+        <button type="button" class="oga-user-pill oga-glass" id="ogaUserMenuBtn" aria-haspopup="menu" aria-expanded="false" aria-controls="ogaUserDropdown" title="Opciones de usuario">
+          <div class="oga-user-avatar" id="ogaUserAvatar">A</div>
+          <div style="min-width:0;flex:1;">
+            <div class="oga-user-name" id="ogaUserName">Administrador</div>
+            <div class="oga-user-role" id="ogaUserRole">Sesión iniciada</div>
+          </div>
+          <svg class="oga-user-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div class="oga-user-dropdown" id="ogaUserDropdown" role="menu" aria-hidden="true">
+          <div class="oga-user-summary">
+            <div class="oga-user-summary-name" id="ogaUserDropdownName">Administrador</div>
+            <div class="oga-user-summary-state">Sesión activa en el Sistema OGA</div>
+          </div>
+          <button type="button" class="oga-user-action" id="ogaLogoutBtn" role="menuitem">🔒 <span>Cerrar sesión</span></button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="oga-side-backdrop" id="ogaSideBackdrop"></div>
+
+  <main class="oga-main-grid">
+    <!-- ── SIDEBAR ──────────────────────────────────────────── -->
+    <aside class="oga-sidebar" id="ogaSidebar" aria-hidden="true">
+      <div class="oga-sidebar-inner">
+        <div class="oga-side-head">
+          <div class="oga-side-head-copy">
+            <div class="oga-side-head-title">Módulos</div>
+          </div>
+          <button class="oga-icon-btn oga-glass oga-side-close" id="ogaSidebarClose" type="button" title="Cerrar menú" aria-label="Cerrar menú">✕</button>
+        </div>
+        <div class="oga-side-list" id="ogaSidebarList"></div>
+      </div>
+    </aside>
+
+    <!-- ── CONTENT ─────────────────────────────────────────── -->
+    <section class="oga-content">
+      <div id="app-container"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ── OVERLAY ─────────────────────────────────────────────── -->
+<div id="oga-overlay">
+  <div class="oga-loader"></div>
+  <div class="oga-overlay-title" id="ogaOverlayTitle">Iniciando OGA</div>
+  <div class="oga-overlay-sub"  id="ogaOverlaySub">Preparando la experiencia...</div>
+</div>
+
+<!-- ── TOAST ───────────────────────────────────────────────── -->
+<div id="oga-toast"></div>
+
+<!-- ── APPEARANCE DRAWER ───────────────────────────────────── -->
+<div class="oga-drawer-backdrop" id="ogaDrawerBackdrop"></div>
+<aside class="oga-drawer" id="ogaAppearanceDrawer" aria-hidden="true">
+  <div class="oga-drawer-head">
+    <div>
+      <div class="oga-drawer-title">Apariencia</div>
+      <div class="oga-drawer-sub">Paletas completas, modo visual y forma del sistema.</div>
+    </div>
+    <button class="oga-icon-btn oga-glass" id="ogaCloseDrawer" title="Cerrar" style="font-size:14px;">✕</button>
+  </div>
+  <div class="oga-drawer-body">
+    <section>
+      <div class="oga-section-title">Modo visual</div>
+      <div class="oga-row" id="ogaThemeChoices"></div>
+    </section>
+    <section>
+      <div class="oga-section-title">Forma de bordes</div>
+      <div class="oga-row" id="ogaRadiusChoices"></div>
+    </section>
+    <section>
+      <div class="oga-section-title">Paleta de color</div>
+      <div class="oga-palette-grid" id="ogaPaletteGrid"></div>
+    </section>
+    <section>
+      <div class="oga-section-title">Historial de cambios</div>
+      <div class="oga-log-list" id="ogaAppearanceLog"></div>
+    </section>
+  </div>
+</aside>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   OGA SHELL — v5.0 · drawer global + temas ampliados
+   BUG FIXES:
+   1. Login sincronizado: setUser() es atómico, navigate() se llama
+      SOLO después de que el estado de usuario está 100% establecido.
+   2. Menú sin solapamiento: data-app-mode controla qué ven sidebar
+      y grid. Los módulos NO incluyen navegación propia; el shell
+      es el único nav. El menú principal usa modo "menu" (full-width
+      sin sidebar). Los módulos usan modo "normal" (sidebar visible).
+   ════════════════════════════════════════════════════════════════ */
+window.OGA = {
+
+  /* ── ESTADO ─────────────────────────────────────────────────── */
+  usuarioActivo : null,
+  nombreVisible : null,
+  _vistaActual       : null,
+  _vistaActualLabel  : '',
+  _cleanupFns        : [],
+  _themeState        : null,
+  _mobileSidebarOpen : false,
+  _userMenuOpen      : false,
+  _navSeq            : 0,
+  _navTimeout        : null,
+
+  /* ── MÓDULOS DEL MENÚ ───────────────────────────────────────── */
+  /*
+   * isSelfMenu:true  → se muestra con modo "menu" (sin sidebar),
+   *                    solo aplica a mostrarPanelMenu
+   * isLogin:true     → se muestra con modo "login" (sin shell)
+   */
+  menuModules:[
+    { fn:'mostrarPanelMenu',             label:'Menú principal',   code:'IN', desc:'Acceso a módulos',     isSelfMenu:true },
+    { fn:'mostrarPanelCertificados',     label:'Certificados',     code:'CE', desc:'Documentos oficiales' },
+    { fn:'mostrarPanelCorrespondencia',  label:'Correspondencia',  code:'CO', desc:'Cartas y oficios'     },
+    { fn:'mostrarmoduloselectoresolib',  label:'Resoluciones',     code:'RE', desc:'Flujos resolutivos'   },
+    { fn:'mostrarPanelFAC078',           label:'FAC-078',          code:'F7', desc:'Reporte y NC'         },
+    { fn:'mostrarpresupuestonuevo',      label:'Presupuestos',     code:'PR', desc:'Boletas y cobros'     },
+    { fn:'mostrarFormularioRegistroPagos',label:'Pagos',           code:'PG', desc:'Registro financiero'  },
+    { fn:'mostraranulacionbuscar',       label:'Anulaciones',      code:'AN', desc:'Anulación de boletas' },
+    { fn:'mostrarPanelReportes',         label:'Reportes',         code:'RP', desc:'Métricas y salidas'   },
+    { fn:'mostrarPreIngreso',            label:'PreIngreso',       code:'PI', desc:'Registros iniciales'  },
+    { fn:'abrirConsejoDirecto',          label:'Consejo',          code:'CN', desc:'Agenda nacional'      },
+    { fn:'mostrarPanelConsultaOEC',      label:'Consulta OEC',     code:'OE', desc:'Datos del OEC'        },
+    { fn:'mostrarDocumentosOECvista',    label:'Explorador OEC',   code:'EX', desc:'Expedientes'          },
+    { fn:'mostrarBitacoraSIGA',            label:'Bitácora',         code:'AU', desc:'Auditoría institucional' },
+  ],
+
+  palettes:[
+    { id:'ocean',     name:'Océano',      desc:'Aqua y azul tecnológico.',       accent:'#14b8a6', accent2:'#3b82f6', dark1:'#06121d', dark2:'#0a1a2b', light1:'#eef8fb', light2:'#dfeff7' },
+    { id:'jade',      name:'Jade',        desc:'Verde institucional moderno.',    accent:'#10b981', accent2:'#0f766e', dark1:'#061612', dark2:'#0b211c', light1:'#effbf6', light2:'#dcf5ea' },
+    { id:'cobalt',    name:'Cobalto',     desc:'Azul corporativo y nítido.',      accent:'#2563eb', accent2:'#06b6d4', dark1:'#071226', dark2:'#0b1c35', light1:'#f0f6ff', light2:'#dfeaff' },
+    { id:'indigo',    name:'Índigo',      desc:'Azul violeta elegante.',          accent:'#6366f1', accent2:'#8b5cf6', dark1:'#0b0d22', dark2:'#151533', light1:'#f4f3ff', light2:'#e8e6ff' },
+    { id:'violet',    name:'Violeta',     desc:'Morado premium.',                 accent:'#8b5cf6', accent2:'#2563eb', dark1:'#120a20', dark2:'#1b1030', light1:'#f8f2ff', light2:'#eee2ff' },
+    { id:'rose',      name:'Rosa',        desc:'Magenta suave y moderno.',         accent:'#ec4899', accent2:'#8b5cf6', dark1:'#1d0915', dark2:'#2b0e20', light1:'#fff2f8', light2:'#fde2ef' },
+    { id:'sunset',    name:'Atardecer',   desc:'Naranja y rojo cálidos.',          accent:'#f97316', accent2:'#dc2626', dark1:'#1b0c06', dark2:'#2b1209', light1:'#fff6ef', light2:'#ffe8d7' },
+    { id:'gold',      name:'Dorado',      desc:'Dorado sobrio institucional.',     accent:'#d4a017', accent2:'#b45309', dark1:'#171104', dark2:'#251a07', light1:'#fff9e8', light2:'#f7ecc7' },
+    { id:'lima',      name:'Lima',        desc:'Verde brillante y energético.',    accent:'#84cc16', accent2:'#14b8a6', dark1:'#0d1705', dark2:'#14230a', light1:'#f6fce9', light2:'#eaf6d0' },
+    { id:'cyan',      name:'Cian',        desc:'Cian limpio para operaciones.',    accent:'#06b6d4', accent2:'#0ea5e9', dark1:'#04161c', dark2:'#07232d', light1:'#ecfbfe', light2:'#d7f4fb' },
+    { id:'burgundy',  name:'Borgoña',     desc:'Rojo vino formal y serio.',        accent:'#be123c', accent2:'#7f1d1d', dark1:'#1a070c', dark2:'#290b12', light1:'#fff1f3', light2:'#f9dce1' },
+    { id:'graphite',  name:'Grafito',     desc:'Monocromático sobrio.',            accent:'#64748b', accent2:'#334155', dark1:'#080b10', dark2:'#111720', light1:'#f4f6f8', light2:'#e4e8ed' },
+  ],
+
+  /* ── OVERLAY & TOAST ────────────────────────────────────────── */
+  overlay(title, sub){
+    /* Compatibilidad: OGA.overlay(null) ahora CIERRA el overlay.
+       Esto evita que un parcial antiguo vuelva a mostrar "Procesando"
+       cuando en realidad intenta liberar la interfaz. */
+    if(title === null || title === false){
+      OGA.hideOverlay();
+      return;
+    }
+
+    const o = document.getElementById('oga-overlay');
+    const t = document.getElementById('ogaOverlayTitle');
+    const s = document.getElementById('ogaOverlaySub');
+    if(!o) return;
+
+    if(t) t.textContent = title || 'Procesando';
+    if(s) s.textContent = sub   || 'Un momento...';
+    o.classList.remove('oculto');
+  },
+  hideOverlay(){
+    const o = document.getElementById('oga-overlay');
+    if(o) o.classList.add('oculto');
+  },
+
+  toast(msg, tipo='info', title='Sistema OGA'){
+    const el = document.getElementById('oga-toast');
+    el.className = tipo + ' show';
+    el.innerHTML = `<div class="oga-toast-title">${title}</div><div class="oga-toast-msg">${msg}</div>`;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 3800);
+  },
+
+  /* ── CLEANUP ────────────────────────────────────────────────── */
+  onUnmount(fn){ if(typeof fn === 'function') OGA._cleanupFns.push(fn); },
+  _limpiarVista(){
+    OGA._cleanupFns.forEach(fn => { try{ fn(); }catch(_){} });
+    OGA._cleanupFns = [];
+  },
+
+  /* ── STORAGE ────────────────────────────────────────────────── */
+  _get(k,fb){ try{ const v=localStorage.getItem(k); return v==null ? fb : JSON.parse(v); }catch(_){ return fb; } },
+  _set(k,v) { try{ localStorage.setItem(k,JSON.stringify(v)); }catch(_){} },
+
+  /* ── MODO DE PANTALLA ───────────────────────────────────────── */
+  /*
+   * "login"  → sin topbar, sin sidebar, contenido full-screen
+   * "menu"   → con topbar, sin sidebar, contenido full-width
+   * "normal" → con topbar, con sidebar, contenido parcial
+   */
+  _setMode(mode){
+    document.documentElement.setAttribute('data-app-mode', mode);
+  },
+
+  /* ── USUARIO ────────────────────────────────────────────────── */
+  /*
+   * FIX BUG 1: setUser() es la única puerta para establecer la
+   * sesión. Actualiza TODOS los elementos de UI de forma síncrona
+   * antes de que cualquier navegación pueda ocurrir.
+   */
+  setUser(usuario, nombre){
+    OGA.usuarioActivo = usuario || null;
+    OGA.nombreVisible = nombre  || usuario || 'Usuario';
+    OGA._renderUser();
+  },
+  clearUser(){
+    OGA.usuarioActivo = null;
+    OGA.nombreVisible = null;
+    OGA._renderUser();
+  },
+  _renderUser(){
+    const nm = OGA.nombreVisible || OGA.usuarioActivo || 'Usuario';
+    const initial = (nm.trim().charAt(0) || 'U').toUpperCase();
+    document.getElementById('ogaUserAvatar').textContent = initial;
+    document.getElementById('ogaUserName').textContent   = nm;
+    document.getElementById('ogaUserRole').textContent   = OGA.usuarioActivo ? 'Sesión activa' : 'Sin sesión';
+    const sideUser = document.getElementById('ogaSidebarUser');
+    if(sideUser) sideUser.textContent = nm;
+    document.getElementById('ogaUserDropdownName').textContent = nm;
+    const userBtn = document.getElementById('ogaUserMenuBtn');
+    if(userBtn) userBtn.disabled = !OGA.usuarioActivo;
+    if(!OGA.usuarioActivo) OGA.closeUserMenu();
+  },
+
+  /* ── MENÚ DEL USUARIO ──────────────────────────────────────── */
+  toggleUserMenu(){
+    if(!OGA.usuarioActivo) return;
+    OGA._userMenuOpen ? OGA.closeUserMenu() : OGA.openUserMenu();
+  },
+  openUserMenu(){
+    const btn = document.getElementById('ogaUserMenuBtn');
+    const menu = document.getElementById('ogaUserDropdown');
+    if(!btn || !menu || !OGA.usuarioActivo) return;
+    OGA._userMenuOpen = true;
+    btn.setAttribute('aria-expanded','true');
+    menu.setAttribute('aria-hidden','false');
+    menu.classList.add('show');
+    requestAnimationFrame(() => document.getElementById('ogaLogoutBtn')?.focus());
+  },
+  closeUserMenu(returnFocus=false){
+    const btn = document.getElementById('ogaUserMenuBtn');
+    const menu = document.getElementById('ogaUserDropdown');
+    OGA._userMenuOpen = false;
+    if(btn) btn.setAttribute('aria-expanded','false');
+    if(menu){ menu.setAttribute('aria-hidden','true'); menu.classList.remove('show'); }
+    if(returnFocus) btn?.focus();
+  },
+
+  /* ── FECHA ──────────────────────────────────────────────────── */
+  _renderTopState(){
+    const f = new Date().toLocaleDateString('es-GT',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+    document.getElementById('ogaActiveDate').textContent = f;
+    document.getElementById('ogaCurrentView').textContent = OGA._vistaActualLabel || 'Inicio';
+    const sideView = document.getElementById('ogaSidebarView');
+    if(sideView) sideView.textContent = OGA._vistaActualLabel || '—';
+  },
+
+  /* ── SIDEBAR LIST ───────────────────────────────────────────── */
+  _renderSidebar(){
+    const list = document.getElementById('ogaSidebarList');
+    if(!list) return;
+    // El drawer contiene los módulos, pero permanece oculto hasta pulsar ☰.
+    list.innerHTML = OGA.menuModules
+      .filter(m => !m.isLogin)
+      .map(m => `
+        <button class="oga-side-item ${OGA._vistaActual === m.fn ? 'active' : ''}"
+                data-fn="${m.fn}" title="${m.label}">
+          <span class="oga-side-badge">${m.code}</span>
+          <span class="oga-side-text">
+            <span class="oga-side-label">${m.label}</span>
+          </span>
+        </button>`
+      ).join('');
+
+    list.querySelectorAll('.oga-side-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mod = OGA.menuModules.find(x => x.fn === btn.dataset.fn);
+        if(mod) OGA.navegar(mod.fn, mod.label);
+        OGA._closeMobileSidebar();
+      });
+    });
+  },
+
+  /* ── MENÚ DE MÓDULOS — drawer global ───────────────────────── */
+  toggleSidebar(force){
+    const sidebar = document.getElementById('ogaSidebar');
+    const backdrop = document.getElementById('ogaSideBackdrop');
+    const btn = document.getElementById('ogaSidebarToggle');
+    if(!sidebar || !backdrop) return;
+
+    const next = typeof force === 'boolean' ? force : !OGA._mobileSidebarOpen;
+    if(next){
+      OGA.closeDrawer();
+      OGA.closeUserMenu();
+    }
+    OGA._mobileSidebarOpen = next;
+    sidebar.classList.toggle('mob-show', next);
+    backdrop.classList.toggle('show', next);
+    sidebar.setAttribute('aria-hidden', next ? 'false' : 'true');
+    if(btn) btn.setAttribute('aria-expanded', next ? 'true' : 'false');
+  },
+  _closeMobileSidebar(){
+    OGA.toggleSidebar(false);
+  },
+
+  /* ── FULLSCREEN ─────────────────────────────────────────────── */
+  toggleFullscreen(){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+    else document.exitFullscreen?.();
+  },
+
+  /* ── THEME ──────────────────────────────────────────────────── */
+  _initTheme(){
+    const def = { theme:'dark', radius:'rounded', paletteId:'ocean' };
+    OGA._themeState = Object.assign({}, def, OGA._get('oga_theme_v3', null) || {});
+    OGA._applyTheme(false);
+  },
+  _applyTheme(writeLog=true){
+    const st = OGA._themeState;
+    const p  = OGA.palettes.find(x => x.id === st.paletteId) || OGA.palettes[0];
+    const r  = document.documentElement;
+    const isDark = st.theme === 'dark';
+    r.setAttribute('data-theme',  st.theme);
+    r.setAttribute('data-radius', st.radius);
+    r.setAttribute('data-palette', p.id);
+    r.style.setProperty('--accent',      p.accent);
+    r.style.setProperty('--accent-2',    p.accent2);
+    r.style.setProperty('--accent-grad', `linear-gradient(135deg,${p.accent} 0%,${p.accent2} 100%)`);
+    r.style.setProperty('--bg',   isDark ? p.dark1  : p.light1);
+    r.style.setProperty('--bg-2', isDark ? p.dark2  : p.light2);
+    OGA._set('oga_theme_v3', st);
+    OGA._renderThemeChoices();
+    OGA._renderRadiusChoices();
+    OGA._renderPaletteChoices();
+    OGA._renderThemeIcon();
+    if(writeLog) OGA._appendThemeLog(`${p.name} · ${st.theme==='dark'?'Oscuro':'Claro'} · ${st.radius==='rounded'?'Rounded':'Flat'}`);
+  },
+  _appendThemeLog(text){
+    const log = OGA._get('oga_theme_log', []);
+    log.unshift({text, at:new Date().toISOString()});
+    OGA._set('oga_theme_log', log.slice(0,10));
+    OGA._renderThemeLog();
+  },
+  _renderThemeLog(){
+    const wrap = document.getElementById('ogaAppearanceLog');
+    if(!wrap) return;
+    const log = OGA._get('oga_theme_log', []);
+    if(!log.length){
+      wrap.innerHTML = '<div class="oga-log-item"><div class="oga-log-title">Sin cambios aún</div></div>';
+      return;
+    }
+    wrap.innerHTML = log.map(item => {
+      const d = new Date(item.at);
+      return `<div class="oga-log-item">
+        <div class="oga-log-title">${item.text}</div>
+        <div class="oga-log-meta">${isNaN(d)?'':d.toLocaleString('es-GT')}</div>
+      </div>`;
+    }).join('');
+  },
+  _renderThemeChoices(){
+    const b = document.getElementById('ogaThemeChoices'); if(!b) return;
+    const t = OGA._themeState.theme;
+    b.innerHTML = ['dark','light'].map(m =>
+      `<button class="oga-choice ${t===m?'active':''}" data-theme="${m}">
+        <span class="oga-radio"></span>${m==='dark'?'Oscuro':'Claro'}
+      </button>`
+    ).join('');
+    b.querySelectorAll('.oga-choice').forEach(btn => btn.onclick = () => {
+      OGA._themeState.theme = btn.dataset.theme; OGA._applyTheme();
+    });
+  },
+  _renderRadiusChoices(){
+    const b = document.getElementById('ogaRadiusChoices'); if(!b) return;
+    const r = OGA._themeState.radius;
+    b.innerHTML = ['rounded','flat'].map(m =>
+      `<button class="oga-choice ${r===m?'active':''}" data-radius="${m}">
+        <span class="oga-radio"></span>${m==='rounded'?'Rounded':'Flat'}
+      </button>`
+    ).join('');
+    b.querySelectorAll('.oga-choice').forEach(btn => btn.onclick = () => {
+      OGA._themeState.radius = btn.dataset.radius; OGA._applyTheme();
+    });
+  },
+  _renderPaletteChoices(){
+    const g = document.getElementById('ogaPaletteGrid'); if(!g) return;
+    const a = OGA._themeState.paletteId;
+    g.innerHTML = OGA.palettes.map(p =>
+      `<button class="oga-palette-btn ${a===p.id?'active':''}" data-palette="${p.id}">
+        <div class="oga-palette-swatches">
+          <span style="background:${p.accent}"></span>
+          <span style="background:${p.accent2}"></span>
+        </div>
+        <div class="oga-palette-name">${p.name}</div>
+        <div class="oga-palette-desc">${p.desc}</div>
+      </button>`
+    ).join('');
+    g.querySelectorAll('.oga-palette-btn').forEach(btn => btn.onclick = () => {
+      OGA._themeState.paletteId = btn.dataset.palette; OGA._applyTheme();
+    });
+  },
+  _renderThemeIcon(){
+    const ic = document.getElementById('ogaThemeIcon'); if(!ic) return;
+    ic.innerHTML = (OGA._themeState?.theme||'dark') === 'dark'
+      ? '<path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z" stroke-linecap="round" stroke-linejoin="round"/>'
+      : '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.5 1.5M17.6 17.6l1.5 1.5M2 12h2M20 12h2M4.9 19.1l1.5-1.5M17.6 6.4l1.5-1.5" stroke-linecap="round"/>';
+  },
+
+  /* ── APPEARANCE DRAWER ──────────────────────────────────────── */
+  openDrawer() {
+    OGA._closeMobileSidebar();
+    OGA.closeUserMenu();
+    document.getElementById('ogaAppearanceDrawer').classList.add('show');
+    document.getElementById('ogaDrawerBackdrop').classList.add('show');
+  },
+  closeDrawer(){
+    document.getElementById('ogaAppearanceDrawer').classList.remove('show');
+    document.getElementById('ogaDrawerBackdrop').classList.remove('show');
+  },
+
+  /* ── NORMALIZADOR DE PARCIALES ──────────────────────────────────
+   * Los parciales llegan como documentos HTML completos (con su
+   * propio <html>, <head>, <body>, .header sticky, etc.).
+   * Este normalizador:
+   * 1. Extrae solo el contenido útil (body o #appRoot)
+   * 2. Elimina el header/nav del módulo (.header, .tabs sticky)
+   *    que colisiona visualmente con el shell
+   * 3. Resetea estilos que rompen el layout del shell
+   *    (position:sticky en header/tabs, min-height:100vh, etc.)
+   * 4. Extrae <style> y <script> para inyección controlada
+   * ──────────────────────────────────────────────────────────── */
+  _parseParcial(html){
+    // Parsear como documento completo para acceder a body
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    /* ── 1. EXTRAER SCRIPTS ANTES DE TOCAR EL DOM ── */
+    const scripts = [];
+    doc.querySelectorAll('script').forEach(el => {
+      scripts.push({ src:el.getAttribute('src')||null, content:el.textContent||'' });
+      el.remove();
+    });
+
+    /* ── 2. EXTRAER ESTILOS ── */
+    const rawStyles = [];
+    doc.querySelectorAll('style').forEach(el => {
+      rawStyles.push(el.textContent);
+      el.remove();
+    });
+
+    /* ── 3. NORMALIZAR CSS DEL MÓDULO ──
+     * Añadir overrides que contienen los estilos problemáticos
+     * dentro del scope del wrapper .oga-view-wrap
+     */
+    const scopePrefix = '.oga-view-wrap';
+    const cssOverrides = `
+      /* Neutralizar estructuras de shell propias del módulo */
+      ${scopePrefix} html,
+      ${scopePrefix} body,
+      ${scopePrefix} #appRoot {
+        min-height: unset !important;
+        height: auto !important;
+        background: transparent !important;
+        overflow: visible !important;
+      }
+      /* El .header del módulo = solo layout interno, NO sticky */
+      ${scopePrefix} .header {
+        position: relative !important;
+        top: unset !important;
+        z-index: 1 !important;
+        border-radius: 12px 12px 0 0;
+      }
+      /* Las .tabs del módulo = relativas, no sticky */
+      ${scopePrefix} .tabs {
+        position: relative !important;
+        top: unset !important;
+        z-index: 1 !important;
+      }
+      /* Modals y overlays del módulo deben quedar dentro del viewport */
+      ${scopePrefix} .modal,
+      ${scopePrefix} .system-lock-overlay,
+      ${scopePrefix} .notification {
+        position: fixed !important;
+        z-index: 8000 !important;
+      }
+      /* Contenido principal sin altura mínima forzada */
+      ${scopePrefix} .content {
+        min-height: unset !important;
+      }
+    `;
+    rawStyles.push(cssOverrides);
+
+    /* ── 4. OBTENER CUERPO DEL MÓDULO ──
+     * Preferir #appRoot si existe (patrón del módulo Consejo),
+     * si no, tomar todo el body.
+     */
+    const appRoot = doc.getElementById('appRoot');
+    const bodyContent = appRoot
+      ? appRoot.outerHTML
+      : (doc.body ? doc.body.innerHTML : html);
+
+    return { styles: rawStyles, scripts, body: bodyContent };
+  },
+  _injectStyle(css, vistaId){
+    const id = `oga-s-${vistaId}`;
+    if(document.getElementById(id)) return;
+    const tag = document.createElement('style');
+    tag.id = id; tag.dataset.vista = vistaId; tag.textContent = css;
+    document.head.appendChild(tag);
+  },
+  _cleanStyles(vistaId){
+    document.querySelectorAll('style[data-vista]').forEach(el => {
+      if(el.dataset.vista !== vistaId) el.remove();
+    });
+  },
+  _runScripts(scripts, container){
+    const ext = scripts.filter(s => s.src);
+    const int = scripts.filter(s => !s.src && s.content.trim());
+    const load = i => {
+      if(i >= ext.length){
+        int.forEach(s => {
+          const tag = document.createElement('script');
+          tag.textContent = s.content;
+          container.appendChild(tag);
+        });
+        return;
+      }
+      const s = ext[i];
+      if(document.querySelector(`script[src="${s.src}"]`)){ load(i+1); return; }
+      const tag = document.createElement('script');
+      tag.src = s.src;
+      tag.onload = () => load(i+1);
+      tag.onerror = () => load(i+1);
+      document.head.appendChild(tag);
+    };
+    load(0);
+  },
+
+  /* ── PLACEHOLDER ────────────────────────────────────────────── */
+  _renderPlaceholder(fn, label){
+    const icons = {
+      mostrarPanelMenu:'🏠', mostrarPanelCertificados:'📜', mostrarPanelCorrespondencia:'✉️',
+      mostrarmoduloselectoresolib:'📑', mostrarPanelFAC078:'📋', mostrarpresupuestonuevo:'💵',
+      mostrarFormularioRegistroPagos:'💳', mostraranulacionbuscar:'🚫', mostrarPanelReportes:'📊',
+      mostrarPreIngreso:'📥', abrirConsejoDirecto:'🏛️', mostrarPanelConsultaOEC:'🏢',
+      mostrarDocumentosOECvista:'🗂️', mostrarLogin:'🔐',
+    };
+    document.getElementById('app-container').innerHTML = `
+      <div class="oga-view-wrap">
+        <div class="oga-placeholder">
+          <div class="oga-placeholder-icon">${icons[fn]||'🔧'}</div>
+          <div class="oga-placeholder-title">${label||fn}</div>
+          <div class="oga-placeholder-sub">
+            Vista fallback local. En producción se cargará el parcial desde Google Apps Script.
+          </div>
+          <button class="oga-placeholder-btn" onclick="OGA.irAlMenu()">← Volver al menú</button>
+        </div>
+      </div>`;
+  },
+
+  /* ══════════════════════════════════════════════════════════════
+     NAVEGAR — corazón del shell
+     ══════════════════════════════════════════════════════════════
+     FIX BUG 2: determina el modo de pantalla según el módulo:
+     · Login  → data-app-mode="login"  (sin shell)
+     · Menú   → data-app-mode="menu"   (sin sidebar, full-width)
+     · Módulo → data-app-mode="normal" (con sidebar activo)
+
+     Los módulos inyectados NO deben contener nav propio; el shell
+     es el único responsable de la navegación.
+  ══════════════════════════════════════════════════════════════ */
+  navegar(fn, label){
+    if(!fn) return;
+    OGA.closeUserMenu();
+    OGA._closeMobileSidebar();
+
+    // Solo bloqueamos si es la misma vista Y no es login/menu
+    // (login y menú siempre pueden refrescarse).
+    const isLogin = fn === 'mostrarLogin';
+    const mod = OGA.menuModules.find(m => m.fn === fn) || {};
+    const isMenu = !!mod.isSelfMenu;
+    if(OGA._vistaActual === fn && !isLogin && !isMenu) return;
+
+    // Cada navegación tiene un identificador. Si una respuesta vieja llega
+    // tarde, se ignora para evitar que reemplace una vista más reciente.
+    const navId = ++OGA._navSeq;
+    clearTimeout(OGA._navTimeout);
+
+    OGA.overlay(`Cargando ${label||'módulo'}...`, 'Preparando contenido...');
+    OGA._limpiarVista();
+
+    // Determinar modo de pantalla ANTES de cargar contenido
+    if(isLogin)      OGA._setMode('login');
+    else if(isMenu)  OGA._setMode('menu');
+    else             OGA._setMode('normal');
+
+    OGA._vistaActual      = fn;
+    OGA._vistaActualLabel = label || fn;
+    OGA._renderSidebar();
+    OGA._renderTopState();
+
+    const isCurrent = () => navId === OGA._navSeq;
+
+    const terminarCarga = () => {
+      if(OGA._navTimeout){
+        clearTimeout(OGA._navTimeout);
+        OGA._navTimeout = null;
+      }
+    };
+
+    const onSuccess = html => {
+      if(!isCurrent()) return;
+      terminarCarga();
+
+      try{
+        if(typeof html !== 'string' || !html.trim()){
+          throw new Error('El backend devolvió un HTML vacío o inválido.');
+        }
+
+        const cont = document.getElementById('app-container');
+        if(!cont) throw new Error('No existe #app-container.');
+
+        cont.innerHTML = '';
+        const p = OGA._parseParcial(html);
+        OGA._cleanStyles(fn);
+        p.styles.forEach(css => OGA._injectStyle(css, fn));
+
+        const wrap = document.createElement('div');
+        wrap.className = 'oga-view-wrap';
+        wrap.innerHTML = p.body;
+        cont.appendChild(wrap);
+
+        OGA._runScripts(p.scripts, wrap);
+        OGA.hideOverlay();
+        window.scrollTo({top:0, behavior:'smooth'});
+      }catch(err){
+        onFailure(err);
+      }
+    };
+
+    const onFailure = err => {
+      if(!isCurrent()) return;
+      terminarCarga();
+
+      console.error('[OGA nav]', fn, err);
+      OGA._renderPlaceholder(fn, label);
+      OGA.hideOverlay();
+      OGA.toast(`No se pudo cargar "${label||fn}". Intenta nuevamente.`, 'warning', 'Navegación');
+    };
+
+    // Seguridad adicional: si Apps Script queda pendiente y nunca llama
+    // success/failure, liberamos el shell para que el usuario pueda continuar.
+    OGA._navTimeout = setTimeout(() => {
+      if(!isCurrent()) return;
+      onFailure(new Error(`Timeout cargando ${fn}`));
+    }, 30000);
+
+    try{
+      if(window.google && google.script && google.script.run){
+        const runner = google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(onFailure);
+
+        if(typeof runner[fn] !== 'function'){
+          throw new Error(`La función backend ${fn}() no está disponible.`);
+        }
+
+        runner[fn]();
+      } else if(isMenu){
+        // Fallback local: intentar fetch del parcial de menú
+        fetch('Menu_dividido.html')
+          .then(r => r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`)))
+          .then(onSuccess)
+          .catch(onFailure);
+      } else {
+        onFailure(new Error('google.script.run no disponible'));
+      }
+    }catch(err){
+      onFailure(err);
+    }
+  },
+
+  /* ── ACCESOS DIRECTOS ───────────────────────────────────────── */
+  irAlMenu(){ OGA.navegar('mostrarPanelMenu', 'Menú principal'); },
+
+  /* ══════════════════════════════════════════════════════════════
+     irAlLogin — limpia sesión y navega al login
+     FIX BUG 1: clearUser() ANTES de navegar, garantizado.
+  ══════════════════════════════════════════════════════════════ */
+  irAlLogin(){
+    OGA.clearUser();
+    OGA.navegar('mostrarLogin', 'Inicio de sesión');
+  },
+
+  /* ══════════════════════════════════════════════════════════════
+     LOGIN HANDLER — llamado desde el parcial de login
+     FIX BUG 1: setUser() completo ANTES de irAlMenu().
+     El parcial de login llama a OGA.onLoginSuccess(detalle).
+  ══════════════════════════════════════════════════════════════ */
+  onLoginSuccess(detalle){
+    // detalle: { usuario, nombre, email } devuelto por getUsuarioActivoDetalle()
+    OGA.setUser(
+      detalle.usuario || detalle.email || 'usuario',
+      detalle.nombre  || detalle.usuario || 'Administrador'
+    );
+    OGA.toast('Sesión iniciada correctamente', 'success', 'Bienvenido');
+    // navegar DESPUÉS de que el estado de usuario está establecido
+    OGA.irAlMenu();
+  },
+
+  salirSistema(){
+    /* FIX cerrar sesión:
+     * 1. Limpiar usuario inmediatamente (UI refleja estado)
+     * 2. Forzar _vistaActual a null para que navegar() no haga early-return
+     * 3. Llamar backend; tanto éxito como fallo van a irAlLogin()
+     * 4. Timeout de seguridad: si el backend tarda > 5s, cerrar de todos modos
+     */
+    OGA.closeUserMenu();
+    OGA.clearUser();
+    OGA._vistaActual = null; // Reset para evitar el guard "misma vista"
+    OGA.overlay('Cerrando sesión...', 'Finalizando sesión actual.');
+
+    const goLogin = () => {
+      clearTimeout(OGA._salirTimeout);
+      OGA.irAlLogin();
+    };
+
+    OGA._salirTimeout = setTimeout(goLogin, 5000); // fallback 5s
+
+    try{
+      if(window.google && google.script && google.script.run){
+        google.script.run
+          .withSuccessHandler(goLogin)
+          .withFailureHandler(goLogin)
+          .cerrarSesionUsuario();
+      } else {
+        goLogin();
+      }
+    }catch(_){ goLogin(); }
+  },
+};
+
+/* ── LOGIN PARCIAL ACTUALIZADO ──────────────────────────────────
+   El parcial de Login debe llamar a OGA.onLoginSuccess(detalle)
+   en lugar de manejar el estado manualmente.
+   Función global para compatibilidad con el parcial existente:
+──────────────────────────────────────────────────────────────── */
+window.hacerLogin = function(){
+  const usuarioEl = document.getElementById('login-usuario');
+  const claveEl   = document.getElementById('login-clave');
+  const btn       = document.getElementById('login-btn');
+  const errEl     = document.getElementById('login-error');
+
+  if(!usuarioEl || !claveEl || !errEl){
+    console.error('[OGA login] No se encontraron los controles del formulario.');
+    OGA.hideOverlay();
+    return;
+  }
+
+  // Evitar doble click / Enter repetido mientras una solicitud está activa.
+  if(window.__ogaLoginBusy) return;
+
+  const usuario = usuarioEl.value.trim();
+  // La contraseña NO se recorta: los espacios pueden formar parte de ella.
+  const clave = claveEl.value;
+
+  errEl.textContent = '';
+
+  if(!usuario && !clave){
+    errEl.textContent = '⚠️ Ingresa tu usuario y contraseña.';
+    usuarioEl.focus();
+    return;
+  }
+  if(!usuario){
+    errEl.textContent = '⚠️ Ingresa tu usuario.';
+    usuarioEl.focus();
+    return;
+  }
+  if(!clave){
+    errEl.textContent = '⚠️ Ingresa tu contraseña.';
+    claveEl.focus();
+    return;
+  }
+
+  if(!(window.google && google.script && google.script.run)){
+    errEl.textContent = '❌ No fue posible conectar con Google Apps Script.';
+    OGA.hideOverlay();
+    return;
+  }
+
+  window.__ogaLoginBusy = true;
+  window.__ogaLoginRequestId = (window.__ogaLoginRequestId || 0) + 1;
+  const requestId = window.__ogaLoginRequestId;
+
+  const isCurrent = () => requestId === window.__ogaLoginRequestId;
+
+  const bloquear = estado => {
+    if(btn){
+      btn.disabled = estado;
+      btn.textContent = estado ? 'Verificando...' : 'Ingresar';
+    }
+    usuarioEl.disabled = estado;
+    claveEl.disabled = estado;
+  };
+
+  const liberar = () => {
+    window.__ogaLoginBusy = false;
+    bloquear(false);
+    OGA.hideOverlay();
+  };
+
+  const mostrarError = mensaje => {
+    liberar();
+    errEl.textContent = mensaje || '❌ Ocurrió un error al iniciar sesión.';
+  };
+
+  bloquear(true);
+  OGA.overlay('Iniciando sesión...', 'Verificando credenciales...');
+
+  // Si Apps Script queda pendiente, la UI no permanece bloqueada para siempre.
+  const loginTimeout = setTimeout(() => {
+    if(!isCurrent()) return;
+    window.__ogaLoginRequestId++; // invalidar respuestas tardías
+    console.error('[OGA login] Timeout en iniciarSesionConClave().');
+    mostrarError('❌ El servidor está tardando demasiado en responder. Intenta nuevamente.');
+  }, 25000);
+
+  const clearLoginTimeout = () => clearTimeout(loginTimeout);
+
+  try{
+    google.script.run
+      .withSuccessHandler(res => {
+        if(!isCurrent()) return;
+        clearLoginTimeout();
+
+        try{
+          if(!res || typeof res !== 'object'){
+            console.error('[OGA login] Respuesta inválida:', res);
+            mostrarError('❌ El servidor devolvió una respuesta inválida.');
+            return;
+          }
+
+          if(res.ok === true){
+            // El login fue correcto. Obtenemos el detalle, pero esta segunda
+            // consulta también tiene fallback para que no bloquee el acceso.
+            let detalleFinalizado = false;
+
+            const completarLogin = detalle => {
+              if(detalleFinalizado || !isCurrent()) return;
+              detalleFinalizado = true;
+              clearTimeout(detalleTimeout);
+              liberar();
+              OGA.onLoginSuccess(
+                detalle && typeof detalle === 'object'
+                  ? detalle
+                  : { usuario, nombre:usuario }
+              );
+            };
+
+            const detalleTimeout = setTimeout(() => {
+              console.warn('[OGA login] Timeout en getUsuarioActivoDetalle(); usando fallback.');
+              completarLogin({ usuario, nombre:usuario });
+            }, 12000);
+
+            google.script.run
+              .withSuccessHandler(detalle => completarLogin(detalle))
+              .withFailureHandler(err => {
+                console.warn('[OGA login] Error obteniendo detalle:', err);
+                completarLogin({ usuario, nombre:usuario });
+              })
+              .getUsuarioActivoDetalle();
+
+            return;
+          }
+
+          if(res.msg === 'definir'){
+            mostrarError('🔑 Debes definir tu clave. Contacta al administrador.');
+            return;
+          }
+
+          mostrarError(res.msg || '❌ Usuario o contraseña incorrectos.');
+
+        }catch(err){
+          console.error('[OGA login] Error procesando respuesta:', err);
+          mostrarError('❌ Ocurrió un error al procesar el inicio de sesión.');
+        }
+      })
+      .withFailureHandler(err => {
+        if(!isCurrent()) return;
+        clearLoginTimeout();
+        console.error('[OGA login] iniciarSesionConClave:', err);
+
+        const detalle = err && err.message ? String(err.message) : String(err || '');
+        let mensaje = '❌ Ocurrió un error al iniciar sesión.';
+
+        if(/maximum execution time|timed out|timeout/i.test(detalle)){
+          mensaje = '❌ El servidor tardó demasiado en responder. Intenta nuevamente.';
+        }else if(/service invoked too many times|quota/i.test(detalle)){
+          mensaje = '❌ El servicio está temporalmente ocupado. Intenta nuevamente.';
+        }else if(/authorization|permission|permis/i.test(detalle)){
+          mensaje = '❌ Error de autorización o permisos. Contacta al administrador.';
+        }else if(/network|connection|conex/i.test(detalle)){
+          mensaje = '❌ Error de conexión con el servidor.';
+        }
+
+        mostrarError(mensaje);
+      })
+      .iniciarSesionConClave(usuario, clave);
+
+  }catch(err){
+    clearLoginTimeout();
+    console.error('[OGA login] Excepción al ejecutar login:', err);
+    mostrarError('❌ No fue posible iniciar la validación de credenciales.');
+  }
+};
+
+/* ── INIT ────────────────────────────────────────────────────── */
+(function init(){
+  OGA._initTheme();
+  OGA._renderUser();
+  OGA._renderTopState();
+
+  // El menú de módulos inicia cerrado y se abre únicamente con ☰.
+  OGA._mobileSidebarOpen = false;
+
+  // Eventos
+  document.getElementById('ogaSidebarToggle').addEventListener('click', () => OGA.toggleSidebar());
+  document.getElementById('ogaSidebarClose').addEventListener('click',  () => OGA._closeMobileSidebar());
+  document.getElementById('ogaSideBackdrop').addEventListener('click',  () => OGA._closeMobileSidebar());
+  document.getElementById('ogaAppearanceBtn').addEventListener('click', () => OGA.openDrawer());
+  document.getElementById('ogaCloseDrawer').addEventListener('click',   () => OGA.closeDrawer());
+  document.getElementById('ogaDrawerBackdrop').addEventListener('click',() => OGA.closeDrawer());
+  document.getElementById('ogaFullscreenBtn').addEventListener('click', () => OGA.toggleFullscreen());
+  document.getElementById('ogaThemeBtn').addEventListener('click', () => {
+    OGA._themeState.theme = OGA._themeState.theme === 'dark' ? 'light' : 'dark';
+    OGA._applyTheme();
+  });
+  document.getElementById('ogaUserMenuBtn').addEventListener('click', event => {
+    event.stopPropagation();
+    OGA.toggleUserMenu();
+  });
+  document.getElementById('ogaUserDropdown').addEventListener('click', event => event.stopPropagation());
+  document.getElementById('ogaLogoutBtn').addEventListener('click', () => OGA.salirSistema());
+  document.addEventListener('click', event => {
+    if(OGA._userMenuOpen && !document.getElementById('ogaUserMenuWrap').contains(event.target)) OGA.closeUserMenu();
+  });
+  document.addEventListener('keydown', event => {
+    if(event.key === 'Escape' && OGA._userMenuOpen){ event.preventDefault(); OGA.closeUserMenu(true); return; }
+    if(event.key === 'Escape' && OGA._mobileSidebarOpen){ event.preventDefault(); OGA._closeMobileSidebar(); }
+  });
+
+  OGA._renderSidebar();
+  OGA.overlay('Verificando sesión...', 'Comprobando acceso actual...');
+
+  /* ══════════════════════════════════════════════════════════════
+     ARRANQUE — FIX BUG 1:
+     Si google.script.run está disponible, verificamos sesión activa.
+     onLoginSuccess() es el único punto de entrada al sistema.
+     Si el usuario ya tiene sesión, llamamos onLoginSuccess() con
+     sus datos; si no, irAlLogin() limpia y muestra el formulario.
+  ══════════════════════════════════════════════════════════════ */
+  // El arranque también queda protegido contra respuestas que nunca llegan.
+  let bootFinalizado = false;
+  let bootTimer = null;
+
+  const finalizarBoot = fn => {
+    if(bootFinalizado) return false;
+    bootFinalizado = true;
+    if(bootTimer) clearTimeout(bootTimer);
+    fn();
+    return true;
+  };
+
+  const goLogin = (motivo='') => finalizarBoot(() => {
+    if(motivo) console.warn('[OGA boot]', motivo);
+    OGA.clearUser();
+    OGA.irAlLogin();
+  });
+
+  const goUsuario = detalle => finalizarBoot(() => {
+    OGA.onLoginSuccess(detalle);
+  });
+
+  // Si la validación automática no responde, mostrar login en vez de
+  // dejar el overlay "Verificando sesión..." indefinidamente.
+  bootTimer = setTimeout(() => {
+    goLogin('Timeout verificando la sesión activa.');
+  }, 15000);
+
+  try{
+    if(window.google && google.script && google.script.run){
+      google.script.run
+        .withSuccessHandler(usuario => {
+          if(bootFinalizado) return;
+          if(!usuario){
+            goLogin('No existe una sesión activa.');
+            return;
+          }
+
+          // Tenemos el usuario activo; buscamos su nombre visible.
+          google.script.run
+            .withSuccessHandler(detalle => {
+              if(bootFinalizado) return;
+              if(detalle && (detalle.usuario || detalle.email)){
+                goUsuario(detalle);
+              } else {
+                goUsuario({ usuario, nombre:usuario });
+              }
+            })
+            .withFailureHandler(err => {
+              if(bootFinalizado) return;
+              console.warn('[OGA boot] No se obtuvo detalle del usuario:', err);
+              goUsuario({ usuario, nombre:usuario });
+            })
+            .getUsuarioActivoDetalle();
+        })
+        .withFailureHandler(err => {
+          console.error('[OGA boot] Error getUsuarioActivo:', err);
+          goLogin('Falló la verificación de la sesión.');
+        })
+        .getUsuarioActivo();
+    } else {
+      // Entorno de desarrollo sin Apps Script → ir al login
+      goLogin('google.script.run no disponible.');
+    }
+  }catch(err){
+    console.error('[OGA boot] Excepción durante el arranque:', err);
+    goLogin('Excepción durante la verificación de sesión.');
+  }
+})();
+</script>
+</body>
+</html>

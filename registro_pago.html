@@ -1,0 +1,337 @@
+<style>
+  #pagoRoot {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    width: 100%;
+    min-height: 100vh;
+    padding: 36px 20px 60px;
+    display: block;
+  }
+
+  .pago-card {
+    max-width: 620px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.22);
+    overflow: hidden;
+  }
+
+  .pago-header {
+    background: linear-gradient(135deg, #0f2027, #2c5364);
+    color: #fff;
+    padding: 24px 28px;
+    text-align: center;
+  }
+  .pago-header h2 { font-size: 1.5rem; font-weight: 900; margin: 0; }
+
+  .pago-body { padding: 28px; }
+
+  .pago-section {
+    background: #f4f6fb;
+    border: 1px solid #dde3f0;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 18px;
+  }
+
+  .pago-field { margin-bottom: 14px; }
+  .pago-field label {
+    font-weight: 800;
+    color: #1a237e;
+    font-size: .9rem;
+    display: block;
+    margin-bottom: 6px;
+  }
+  .pago-field input,
+  .pago-field select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #c5cae9;
+    border-radius: 8px;
+    font-size: .95rem;
+    background: #fff;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .pago-field input:focus,
+  .pago-field select:focus { border-color: #1e88e5; }
+
+  .pago-info {
+    background: #e8f5e9;
+    border: 1px solid #a5d6a7;
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 18px;
+    display: none;
+  }
+  .pago-info p { margin: 4px 0; font-size: .93rem; color: #1b5e20; }
+  .pago-info strong { color: #2e7d32; }
+
+  .pago-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 800;
+    font-size: .95rem;
+    cursor: pointer;
+    color: #fff;
+    transition: opacity .2s, transform .15s;
+    margin-top: 4px;
+  }
+  .pago-btn:hover   { opacity: .88; transform: translateY(-1px); }
+  .pago-btn:active  { transform: translateY(0); }
+  .pago-btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+  .pago-btn-azul    { background: #1e88e5; }
+  .pago-btn-verde   { background: #2e7d32; }
+  .pago-btn-gris    { background: #78909c; margin-top: 10px; }
+
+  .pago-buscando {
+    display: none;
+    font-style: italic;
+    color: #1e88e5;
+    font-size: .9rem;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  #pago-toast {
+    visibility: hidden;
+    min-width: 240px;
+    background: #333; color: #fff;
+    text-align: center; border-radius: 8px;
+    padding: 11px 16px;
+    position: fixed; z-index: 9999;
+    bottom: 24px; right: 24px;
+    font-size: .95rem;
+  }
+  #pago-toast.show    { visibility: visible; animation: pago-fi .3s, pago-fo .4s 3.2s; }
+  #pago-toast.success { background: #2e7d32; }
+  #pago-toast.error   { background: #c62828; }
+  #pago-toast.warning { background: #e65100; }
+  @keyframes pago-fi { from{bottom:0;opacity:0;} to{bottom:24px;opacity:1;} }
+  @keyframes pago-fo { from{bottom:24px;opacity:1;} to{bottom:0;opacity:0;} }
+</style>
+
+<!-- SweetAlert2 desde CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div id="pagoRoot">
+  <div class="pago-card">
+
+    <div class="pago-header">
+      <h2>🏦 Registro de Pago</h2>
+    </div>
+
+    <div class="pago-body">
+
+      <!-- Búsqueda -->
+      <div class="pago-section">
+        <div class="pago-field">
+          <label>📅 Año de la boleta</label>
+          <input type="number" id="pago-anio" placeholder="Ej. 2025" min="2020" max="2099"/>
+        </div>
+        <div class="pago-field">
+          <label>🔢 Correlativo de boleta</label>
+          <input type="text" id="pago-correlativo" placeholder="Ej. 218"/>
+        </div>
+        <button class="pago-btn pago-btn-azul" onclick="pago_buscar()">🔎 Buscar Boleta</button>
+        <div class="pago-buscando" id="pago-buscando">🔎 Buscando boleta, por favor espere...</div>
+      </div>
+
+      <!-- Info boleta -->
+      <div class="pago-info" id="pago-infoBoleta">
+        <p><strong>Registro OEC:</strong> <span id="pago-registro"></span></p>
+        <p><strong>Nombre OEC:</strong> <span id="pago-nombre"></span></p>
+        <p><strong>Monto a cancelar: Q.</strong> <span id="pago-monto"></span></p>
+      </div>
+
+      <!-- Formulario de pago -->
+      <div id="pago-formulario" style="display:none;">
+        <div class="pago-section">
+          <div class="pago-field">
+            <label>💵 Monto Cancelado (Q.)</label>
+            <input type="number" id="pago-montoPago" step="0.01"/>
+          </div>
+          <div class="pago-field">
+            <label>📆 Fecha de Pago</label>
+            <input type="date" id="pago-fechaPago"/>
+          </div>
+          <div class="pago-field">
+            <label>🏛️ Banco del sistema</label>
+            <select id="pago-banco">
+              <option value="">Seleccionar...</option>
+              <option>Crédito Hipotecario Nacional de Guatemala</option>
+              <option>Banco Industrial, S.A.</option>
+              <option>Banco Ficohsa Guatemala, S.A.</option>
+              <option>Banco Promerica, S.A.</option>
+              <option>Banco de Antigua, S.A.</option>
+              <option>Banco de América Central, S.A.</option>
+              <option>Banco Agromercantil de Guatemala, S.A.</option>
+              <option>Banco G&T Continental, S.A.</option>
+              <option>Banco Azteca de Guatemala, S.A.</option>
+              <option>Banco de los Trabajadores</option>
+              <option>Banco de Desarrollo Rural, S.A.</option>
+              <option>Banco Inmobiliario, S.A.</option>
+              <option>Banco Internacional, S.A.</option>
+              <option>Vivibanco, S.A.</option>
+            </select>
+          </div>
+          <div class="pago-field">
+            <label>📋 No. de Referencia</label>
+            <input type="text" id="pago-referencia"/>
+          </div>
+          <div class="pago-field">
+            <label>🧾 No. Recibo 63A</label>
+            <input type="text" id="pago-recibo63A"/>
+          </div>
+          <button class="pago-btn pago-btn-verde" onclick="pago_registrar()">✅ Registrar Pago</button>
+        </div>
+      </div>
+
+      <button class="pago-btn pago-btn-gris" onclick="window.OGA.irAlMenu()">🔙 Volver al Menú</button>
+
+    </div>
+  </div>
+</div>
+
+<div id="pago-toast"></div>
+
+<script>
+  let pago_datosBoleta = null;
+  let pago_nombreOEC   = "";
+
+  function pago_toast(msg, tipo = 'info') {
+    const t = document.getElementById('pago-toast');
+    t.textContent = msg;
+    t.className = 'show ' + tipo;
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.className = '', 3600);
+  }
+
+  function pago_buscar() {
+    const anio = document.getElementById('pago-anio').value.trim();
+    let correlativo    = document.getElementById('pago-correlativo').value.trim();
+
+    if (!anio || !correlativo) {
+      return Swal.fire('Campos requeridos', 'Debe ingresar año y correlativo', 'warning');
+    }
+
+    correlativo = correlativo.padStart(4, '0');
+    document.getElementById('pago-buscando').style.display  = 'block';
+    document.getElementById('pago-infoBoleta').style.display = 'none';
+    document.getElementById('pago-formulario').style.display = 'none';
+    pago_datosBoleta = null;
+
+    google.script.run
+      .withSuccessHandler(data => {
+        document.getElementById('pago-buscando').style.display = 'none';
+        if (data) {
+          pago_mostrarBoleta(data);
+        } else {
+          Swal.fire('No encontrado', 'No se encontró ninguna boleta con ese año y correlativo', 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        document.getElementById('pago-buscando').style.display = 'none';
+        Swal.fire('Error', 'Ocurrió un error al buscar la boleta: ' + (err.message || err), 'error');
+      })
+      .buscarBoletaPorAnioYCorrelativo(anio, correlativo);
+  }
+
+  function pago_mostrarBoleta(data) {
+    if (!data || typeof data.fila !== 'number') {
+      return Swal.fire({
+        icon: 'error', title: 'No encontrado',
+        text: 'No se encontró ninguna boleta con ese año y correlativo',
+        showConfirmButton: false, timer: 2500
+      });
+    }
+
+    pago_datosBoleta = data;
+    const { estado, registro, monto } = data;
+
+    // ✅ nombre ya viene en data.nombre — sin segunda llamada al backend
+    pago_nombreOEC = data.nombre || 'Nombre no encontrado';
+
+    if (estado === 'Pagado') {
+      return Swal.fire({
+        icon: 'info', title: 'Pago registrado',
+        text: 'Esta boleta ya fue pagada.',
+        showConfirmButton: false, timer: 2500
+      });
+    }
+    if (estado === 'Anulado') {
+      return Swal.fire({
+        icon: 'error', title: 'Boleta anulada',
+        text: 'Esta boleta está anulada.',
+        showConfirmButton: false, timer: 2500
+      });
+    }
+
+    // Mostrar info y formulario
+    document.getElementById('pago-registro').textContent = registro;
+    document.getElementById('pago-nombre').textContent   = pago_nombreOEC;
+    document.getElementById('pago-monto').textContent    = parseFloat(monto).toFixed(2);
+    document.getElementById('pago-infoBoleta').style.display  = 'block';
+    document.getElementById('pago-formulario').style.display  = 'block';
+  }
+
+  function pago_registrar() {
+    if (!pago_datosBoleta || !pago_datosBoleta.fila) {
+      return Swal.fire('Error interno', 'No se ha identificado correctamente la boleta', 'error');
+    }
+
+    const datos = {
+      fila:       pago_datosBoleta.fila,
+      correlativo: document.getElementById('pago-correlativo').value.trim().padStart(4, '0'),
+      monto:      parseFloat(document.getElementById('pago-montoPago').value),
+      fecha:      document.getElementById('pago-fechaPago').value,
+      banco:      document.getElementById('pago-banco').value,
+      referencia: document.getElementById('pago-referencia').value.trim(),
+      recibo63A:  document.getElementById('pago-recibo63A').value.trim()
+    };
+
+    if (!datos.monto || !datos.fecha || !datos.banco || !datos.referencia || !datos.recibo63A) {
+      return Swal.fire('Datos incompletos', 'Todos los campos son obligatorios', 'warning');
+    }
+
+    Swal.fire({
+      title: 'Registrando pago...',
+      text: 'Por favor espere.',
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => Swal.showLoading()
+    });
+
+    google.script.run
+      .withSuccessHandler(nombre => {
+        datos.responsable = nombre;
+        google.script.run
+          .withSuccessHandler(() => {
+            Swal.fire({
+              icon: 'success', title: '✅ Pago registrado',
+              text: `Pago registrado para ${pago_nombreOEC}`,
+              showConfirmButton: false, timer: 2500
+            });
+            // Limpiar formulario
+            ['pago-anio','pago-correlativo','pago-montoPago',
+             'pago-fechaPago','pago-referencia','pago-recibo63A'].forEach(id => {
+              document.getElementById(id).value = '';
+            });
+            document.getElementById('pago-banco').value = '';
+            document.getElementById('pago-infoBoleta').style.display  = 'none';
+            document.getElementById('pago-formulario').style.display  = 'none';
+            pago_datosBoleta = null;
+            // Volver al menú después del éxito
+            setTimeout(() => window.OGA.irAlMenu(), 2600);
+          })
+          .withFailureHandler(err => {
+            Swal.fire('Error', 'No se pudo registrar el pago: ' + (err.message||err), 'error');
+          })
+          .registrarPagoBoleta(datos);
+      })
+      .getNombreUsuarioActivo();
+  }
+</script>

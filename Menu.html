@@ -1,0 +1,228 @@
+<style>
+  #menuRoot,
+  #menuRoot *{box-sizing:border-box}
+
+  #menuRoot{
+    --mn-line:var(--line,rgba(255,255,255,.12));
+    --mn-text:var(--text,#eef4ff);
+    --mn-text-2:var(--text-2,#c2cede);
+    width:100%;
+    min-height:calc(100vh - var(--topbar-h,72px) - 28px);
+    display:grid;
+    place-items:center;
+    padding:22px;
+    color:var(--mn-text);
+    overflow:hidden;
+  }
+
+  .mn-center{
+    position:relative;
+    width:min(520px,94vw);
+    min-height:420px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:22px;
+    text-align:center;
+  }
+
+  .mn-glow{
+    position:absolute;
+    width:390px;
+    height:390px;
+    max-width:85vw;
+    max-height:85vw;
+    border-radius:50%;
+    background:
+      radial-gradient(circle,
+        color-mix(in srgb,var(--accent) 18%,transparent) 0%,
+        color-mix(in srgb,var(--accent-2) 10%,transparent) 38%,
+        transparent 72%);
+    filter:blur(4px);
+    pointer-events:none;
+  }
+
+  .mn-rings{
+    position:absolute;
+    width:315px;
+    height:315px;
+    max-width:72vw;
+    max-height:72vw;
+    border:1px solid color-mix(in srgb,var(--accent) 18%,var(--mn-line));
+    border-radius:50%;
+    opacity:.7;
+    pointer-events:none;
+    animation:mnBreath 5s ease-in-out infinite;
+  }
+
+  .mn-rings::before,
+  .mn-rings::after{
+    content:'';
+    position:absolute;
+    border-radius:50%;
+    border:1px solid color-mix(in srgb,var(--accent-2) 16%,transparent);
+  }
+  .mn-rings::before{inset:30px}
+  .mn-rings::after{inset:65px}
+
+  .mn-logo{
+    position:relative;
+    z-index:2;
+    width:116px;
+    height:116px;
+    border-radius:34px;
+    display:grid;
+    place-items:center;
+    background:var(--accent-grad,linear-gradient(135deg,#14b8a6,#3b82f6));
+    color:#fff;
+    font-size:2rem;
+    font-weight:950;
+    letter-spacing:-.07em;
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:
+      0 26px 60px color-mix(in srgb,var(--accent) 28%,transparent),
+      inset 0 1px 0 rgba(255,255,255,.24);
+  }
+
+  .mn-copy{
+    position:relative;
+    z-index:2;
+  }
+
+  .mn-title{
+    margin:0;
+    font-size:clamp(1.55rem,3vw,2.05rem);
+    font-weight:950;
+    letter-spacing:-.035em;
+  }
+
+  .mn-label{
+    margin-top:7px;
+    color:var(--mn-text-2);
+    font-size:.76rem;
+    font-weight:800;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+  }
+
+  .mn-open{
+    position:relative;
+    z-index:2;
+    min-width:190px;
+    height:54px;
+    border:1px solid color-mix(in srgb,var(--accent) 34%,var(--mn-line));
+    border-radius:18px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    color:#fff;
+    background:var(--accent-grad,linear-gradient(135deg,#14b8a6,#3b82f6));
+    font:inherit;
+    font-size:.88rem;
+    font-weight:900;
+    cursor:pointer;
+    box-shadow:0 16px 36px color-mix(in srgb,var(--accent) 24%,transparent);
+    transition:transform .18s ease,box-shadow .18s ease;
+  }
+
+  .mn-open:hover{
+    transform:translateY(-2px);
+    box-shadow:0 20px 44px color-mix(in srgb,var(--accent) 32%,transparent);
+  }
+
+  .mn-open:active{transform:translateY(0) scale(.98)}
+  .mn-open:focus-visible{
+    outline:3px solid color-mix(in srgb,var(--accent) 34%,transparent);
+    outline-offset:4px;
+  }
+
+  .mn-bars{
+    width:21px;
+    height:16px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .mn-bars i{
+    display:block;
+    height:2px;
+    border-radius:999px;
+    background:currentColor;
+  }
+
+  .mn-dots{
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+  }
+  .mn-dot{
+    position:absolute;
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 18px color-mix(in srgb,var(--accent) 55%,transparent);
+    opacity:.58;
+  }
+  .mn-dot:nth-child(1){top:13%;left:18%}
+  .mn-dot:nth-child(2){top:24%;right:12%;background:var(--accent-2)}
+  .mn-dot:nth-child(3){bottom:18%;left:10%;background:var(--accent-2)}
+  .mn-dot:nth-child(4){bottom:12%;right:20%}
+
+  @keyframes mnBreath{
+    50%{transform:scale(1.035);opacity:.45}
+  }
+
+  @media(max-width:640px){
+    #menuRoot{padding:12px;min-height:calc(100vh - var(--topbar-h,72px) - 20px)}
+    .mn-center{min-height:360px;gap:18px}
+    .mn-logo{width:98px;height:98px;border-radius:29px;font-size:1.7rem}
+    .mn-rings{width:270px;height:270px}
+    .mn-open{min-width:180px;height:52px}
+  }
+
+  @media(prefers-reduced-motion:reduce){
+    .mn-rings{animation:none}
+    .mn-open{transition:none}
+  }
+</style>
+
+<div id="menuRoot">
+  <main class="mn-center" aria-label="Panel central OGA">
+    <div class="mn-glow" aria-hidden="true"></div>
+    <div class="mn-rings" aria-hidden="true"></div>
+    <div class="mn-dots" aria-hidden="true">
+      <span class="mn-dot"></span>
+      <span class="mn-dot"></span>
+      <span class="mn-dot"></span>
+      <span class="mn-dot"></span>
+    </div>
+
+    <div class="mn-logo" aria-hidden="true">OGA</div>
+
+    <div class="mn-copy">
+      <h1 class="mn-title">Panel Central</h1>
+      <div class="mn-label">Sistema OGA</div>
+    </div>
+
+    <button type="button" class="mn-open" id="mnOpenModules" aria-label="Abrir menú de módulos">
+      <span class="mn-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>Módulos</span>
+    </button>
+  </main>
+</div>
+
+<script>
+(function(){
+  const btn = document.getElementById('mnOpenModules');
+  if(btn){
+    btn.addEventListener('click', function(){
+      if(window.OGA && typeof OGA.toggleSidebar === 'function'){
+        OGA.toggleSidebar(true);
+      }
+    });
+  }
+})();
+</script>

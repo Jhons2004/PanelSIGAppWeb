@@ -1,0 +1,4586 @@
+<!--
+  Consejo.html — PARCIAL SPA compatible con App.html
+  Ruta esperada en Code.gs:
+    function abrirConsejoDirecto() { return cargarVista('Consejo'); }
+  No usar <!DOCTYPE>, <html>, <head>, <body>, document.write ni navegación backend para volver.
+-->
+<script>
+    // Inicialización del tema con detección automática
+    (function initTheme() {
+      try {
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('temaPreferidoAgendaOGA') || (prefersDark ? 'dark' : 'light');
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        document.querySelector('meta[name="color-scheme"]')?.setAttribute('content', 'light dark');
+      } catch(e) {
+        console.warn('Error inicializando tema:', e);
+      }
+    })();
+  </script>
+
+<style>
+#appRoot {--oga-bg-page: #ffffff;
+      --oga-bg-surface: #ffffff;
+      --oga-bg-muted: #f8fafc;
+      --oga-text: #1e293b;
+      --oga-text-soft: #475569;
+      --oga-text-muted: #64748b;
+      --oga-border: #e2e8f0;
+      --oga-border-light: #f1f5f9;
+      --oga-primary-from: #5D5CDE;
+      --oga-primary-to: #4338CA;
+      --oga-accent: #2563EB;
+      --oga-accent-hover: #1D4ED8;
+      --oga-success: #10b981;
+      --oga-success-dark: #166534;
+      --oga-success-light: #d1fae5;
+      --oga-error: #ef4444;
+      --oga-error-dark: #991b1b;
+      --oga-error-light: #fee2e2;
+      --oga-warning: #f59e0b;
+      --oga-warning-dark: #b45309;
+      --oga-warning-light: #fef3c7;
+      --oga-blue: #3b82f6;
+      --oga-blue-light: #dbeafe;
+      --oga-blue-dark: #1e40af;
+      --oga-input-bg: #ffffff;
+      --oga-input-border: #d1d5db;
+      --oga-input-focus: #2563eb;
+      --oga-shadow: rgba(0, 0, 0, 0.1);
+      --oga-shadow-strong: rgba(0, 0, 0, 0.15);}
+.dark #appRoot {--oga-bg-page: #0a0a0a;
+      --oga-bg-surface: #1a1a1a;
+      --oga-bg-muted: #2a2a2a;
+      --oga-text: #ffffff;
+      --oga-text-soft: #e2e8f0;
+      --oga-text-muted: #cbd5e1;
+      --oga-border: #404040;
+      --oga-border-light: #2a2a2a;
+      --oga-accent: #6366F1;
+      --oga-accent-hover: #5856EB;
+      --oga-success: #22c55e;
+      --oga-success-dark: #16a34a;
+      --oga-success-light: #064e3b;
+      --oga-error: #f87171;
+      --oga-error-dark: #dc2626;
+      --oga-error-light: #7f1d1d;
+      --oga-warning: #fbbf24;
+      --oga-warning-dark: #d97706;
+      --oga-warning-light: #78350f;
+      --oga-blue: #60a5fa;
+      --oga-blue-light: #1e3a8a;
+      --oga-blue-dark: #3b82f6;
+      --oga-input-bg: #1a1a1a;
+      --oga-input-border: #4a4a4a;
+      --oga-input-focus: #6366f1;
+      --oga-shadow: rgba(0, 0, 0, 0.4);
+      --oga-shadow-strong: rgba(0, 0, 0, 0.6);}
+#appRoot * {box-sizing: border-box;}
+#appRoot, #appRoot {min-height: 100vh;
+      margin: 0;
+      padding: 0;
+      background: var(--oga-bg-page);
+      color: var(--oga-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      scroll-behavior: smooth;
+      -webkit-text-stroke: 0.01em transparent;
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;}
+#appRoot {min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--oga-bg-page);
+      transition: all 0.3s ease;}
+/* MEJORA CRÍTICA: Texto siempre nítido sin blur */
+#appRoot *, #appRoot *::before, #appRoot *::after {text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-weight: inherit;
+      color: inherit;
+      text-shadow: none !important;
+      filter: none !important;
+      opacity: 1 !important;}
+/* Asegurar contraste óptimo en modo oscuro */
+.dark #appRoot * {color: var(--oga-text);
+      font-weight: 500;}
+.dark #appRoot .form-input, .dark #appRoot .form-select, .dark #appRoot .form-textarea {background: var(--oga-input-bg);
+      border: 2px solid var(--oga-border);
+      color: var(--oga-text);
+      font-weight: 600;}
+.dark #appRoot .form-input:focus, .dark #appRoot .form-select:focus, .dark #appRoot .form-textarea:focus {border-color: var(--oga-accent);
+      background: var(--oga-bg-surface);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.25);
+      color: var(--oga-text);
+      font-weight: 600;}
+/* Header */
+#appRoot .header {background: linear-gradient(135deg, #334155 0%, #2563eb 70%, #3b82f6 100%);
+      padding: 1.5rem;
+      box-shadow: 0 4px 12px var(--oga-shadow);
+      position: sticky;
+      top: 0;
+      z-index: 100;}
+.dark #appRoot .header {background: linear-gradient(135deg, #0f172a 0%, #1e40af 70%, #2563eb 100%);
+      box-shadow: 0 4px 12px var(--oga-shadow-strong);}
+#appRoot .header-content {display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1400px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+      gap: 1rem;}
+#appRoot .header-brand {display: flex;
+      align-items: center;
+      gap: 1rem;}
+#appRoot .header-icon {font-size: 2.5rem;}
+#appRoot .header-title {font-size: 1.75rem;
+      font-weight: 700;
+      color: white;
+      margin: 0;}
+#appRoot .header-subtitle {color: #dbeafe;
+      margin: 0;
+      font-size: 0.95rem;}
+#appRoot .header-actions {display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;}
+/* Botones */
+#appRoot .btn {display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 500;
+      font-size: max(16px, 0.95rem);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px var(--oga-shadow);
+      min-height: 44px;
+      color: inherit;}
+#appRoot .btn:disabled {opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;}
+#appRoot .btn-primary {background: var(--oga-accent);
+      color: white;}
+#appRoot .btn-primary:hover:not(:disabled) {background: var(--oga-accent-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--oga-shadow-strong);}
+#appRoot .btn-secondary {background: var(--oga-text-soft);
+      color: white;}
+#appRoot .btn-secondary:hover:not(:disabled) {background: var(--oga-text);
+      transform: translateY(-1px);}
+#appRoot .btn-success {background: var(--oga-success);
+      color: white;}
+#appRoot .btn-success:hover:not(:disabled) {background: var(--oga-success-dark);
+      transform: translateY(-1px);}
+#appRoot .btn-warning {background: var(--oga-warning);
+      color: white;}
+#appRoot .btn-warning:hover:not(:disabled) {background: var(--oga-warning-dark);
+      transform: translateY(-1px);}
+#appRoot .btn-danger {background: var(--oga-error);
+      color: white;}
+#appRoot .btn-danger:hover:not(:disabled) {background: var(--oga-error-dark);
+      transform: translateY(-1px);}
+#appRoot .btn-info {background: var(--oga-blue);
+      color: white;}
+#appRoot .btn-info:hover:not(:disabled) {background: var(--oga-blue-dark);
+      transform: translateY(-1px);}
+#appRoot .btn-sm {padding: 0.5rem 1rem;
+      font-size: max(14px, 0.875rem);
+      min-height: 40px;}
+/* Status */
+#appRoot .status {display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--oga-success);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      box-shadow: 0 2px 4px var(--oga-shadow);}
+#appRoot .status-dot {width: 0.5rem;
+      height: 0.5rem;
+      background: white;
+      border-radius: 50%;
+      animation: pulse 2s infinite;}
+@keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+/* Tabs */
+#appRoot .tabs {background: var(--oga-bg-surface);
+      border-bottom: 2px solid var(--oga-border);
+      padding: 0 1.5rem;
+      box-shadow: 0 2px 4px var(--oga-shadow);
+      position: sticky;
+      top: 100px;
+      z-index: 90;}
+#appRoot .tabs-list {display: flex;
+      gap: 0.25rem;
+      overflow-x: auto;
+      padding: 0.5rem 0;
+      scroll-behavior: smooth;}
+#appRoot .tab {display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: var(--oga-bg-muted);
+      color: var(--oga-text-soft);
+      border: 1px solid var(--oga-border);
+      border-radius: 0.5rem 0.5rem 0 0;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      min-height: 44px;}
+#appRoot .tab:hover {background: var(--oga-bg-surface);
+      color: var(--oga-text);
+      border-color: var(--oga-accent);}
+#appRoot .tab.active {background: linear-gradient(135deg, var(--oga-primary-from), var(--oga-primary-to));
+      color: white;
+      border-color: var(--oga-accent);
+      box-shadow: 0 4px 12px rgba(93, 92, 222, 0.3);}
+/* Content */
+#appRoot .content {flex: 1;
+      background: var(--oga-bg-muted);
+      padding: 2rem;
+      min-height: calc(100vh - 200px);}
+#appRoot .content-inner {max-width: 1400px;
+      margin: 0 auto;}
+/* Cards */
+#appRoot .card {background: var(--oga-bg-surface);
+      border: 1px solid var(--oga-border);
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px var(--oga-shadow);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      transition: all 0.2s ease;}
+#appRoot .card:hover {border-color: var(--oga-accent);
+      box-shadow: 0 8px 25px var(--oga-shadow-strong);}
+#appRoot .card-header {padding: 1.5rem;
+      border-bottom: 1px solid var(--oga-border);
+      background: var(--oga-bg-muted);}
+#appRoot .card-title {font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--oga-text);
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;}
+#appRoot .card-body {padding: 1.5rem;}
+/* Grid */
+#appRoot .grid {display: grid;
+      gap: 1.5rem;}
+#appRoot .grid-cols-1 {grid-template-columns: 1fr;}
+@media (min-width: 768px) {
+#appRoot .grid-cols-2 {grid-template-columns: repeat(2, 1fr);}
+#appRoot .grid-cols-3 {grid-template-columns: repeat(3, 1fr);}
+#appRoot .grid-cols-4 {grid-template-columns: repeat(4, 1fr);}
+#appRoot .grid-lg-2 {grid-template-columns: repeat(2, 1fr);}
+}
+/* Forms */
+#appRoot .form-group {margin-bottom: 1.25rem;}
+#appRoot .form-label {display: block;
+      font-weight: 600;
+      color: var(--oga-text);
+      margin-bottom: 0.5rem;
+      font-size: 0.95rem;}
+.dark #appRoot .form-label {color: var(--oga-text);
+      font-weight: 700;}
+#appRoot .form-input, #appRoot .form-select, #appRoot .form-textarea {width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--oga-border);
+      border-radius: 0.5rem;
+      background: var(--oga-bg-surface);
+      color: var(--oga-text);
+      font-size: max(16px, 1rem);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      min-height: 44px;}
+#appRoot .form-input:focus, #appRoot .form-select:focus, #appRoot .form-textarea:focus {outline: none;
+      border-color: var(--oga-accent);
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.1);}
+#appRoot .form-input[readonly] {background: var(--oga-bg-muted);
+      color: var(--oga-text-muted);
+      cursor: not-allowed;}
+.dark #appRoot .form-input[readonly] {background: #2a2a2a;
+      color: var(--oga-text-muted);
+      border-color: var(--oga-border);}
+.dark #appRoot .form-select option {background: var(--oga-input-bg);
+      color: var(--oga-text);}
+#appRoot .form-row {display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+      flex-wrap: wrap;}
+#appRoot .form-row > * {flex: 1; 
+      min-width: 200px;}
+#appRoot .form-help {font-size: 0.875rem;
+      color: var(--oga-text-muted);
+      margin-top: 0.25rem;
+      font-weight: 500;}
+.dark #appRoot .form-help {color: var(--oga-text-muted);
+      font-weight: 600;}
+/* Alerts */
+#appRoot .alert {padding: 1rem;
+      border-radius: 0.5rem;
+      margin-bottom: 1rem;
+      border: 1px solid;
+      font-weight: 500;}
+.dark #appRoot .alert {font-weight: 600;}
+#appRoot .alert-warning {background: var(--oga-warning-light);
+      border-color: var(--oga-warning);
+      color: var(--oga-warning-dark);}
+#appRoot .alert-success {background: var(--oga-success-light);
+      border-color: var(--oga-success);
+      color: var(--oga-success-dark);}
+#appRoot .alert-info {background: var(--oga-blue-light);
+      border-color: var(--oga-blue);
+      color: var(--oga-accent-hover);}
+#appRoot .alert-error {background: var(--oga-error-light);
+      border-color: var(--oga-error);
+      color: var(--oga-error-dark);}
+/* Form sections */
+#appRoot .form-section {background: var(--oga-bg-muted);
+      border: 1px solid var(--oga-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;}
+#appRoot .form-section-title {font-weight: 600;
+      color: var(--oga-text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;}
+.dark #appRoot .form-section-title {font-weight: 700;}
+/* File upload */
+#appRoot .file-upload {border: 2px dashed var(--oga-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      text-align: center;
+      transition: all 0.2s ease;
+      background: var(--oga-bg-surface);}
+#appRoot .file-upload:hover {border-color: var(--oga-accent);
+      background: var(--oga-blue-light);}
+/* === ESTILOS PARA DRAG & DROP === */
+#appRoot .file-upload.drag-over {background-color: #e0f2fe !important; /* Azul claro */
+      border-color: var(--oga-accent) !important;
+      border-style: solid !important;
+      transform: scale(1.02);
+      box-shadow: 0 0 15px rgba(37, 99, 235, 0.2);}
+#appRoot .file-list {margin-top: 1rem;}
+#appRoot .file-item {display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--oga-bg-surface);
+      border: 1px solid var(--oga-border);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      margin-bottom: 0.5rem;}
+#appRoot .file-remove {background: none;
+      border: none;
+      color: var(--oga-error);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s ease;
+      min-width: 32px;
+      min-height: 32px;}
+#appRoot .file-remove:hover {background: var(--oga-error-light);}
+/* Tables */
+#appRoot .table-container {overflow-x: auto;
+      border-radius: 0.75rem;
+      border: 1px solid var(--oga-border);
+      background: var(--oga-bg-surface);}
+#appRoot .table {width: 100%;
+      border-collapse: collapse;
+      background: var(--oga-bg-surface);}
+#appRoot .table th, #appRoot .table td {padding: 0.75rem;
+      text-align: left;
+      border-bottom: 1px solid var(--oga-border);
+      font-size: 0.9rem;
+      font-weight: 500;}
+.dark #appRoot .table th, .dark #appRoot .table td {font-weight: 600;
+      color: var(--oga-text);}
+#appRoot .table th {background: var(--oga-bg-muted);
+      font-weight: 600;
+      color: var(--oga-text);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-size: 0.8rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;}
+.dark #appRoot .table th {font-weight: 700;}
+#appRoot .table tr:hover td {background: var(--oga-bg-muted);}
+#appRoot .table tr:last-child td {border-bottom: none;}
+/* Pills */
+#appRoot .pill {display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 500;}
+.dark #appRoot .pill {font-weight: 600;}
+#appRoot .pill-blue {background: var(--oga-blue-light); 
+      color: var(--oga-blue);}
+#appRoot .pill-purple {background: #f3e8ff; 
+      color: #7c3aed;}
+.dark #appRoot .pill-purple {background: #2d1b69; 
+      color: #c4b5fd;}
+#appRoot .pill-gray {background: var(--oga-bg-muted); 
+      color: var(--oga-text-soft);}
+#appRoot .pill-warning {background: var(--oga-warning-light); 
+      color: var(--oga-warning-dark);}
+/* Loading */
+#appRoot .loading {display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 2rem;
+      color: var(--oga-text-soft);
+      font-weight: 500;}
+.dark #appRoot .loading {font-weight: 600;}
+#appRoot .spinner {border: 3px solid var(--oga-border);
+      border-top: 3px solid var(--oga-accent);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;}
+@keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+/* Modals */
+#appRoot .modal {position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);}
+#appRoot .modal-content {background: var(--oga-bg-surface);
+      border: 1px solid var(--oga-border);
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 90vw;
+      box-shadow: 0 10px 25px var(--oga-shadow-strong);
+      animation: modalSlideIn 0.3s ease-out;}
+@keyframes modalSlideIn {
+      from {
+        transform: scale(0.9) translateY(-20px);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+    }
+#appRoot .modal-header {font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: var(--oga-text);}
+.dark #appRoot .modal-header {font-weight: 700;}
+#appRoot .modal-body {color: var(--oga-text-soft);
+      margin-bottom: 1.5rem;
+      line-height: 1.6;
+      font-weight: 500;}
+.dark #appRoot .modal-body {font-weight: 600;}
+#appRoot .modal-actions {display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      flex-wrap: wrap;}
+/* Notifications */
+#appRoot .notification {position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1001;
+      min-width: 300px;
+      max-width: 400px;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 12px var(--oga-shadow-strong);
+      font-weight: 500;
+      color: white;
+      opacity: 0;
+      transform: translateX(100%);
+      transition: all 0.3s ease;
+      border: 1px solid;}
+#appRoot .notification.show {opacity: 1; 
+      transform: translateX(0);}
+#appRoot .notification.success {background: var(--oga-success); 
+      border-color: var(--oga-success-dark);}
+#appRoot .notification.error {background: var(--oga-error); 
+      border-color: var(--oga-error-dark);}
+#appRoot .notification.warning {background: var(--oga-warning); 
+      color: #1f2937; 
+      border-color: var(--oga-warning-dark);}
+#appRoot .notification.info {background: var(--oga-blue); 
+      border-color: var(--oga-accent-hover);}
+#appRoot .notification-content {display: flex;
+      align-items: center;
+      justify-content: space-between;}
+#appRoot .notification-close {background: none;
+      border: none;
+      color: inherit;
+      cursor: pointer;
+      font-size: 1.2rem;
+      margin-left: 0.75rem;
+      padding: 0.25rem;
+      border-radius: 0.25rem;
+      transition: background-color 0.2s ease;
+      min-width: 32px;
+      min-height: 32px;}
+#appRoot .notification-close:hover {background: rgba(255, 255, 255, 0.2);}
+/* Utility classes */
+#appRoot .hidden {display: none !important;}
+#appRoot .text-center {text-align: center;}
+#appRoot .text-right {text-align: right;}
+#appRoot .flex {display: flex;}
+#appRoot .flex-1 {flex: 1;}
+#appRoot .items-center {align-items: center;}
+#appRoot .justify-between {justify-content: space-between;}
+#appRoot .justify-center {justify-content: center;}
+#appRoot .gap-4 {gap: 1rem;}
+#appRoot .fade-in {animation: fadeIn 0.3s ease-in;}
+@keyframes fadeIn {
+      from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: translateY(0); 
+      }
+    }
+/* Validation styles */
+#appRoot .campo-invalido-busqueda {border-color: var(--oga-error) !important;
+      box-shadow: 0 0 0 3px rgba(239,68,68,0.25) !important;}
+#appRoot .ayuda-busqueda-obligatoria {color: var(--oga-error-dark);
+      font-weight: 600;}
+.dark #appRoot .ayuda-busqueda-obligatoria {color: var(--oga-error);
+      font-weight: 700;}
+#appRoot .badge-required {display: inline-block;
+      background: var(--oga-error);
+      color: #fff;
+      padding: 0 0.4rem;
+      font-size: 0.65rem;
+      border-radius: 0.4rem;
+      margin-left: 0.35rem;
+      letter-spacing: 0.5px;
+      font-weight: 600;}
+/* Status states */
+#appRoot .estado-aprobada {background: var(--oga-success-light) !important;
+      border-color: var(--oga-success) !important;
+      color: var(--oga-success-dark) !important;}
+#appRoot .estado-pendiente {background: var(--oga-warning-light) !important;
+      border-color: var(--oga-warning) !important;
+      color: var(--oga-warning-dark) !important;}
+#appRoot .bloqueo-votacion {background: var(--oga-error-light) !important;
+      border: 2px solid var(--oga-error) !important;
+      padding: 1rem !important;
+      border-radius: 0.5rem !important;
+      margin: 1rem 0 !important;}
+#appRoot .bloqueo-votacion p {color: var(--oga-error-dark) !important;
+      font-weight: 600 !important;
+      margin: 0 !important;}
+.dark #appRoot .bloqueo-votacion p {font-weight: 700 !important;}
+/* Counter */
+#appRoot .contador-tiempo-tarjeta {background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 0.75rem;
+      color: white;
+      text-align: center;
+      border: 2px solid rgba(255,255,255,0.2);
+      margin-top: 1rem;
+      padding: 1rem;
+      transition: all 0.3s ease;}
+#appRoot .contador-tiempo-tarjeta:hover {transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);}
+#appRoot .contador-display {font-size: 1.25rem;
+      font-weight: bold;
+      font-family: "Courier New", monospace;
+      letter-spacing: 1px;
+      text-shadow: none;}
+#appRoot .contador-barra {height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 0.75rem;}
+#appRoot .contador-barra-fill {height: 100%;
+      background: linear-gradient(90deg, #10b981, #22c55e);
+      border-radius: 2px;
+      width: 50%;
+      transition: width 1s ease;}
+/* Control panels */
+#appRoot .panel-control-votaciones {background: var(--oga-warning-light);
+      border: 2px solid var(--oga-warning);
+      border-radius: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;}
+#appRoot .panel-control-votaciones h3 {color: var(--oga-warning-dark);
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;}
+#appRoot .panel-control-votaciones p {color: var(--oga-warning-dark);
+      font-weight: 600;
+      margin: 0;
+      font-size: 0.875rem;}
+/* Enhanced statistics */
+#appRoot .estadisticas-por-tipo {background: var(--oga-bg-surface);
+      border: 1px solid var(--oga-border);
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 1rem;}
+#appRoot .tipo-decision-header {display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--oga-border);}
+#appRoot .tipo-decision-title {font-weight: 700;
+      font-size: 1.125rem;
+      color: var(--oga-text);}
+#appRoot .tipo-decision-badge {padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: var(--oga-blue-light);
+      color: var(--oga-blue-dark);}
+/* Overlay de bloqueo del sistema */
+#appRoot .system-lock-overlay {position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s ease;}
+#appRoot .system-lock-overlay.show {opacity: 1;
+      visibility: visible;}
+#appRoot .system-lock-content {background: var(--oga-bg-surface);
+      border: 2px solid var(--oga-primary-from);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transform: scale(0.8) translateY(20px);
+      transition: all 0.4s ease;
+      max-width: 400px;
+      width: 90vw;
+      position: relative;}
+#appRoot .system-lock-overlay.show .system-lock-content {transform: scale(1) translateY(0);}
+#appRoot .lock-spinner {width: 60px;
+      height: 60px;
+      border: 4px solid var(--oga-border);
+      border-top: 4px solid var(--oga-primary-from);
+      border-radius: 50%;
+      margin: 0 auto 1.5rem auto;
+      animation: lockSpin 1s linear infinite;}
+@keyframes lockSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+#appRoot .lock-icon {font-size: 3rem;
+      margin-bottom: 1rem;
+      animation: lockPulse 2s ease-in-out infinite;}
+@keyframes lockPulse {
+      0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% { 
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+    }
+#appRoot .lock-title {font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--oga-text);
+      margin-bottom: 0.75rem;}
+.dark #appRoot .lock-title {font-weight: 800;}
+#appRoot .lock-message {color: var(--oga-text-soft);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;}
+.dark #appRoot .lock-message {font-weight: 600;}
+#appRoot .lock-progress {width: 100%;
+      height: 6px;
+      background: var(--oga-border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 1rem;}
+#appRoot .lock-progress-bar {height: 100%;
+      background: linear-gradient(90deg, var(--oga-primary-from), var(--oga-primary-to));
+      border-radius: 3px;
+      width: 0%;
+      animation: lockProgress 3s ease-out forwards;}
+@keyframes lockProgress {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+/* Animación de ondas de bloqueo */
+#appRoot .lock-waves {position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      z-index: -1;}
+#appRoot .lock-wave {position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 2px solid var(--oga-primary-from);
+      border-radius: 50%;
+      opacity: 0;
+      animation: lockWave 3s ease-out infinite;}
+#appRoot .lock-wave:nth-child(2) {animation-delay: 1s;}
+#appRoot .lock-wave:nth-child(3) {animation-delay: 2s;}
+@keyframes lockWave {
+      0% {
+        transform: scale(0.1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+/* Efectos de desvanecimiento */
+#appRoot.system-locked {overflow: hidden;}
+#appRoot.system-locked {filter: blur(1px);
+      transform: scale(0.99);
+      transition: all 0.4s ease;}
+/* Mobile optimizations */
+@media (max-width: 768px) {
+#appRoot .header {padding: 1rem;}
+#appRoot .header-content {flex-direction: column;
+        gap: 1rem;
+        text-align: center;}
+#appRoot .header-actions {justify-content: center;
+        width: 100%;}
+#appRoot .content {padding: 1rem;}
+#appRoot .form-row {flex-direction: column;}
+#appRoot .form-row > * {min-width: auto;}
+#appRoot .tabs {padding: 0 1rem;
+        top: 80px;}
+#appRoot .tabs-list {justify-content: flex-start;
+        -webkit-overflow-scrolling: touch;}
+#appRoot .card-body {padding: 1rem;}
+#appRoot .grid {gap: 1rem;}
+#appRoot .notification {left: 1rem;
+        right: 1rem;
+        min-width: auto;
+        max-width: none;}
+#appRoot .modal-content {margin: 1rem;
+        width: calc(100vw - 2rem);
+        max-width: none;}
+#appRoot .table-container {font-size: 0.875rem;}
+#appRoot .btn {padding: 0.6rem 1rem;
+        font-size: max(16px, 0.875rem);}
+#appRoot .btn-sm {padding: 0.5rem 0.75rem;
+        font-size: max(14px, 0.8rem);}
+#appRoot .system-lock-content {padding: 1.5rem;
+        margin: 1rem;
+        width: calc(100vw - 2rem);
+        max-width: none;}
+}
+@media (max-width: 480px) {
+#appRoot .header-title {font-size: 1.5rem;}
+#appRoot .header-subtitle {font-size: 0.875rem;}
+#appRoot .tabs {top: 70px;}
+#appRoot .grid {gap: 0.75rem;}
+#appRoot .card-body {padding: 0.75rem;}
+#appRoot .form-group {margin-bottom: 1rem;}
+}
+/* Accessibility para movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+#appRoot .lock-spinner, #appRoot .lock-icon, #appRoot .lock-progress-bar, #appRoot .lock-wave {animation: none !important;}
+#appRoot .system-lock-overlay, #appRoot .system-lock-content {transition: none !important;}
+#appRoot *, #appRoot *::before, #appRoot *::after {animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;}
+}
+#appRoot .btn:focus-visible, #appRoot .tab:focus-visible, #appRoot .form-input:focus-visible, #appRoot .form-select:focus-visible, #appRoot .form-textarea:focus-visible {outline: 2px solid var(--oga-accent);
+      outline-offset: 2px;}
+/* Loading overlays */
+#appRoot .loading-overlay {position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      border-radius: inherit;}
+.dark #appRoot .loading-overlay {background: rgba(26, 26, 26, 0.9);}
+/* Performance optimizations */
+#appRoot .card, #appRoot .btn, #appRoot .tab {will-change: transform;}
+#appRoot .card:hover, #appRoot .btn:hover, #appRoot .tab:hover {will-change: auto;}
+/* Overlay de bloqueo del sistema */
+#appRoot .system-lock-overlay {position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      backdrop-filter: blur(8px);
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.4s ease;}
+#appRoot .system-lock-overlay.show {opacity: 1;
+      visibility: visible;}
+#appRoot .system-lock-content {background: var(--oga-bg-surface);
+      border: 2px solid var(--oga-primary-from);
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      transform: scale(0.8) translateY(20px);
+      transition: all 0.4s ease;
+      max-width: 400px;
+      width: 90vw;
+      position: relative;}
+#appRoot .system-lock-overlay.show .system-lock-content {transform: scale(1) translateY(0);}
+#appRoot .lock-spinner {width: 60px;
+      height: 60px;
+      border: 4px solid var(--oga-border);
+      border-top: 4px solid var(--oga-primary-from);
+      border-radius: 50%;
+      margin: 0 auto 1.5rem auto;
+      animation: lockSpin 1s linear infinite;}
+@keyframes lockSpin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+#appRoot .lock-icon {font-size: 3rem;
+      margin-bottom: 1rem;
+      animation: lockPulse 2s ease-in-out infinite;}
+@keyframes lockPulse {
+      0%, 100% { 
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% { 
+        transform: scale(1.1);
+        opacity: 0.8;
+      }
+    }
+#appRoot .lock-title {font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--oga-text);
+      margin-bottom: 0.75rem;}
+.dark #appRoot .lock-title {font-weight: 800;}
+#appRoot .lock-message {color: var(--oga-text-soft);
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+      line-height: 1.6;}
+.dark #appRoot .lock-message {font-weight: 600;}
+#appRoot .lock-progress {width: 100%;
+      height: 6px;
+      background: var(--oga-border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 1rem;}
+#appRoot .lock-progress-bar {height: 100%;
+      background: linear-gradient(90deg, var(--oga-primary-from), var(--oga-primary-to));
+      border-radius: 3px;
+      width: 0%;
+      animation: lockProgress 3s ease-out forwards;}
+@keyframes lockProgress {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+/* Animación de ondas de bloqueo */
+#appRoot .lock-waves {position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 200px;
+      z-index: -1;}
+#appRoot .lock-wave {position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 2px solid var(--oga-primary-from);
+      border-radius: 50%;
+      opacity: 0;
+      animation: lockWave 3s ease-out infinite;}
+#appRoot .lock-wave:nth-child(2) {animation-delay: 1s;}
+#appRoot .lock-wave:nth-child(3) {animation-delay: 2s;}
+@keyframes lockWave {
+      0% {
+        transform: scale(0.1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+/* Efectos de desvanecimiento */
+#appRoot.system-locked {overflow: hidden;}
+#appRoot.system-locked {filter: blur(1px);
+      transform: scale(0.99);
+      transition: all 0.4s ease;}
+/* Accessibility para movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+#appRoot .lock-spinner, #appRoot .lock-icon, #appRoot .lock-progress-bar, #appRoot .lock-wave {animation: none !important;}
+#appRoot .system-lock-overlay, #appRoot .system-lock-content {transition: none !important;}
+#appRoot *, #appRoot *::before, #appRoot *::after {animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;}
+}
+@media (max-width: 768px) {
+#appRoot .system-lock-content {padding: 1.5rem;
+        margin: 1rem;
+        width: calc(100vw - 2rem);
+        max-width: none;}
+}
+/* === NUEVOS ESTILOS PARA ESTADÍSTICAS DETALLADAS === */
+#appRoot .consenso-bar-container {height: 12px; background: var(--oga-bg-muted); border-radius: 6px; overflow: hidden;
+      display: flex; margin: 10px 0; border: 1px solid var(--oga-border);}
+#appRoot .consenso-segment {height: 100%; transition: width 0.5s ease;}
+#appRoot .bg-favor {background-color: var(--oga-success);}
+#appRoot .bg-contra {background-color: var(--oga-error);}
+#appRoot .bg-abstencion {background-color: var(--oga-warning);}
+#appRoot .voters-table {width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 1rem;}
+#appRoot .voters-table th {text-align: left; padding: 8px; background: var(--oga-bg-muted);
+      border-bottom: 2px solid var(--oga-border); color: var(--oga-text-soft); font-weight: 600;}
+#appRoot .voters-table td {padding: 8px; border-bottom: 1px solid var(--oga-border-light); vertical-align: middle;}
+#appRoot .voter-row:last-child td {border-bottom: none;}
+#appRoot .badge-voto {display: inline-block; padding: 2px 8px; border-radius: 4px; font-weight: 600;
+      font-size: 0.75rem; text-transform: uppercase;}
+#appRoot .badge-voto.favor {background: var(--oga-success-light); color: var(--oga-success-dark); border: 1px solid var(--oga-success);}
+#appRoot .badge-voto.contra {background: var(--oga-error-light); color: var(--oga-error-dark); border: 1px solid var(--oga-error);}
+#appRoot .badge-voto.abstencion {background: var(--oga-warning-light); color: var(--oga-warning-dark); border: 1px solid var(--oga-warning);}
+#appRoot .comment-bubble {background: var(--oga-bg-muted); padding: 8px 12px; border-radius: 0 12px 12px 12px;
+      border: 1px solid var(--oga-border); margin-top: 4px; font-style: italic;
+      color: var(--oga-text-soft); font-size: 0.8rem; position: relative;}
+#appRoot .comment-bubble::before {content: "💬"; margin-right: 5px; font-style: normal;}
+
+/* === SPA OVERRIDES CONSEJO === */
+#appRoot{
+  min-height:0 !important;
+  height:auto !important;
+  background:transparent !important;
+  border-radius:22px;
+  overflow:hidden;
+}
+#appRoot .header,
+#appRoot .tabs{
+  position:relative !important;
+  top:auto !important;
+  z-index:1 !important;
+}
+#appRoot .content{ min-height:0 !important; }
+#appRoot .system-lock-overlay,
+#appRoot .modal,
+#appRoot .notification{
+  position:fixed !important;
+  z-index:8000 !important;
+}
+#appRoot.system-locked{ overflow:hidden; }
+
+</style>
+
+<div id="appRoot">
+    <!-- Header optimizado -->
+    <header class="header">
+      <div class="header-content">
+        <div class="header-brand">
+          <div class="header-icon">📅</div>
+          <div>
+            <h1 class="header-title">Agenda Consejo OGA</h1>
+            <p class="header-subtitle">CNA - v23 recuerda que las reevaluaciones solo pueden llenarse los primeros 3 dias que la agenda se encuentre activa.</p>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button id="btnVerTiempo" onclick="mostrarInfoTiempo()" class="btn btn-info btn-sm">
+            <span>⏰</span><span>Info Tiempo</span>
+          </button>
+          <button id="toggleDarkMode" type="button" class="btn btn-warning">
+            <span id="iconTema">🌓</span>
+            <span id="textoTema">Oscuro</span>
+          </button>
+          <div class="status">
+            <span class="status-dot"></span>
+            <span>🟢 Conectado</span>
+          </div>
+          <button onclick="volverAlMenu()" class="btn btn-secondary">
+            <span>🔙</span><span>Volver</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Tabs optimizados -->
+    <nav class="tabs" role="tablist">
+      <div class="tabs-list">
+        <button id="tab-sistema" onclick="mostrarTab('sistema')" class="tab active" role="tab" aria-selected="true">
+          <span>🗓️</span><span>Sistema</span>
+        </button>
+        <button id="tab-agregar" onclick="mostrarTab('agregar')" class="tab" role="tab">
+          <span>➕</span><span>Agregar</span>
+        </button>
+        <button id="tab-datos" onclick="mostrarTab('datos')" class="tab" role="tab">
+          <span>📊</span><span>Ver Datos</span>
+        </button>
+        <button id="tab-documentos" onclick="mostrarTab('documentos')" class="tab" role="tab">
+          <span>📄</span><span>Documentos</span>
+        </button>
+        <button id="tab-aprobacion" onclick="mostrarTab('aprobacion')" class="tab" role="tab">
+          <span>✅</span><span>Aprobación</span>
+        </button>
+        <button id="tab-votaciones" onclick="mostrarTab('votaciones')" class="tab" role="tab">
+          <span>🗳️</span><span>Votaciones</span>
+        </button>
+        <button id="tab-estadisticas" onclick="mostrarTab('estadisticas')" class="tab" role="tab">
+          <span>📈</span><span>Estadísticas</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- Content principal -->
+    <main class="content">
+      <div class="content-inner">
+
+        <!-- Sistema -->
+        <section id="content-sistema" class="tab-content" role="tabpanel">
+          <div class="grid grid-lg-2">
+            <!-- Crear Nueva Agenda -->
+<article id="seccionCrearAgenda" class="card">
+              <header class="card-header">
+                <h2 class="card-title">
+                  <span style="font-size:1.4em;">🆕</span>
+                  Crear Nueva Agenda
+                </h2>
+              </header>
+              <div class="card-body">
+                <form id="formNuevaAgenda">
+                  <div class="form-group">
+                    <label class="form-label" for="nombreAgenda">Nombre de la Agenda *</label>
+                    <input type="text" id="nombreAgenda" required readonly class="form-input" 
+                           aria-describedby="ayudaNombre">
+                    <div id="ayudaNombre" class="form-help">🤖 El nombre se genera automáticamente</div>
+                  </div>
+
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" for="numeroReunion">Número de Reunión *</label>
+                      <div class="flex gap-4">
+                        <input type="text" id="numeroReunion" required class="form-input" 
+                               aria-describedby="ayudaReunion">
+                        
+                        <button type="button" onclick="cargarDatosCompletosReunion()" 
+                                class="btn btn-primary btn-sm" 
+                                title="Generar Número y Buscar Fecha Automática">
+                           🔄 Cargar Datos
+                        </button>
+                      </div>
+                      <div id="ayudaReunion" class="form-help">🔄 Genera Nombre, Número y detecta Fecha del Calendario</div>
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="fechaReunion">Fecha de la Reunión *</label>
+                    <div class="flex gap-4">
+                      <input type="date" id="fechaReunion" required class="form-input">
+                    </div>
+                    <div id="infoOrigenFecha" class="form-help text-right" 
+                         style="font-size: 0.85em; font-weight: 600; min-height: 1.5em; margin-top:5px;">
+                    </div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Rango de Fechas para Llenar *</label>
+                    <div class="grid grid-cols-2">
+                      <div>
+                        <label for="fechaInicio" class="form-label">Fecha inicio</label>
+                        <input type="date" id="fechaInicio" required class="form-input">
+                      </div>
+                      <div>
+                        <label for="fechaFin" class="form-label">Fecha fin</label>
+                        <input type="date" id="fechaFin" required class="form-input">
+                      </div>
+                    </div>
+                    <div class="form-help">Máximo 2 meses permitidos (Se llenan auto al cargar datos)</div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label" for="horaLimite">⏰ Hora Límite para Agregar Elementos</label>
+                    <input type="time" id="horaLimite" value="23:59" class="form-input">
+                    <div class="form-help">Hora límite del último día para agregar elementos a la agenda</div>
+                  </div>
+
+                  <div class="form-row">
+                    <button type="submit" class="btn btn-primary flex-1">
+                      <span>🗓️</span><span>Crear Nueva Agenda</span>
+                    </button>
+                    <button type="button" onclick="actualizarListaAgendas()" 
+                            class="btn btn-secondary btn-sm" aria-label="Actualizar lista de agendas">🔄</button>
+                  </div>
+                </form>
+              </div>
+
+              <script>
+                function cargarDatosCompletosReunion() {
+                  const numeroInput = document.getElementById('numeroReunion');
+                  const nombreInput = document.getElementById('nombreAgenda');
+                  const fechaInput = document.getElementById('fechaReunion');
+                  const infoSpan = document.getElementById('infoOrigenFecha');
+                  
+                  // Referencia al botón
+                  const btn = document.querySelector('button[onclick="cargarDatosCompletosReunion()"]');
+                  const textoOriginal = btn ? btn.innerHTML : '🔄 Cargar Datos';
+                  
+                  // Estado de carga UI
+                  if (btn) {
+                    btn.innerHTML = '<div class="spinner" style="width:15px;height:15px;border-width:2px;"></div>';
+                    btn.disabled = true;
+                  }
+                  
+                  if (infoSpan) infoSpan.innerHTML = '<span style="color:var(--oga-text-muted);">Consultando sistema...</span>';
+
+                  // Llamada al backend
+                  if (window.google && window.google.script) {
+                    google.script.run
+                      .withSuccessHandler(res => {
+                        // Restaurar botón
+                        if (btn) {
+                          btn.innerHTML = textoOriginal;
+                          btn.disabled = false;
+                        }
+
+                        if (res.success) {
+                          // 1. LLENAR NÚMERO Y NOMBRE
+                          const numero = res.numero;
+                          if (numeroInput) numeroInput.value = numero;
+                          if (nombreInput) nombreInput.value = `Reunión Consejo Nacional de Acreditación ${numero}`;
+                          
+                          // 2. PROCESAR FECHA
+                          const fechaData = res.fechaInfo;
+                          
+                          if (fechaData && fechaData.success) {
+                             if (fechaInput) fechaInput.value = fechaData.fechaInput;
+                             
+                             // Feedback visual
+                             let colorBadge = 'var(--oga-success)'; 
+                             let icono = '✅';
+                             
+                             if (fechaData.origen === 'FECHA EXTRAORDINARIA') {
+                                 colorBadge = 'var(--oga-warning-dark)'; 
+                                 icono = '⚡'; 
+                             }
+                             
+                             if (infoSpan) {
+                               infoSpan.innerHTML = `<span style="color:${colorBadge}">${icono} ${fechaData.origen} detectada (${fechaData.mes})</span>`;
+                             }
+                             
+                             // Auto-llenar rangos (15 días antes, 1 día después)
+                             if (typeof sugerirRangoFechas === "function") {
+                                sugerirRangoFechas(fechaData.fechaInput);
+                             }
+                             
+                             mostrarNotificacion(`✅ Datos cargados: ${numero} / ${fechaData.fechaDisplay}`, 'success');
+                             
+                          } else {
+                             if (infoSpan) infoSpan.innerHTML = `<span style="color:var(--oga-error);">⚠️ ${fechaData ? fechaData.message : 'Sin fecha futura'}</span>`;
+                             mostrarNotificacion(`📋 Número ${numero} cargado. Revise calendario de fechas.`, 'warning');
+                          }
+                          
+                        } else {
+                          mostrarNotificacion(`❌ Error backend: ${res.message}`, 'error');
+                          if (infoSpan) infoSpan.innerHTML = '';
+                        }
+                      })
+                      .withFailureHandler(err => {
+                        if (btn) {
+                          btn.innerHTML = textoOriginal;
+                          btn.disabled = false;
+                        }
+                        if (infoSpan) infoSpan.innerHTML = '<span style="color:var(--oga-error);">Error conexión</span>';
+                        mostrarNotificacion(`❌ Error crítico: ${err.message}`, 'error');
+                      })
+                      .obtenerDatosProximaReunion(); // Esta función ya la agregaste en el Paso 1
+                  } else {
+                    console.error("Google Script Run no disponible");
+                    if (btn) btn.disabled = false;
+                  }
+                }
+              </script>
+            </article>
+            <!-- Agendas Disponibles -->
+            <article class="card">
+              <header class="card-header">
+                <div class="flex justify-between items-center">
+                  <h2 class="card-title">
+                    <span style="font-size:1.4em;">📋</span>
+                    Agendas Disponibles
+                  </h2>
+                  <button onclick="actualizarListaAgendas()" class="btn btn-primary btn-sm">
+                    🔄 Actualizar
+                  </button>
+                </div>
+              </header>
+              <div class="card-body">
+                <div id="listaAgendas" role="region" aria-live="polite">
+                  <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Cargando agendas...</span>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- Agregar -->
+        <section id="content-agregar" class="tab-content hidden" role="tabpanel">
+          <article class="card">
+            <header class="card-header">
+              <h2 class="card-title">
+                <span style="font-size:1.4em;">➕</span>
+                Agregar Elemento a la Agenda
+              </h2>
+            </header>
+
+            <div class="card-body">
+              <div id="selectorAgenda" class="alert alert-warning" role="alert">
+                <p class="text-center">Seleccione una agenda activa para continuar</p>
+              </div>
+
+              <form id="formAgregarElemento">
+                <!-- Usuario -->
+                <div class="grid grid-cols-2">
+                  <div class="form-group">
+                    <label class="form-label" for="correoElemento">Usuario (Nombre Completo) <span class="badge-required">REQ</span></label>
+                    <div class="flex gap-4">
+                      <input type="text" id="correoElemento" required readonly class="form-input" 
+                             placeholder="Cargando usuario..." aria-describedby="ayudaUsuario">
+                      <button type="button" onclick="cargarUsuarioActivo()" 
+                              class="btn btn-primary btn-sm" aria-label="Cargar usuario activo">👤</button>
+                    </div>
+                    <div id="ayudaUsuario" class="form-help">🤖 Se carga automáticamente el usuario activo desde la hoja "Usuarios"</div>
+                  </div>
+
+                  <!-- Registro -->
+                  <div class="form-group" id="grupoRegistro">
+                    <label class="form-label" for="registroAcreditacion">
+                      Registro de Acreditación <span class="badge-required">REQ</span>
+                    </label>
+                    <div class="flex gap-4">
+                      <input type="text" id="registroAcreditacion" class="form-input" 
+                             autocomplete="off" aria-describedby="ayudaBusquedaRegistro">
+                      <button type="button" id="btnBuscarRegistro" onclick="buscarEstablecimiento()" 
+                              class="btn btn-primary btn-sm" aria-label="Buscar establecimiento">🔍</button>
+                    </div>
+                    <div id="ayudaBusquedaRegistro" class="form-help">
+                      Debe presionar 🔍 Buscar y que se llenen Nombre del Establecimiento, Esquema y Norma para poder guardar (excepto tipo VARIOS).
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Nombre, Esquema y Norma -->
+                <div class="grid grid-cols-3">
+                  <div class="form-group" id="grupoNombre">
+                    <label class="form-label" for="nombreEstablecimiento">Nombre del Establecimiento <span class="badge-required">AUTO</span></label>
+                    <input type="text" id="nombreEstablecimiento" readonly class="form-input">
+                    <div class="form-help">Se llena automáticamente al buscar</div>
+                  </div>
+                  <div class="form-group" id="grupoEsquema">
+                    <label class="form-label" for="esquema">Esquema <span class="badge-required">AUTO</span></label>
+                    <input type="text" id="esquema" readonly class="form-input">
+                    <div class="form-help">Se llena automáticamente al buscar</div>
+                  </div>
+                  <div class="form-group" id="grupoNorma">
+                    <label class="form-label" for="norma">Norma <span class="badge-required">AUTO</span></label>
+                    <input type="text" id="norma" readonly class="form-input">
+                    <div class="form-help">🆕 Se llena automáticamente al buscar</div>
+                  </div>
+                </div>
+
+                <!-- Tipo de Solicitud -->
+                <div class="form-group">
+                  <label class="form-label" for="solicitudCNA">Solicitud para Consejo Nacional de Acreditación <span class="badge-required">REQ</span></label>
+                  <select id="solicitudCNA" required onchange="mostrarCamposEspecificos(); reevaluarRequisitoBusqueda();" class="form-select">
+                    <option value="">-- Seleccione el tipo --</option>
+                    <option value="DECISION">DECISIÓN</option>
+                    <option value="NOTIFICACION">NOTIFICACIÓN</option>
+                    <option value="VARIOS">VARIOS</option>
+                  </select>
+                </div>
+
+                <!-- Campos Decisión -->
+                <div id="camposDecision" class="form-section alert-info hidden">
+                  <div class="form-section-title">
+                    <span>📋</span>Campos para Decisión
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="nombreExperto">Nombre del Experto <span class="badge-required">REQ</span></label>
+                    <input type="text" id="nombreExperto" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="tipoDecision">Tipo de Decisión <span class="badge-required">REQ</span></label>
+                    <select id="tipoDecision" class="form-select">
+                      <option value="">-- Seleccione --</option>
+                      <option value="Evaluación Inicial">Evaluación Inicial</option>
+                      <option value="Reconocimiento de Acreditación">Reconocimiento de Acreditación</option>
+                      <option value="Reevaluación">Reevaluación</option>
+                      <option value="Ampliación de Alcance">Ampliación de Alcance</option>
+                      <option value="Reducción de Alcance">Reducción de Alcance</option>
+                      <option value="Suspensión">Suspensión</option>
+                      <option value="Retiro">Retiro</option>
+                    </select>
+                  </div>
+                  <div class="form-section alert-success">
+                    <div class="form-section-title">
+                      <span>📜</span>Resolución (Auto-generada)
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="resolucion">Número de Resolución</label>
+                      <input type="text" id="resolucion" readonly class="form-input">
+                      <div class="form-help">🤖 Se genera automáticamente al guardar</div>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">📎 Favor Adjuntar: OGA-FAC-090, OGA-FAC-078, OGA-FAC-014, OGA-FAC-003</label>
+                    <div class="file-upload" id="dropZoneOGA">
+                      <input type="file" id="adjuntosOGA" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.pptx" 
+                             class="hidden" onchange="manejarArchivosOGA(this)">
+                      <button type="button" onclick="document.getElementById('adjuntosOGA').click()" class="btn btn-primary">
+                        <span>📁</span><span>Seleccionar o Arrastrar archivos OGA... (máx. 10)</span>
+                      </button>
+                      <div class="form-help">Arrastre aquí los archivos o haga clic para buscar. (Debe iniciar con nombre correcto)</div>
+                      <div id="listaArchivosOGA" class="file-list"></div>
+                      <div id="carpetaOGA" class="alert alert-success hidden">
+                        <p class="flex items-center">
+                          <span>📁</span>Carpeta de archivos OGA: 
+                          <a href="#" id="enlaceCarpetaOGA" target="_blank" class="btn btn-primary btn-sm">Ver carpeta</a>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Campos Notificación -->
+                <div id="camposNotificacion" class="form-section hidden" style="background: #f3e8ff; border-color: #d8b4fe;">
+                  <div class="form-section-title" style="color: #7c3aed;">
+                    <span>📧</span>Campos para Notificación
+                  </div>
+                  <div class="grid grid-cols-2">
+                    <div class="form-group">
+                      <label class="form-label" for="tipoNotificacion">Tipo de Notificación <span class="badge-required">REQ</span></label>
+                      <select id="tipoNotificacion" class="form-select">
+                        <option value="">-- Seleccione --</option>
+                        <option value="Notificación de Decisión">Notificación de Decisión</option>
+                        <option value="Solicitud de Información">Solicitud de Información</option>
+                        <option value="Mantenimiento">Mantenimiento</option>
+                        <option value="Recordatorio">Recordatorio</option>
+                        <option value="Suspensión Temporal">Suspensión Temporal</option>
+                        <option value="Reconocimiento de acreditación">Reconocimiento de acreditación</option>
+                        <option value="Levantamiento de Suspensión">Levantamiento de Suspensión</option>
+                        <option value="Otro">Otro</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" for="motivoNotificacion">Motivo de la Notificación <span class="badge-required">REQ</span></label>
+                      <textarea id="motivoNotificacion" rows="3" class="form-textarea"></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Campos VARIOS -->
+                <div id="camposVarios" class="form-section hidden" style="background:#f0f9ff; border-color:#38bdf8;">
+                  <div class="form-section-title" style="color:#0284c7;">
+                    <span>📂</span>Campos para Varios (Información)
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="tituloVarios">Título/Descripción del Punto Varios <span class="badge-required">REQ</span></label>
+                    <textarea id="tituloVarios" rows="3" class="form-textarea" 
+                              placeholder="Describa el punto informativo..."></textarea>
+                    <div class="form-help">En VARIOS solo se registra esta descripción. Adjuntar documentos abajo es opcional.</div>
+                  </div>
+                </div>
+
+                <!-- Documentos Adicionales -->
+                <div class="form-group" id="grupoAdjuntosGenerales">
+                  <label class="form-label">📎 Adjuntar Documentos</label>
+                  <div class="file-upload" id="dropZoneDocs">
+                    <input type="file" id="adjuntarDocumentos" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.pptx" 
+                           class="hidden" onchange="manejarDocumentosAdicionales(this)">
+                    <button type="button" onclick="document.getElementById('adjuntarDocumentos').click()" class="btn btn-secondary">
+                      <span>📎</span><span>Seleccionar documentos adicionales... (máx. 10)</span>
+                    </button>
+                    <div class="form-help">Opcional. Puede agregar uno por uno hasta máximo 10 archivos. (PDF, Word, Excel, PowerPoint)</div>
+                    <div id="listaDocumentosAdicionales" class="file-list"></div>
+                    <div id="carpetaDocumentos" class="alert alert-success hidden">
+                      <p class="flex items-center">
+                        <span>📁</span>Carpeta de documentos:
+                        <a href="#" id="enlaceCarpetaDocumentos" target="_blank" class="btn btn-primary btn-sm">Ver carpeta</a>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Acta -->
+                <div class="form-group">
+                  <label class="form-label" for="acta">Acta (Número de Reunión y Año)</label>
+                  <input type="text" id="acta" readonly class="form-input">
+                </div>
+
+                <div class="form-row">
+                  <button type="submit" id="btnGuardarElemento" class="btn btn-success flex-1" disabled>
+                    <span>💾</span><span>Guardar Elemento</span>
+                  </button>
+                  <button type="button" onclick="limpiarFormulario()" class="btn btn-secondary">
+                    <span>🧹</span><span>Limpiar</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </article>
+        </section>
+
+        <!-- Ver Datos -->
+        <section id="content-datos" class="tab-content hidden" role="tabpanel">
+          <article class="card">
+            <header class="card-header">
+              <h2 class="card-title">
+                <span style="font-size:1.4em;">📊</span>
+                Búsqueda Dinámica de Elementos
+              </h2>
+            </header>
+            <div class="card-body">
+              <div class="form-section">
+                <div class="grid grid-cols-3">
+                  <div class="form-group">
+                    <label class="form-label" for="busquedaTexto">🔍 Búsqueda Inteligente</label>
+                    <input type="text" id="busquedaTexto" 
+                           placeholder="💡 Escriba cualquier palabra para buscar en todos los campos" 
+                           oninput="filtrarDatos()" class="form-input">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="filtroReunion">Filtrar por Reunión</label>
+                    <select id="filtroReunion" onchange="filtrarDatos()" class="form-select">
+                      <option value="">📋 Todas las reuniones</option>
+                      <option value="01-2026">📋 Reunión 01-2026</option>
+                      <option value="02-2026">📋 Reunión 02-2026</option>
+                      <option value="3-2026">📋 Reunión 3-2026</option>
+                      <option value="04-2026">📋 Reunión 04-2026</option>
+                      <option value="05-2026">📋 Reunión 05-2026</option>
+                      <option value="06-2026">📋 Reunión 06-2026</option>
+                      <option value="07-2026">📋 Reunión 07-2026</option>
+                      <option value="08-2026">📋 Reunión 08-2026</option>
+                      <option value="09-2026">📋 Reunión 09-2026</option>
+                      <option value="10-2026">📋 Reunión 10-2026</option>
+                      <option value="11-2026">📋 Reunión 11-2026</option>
+                      <option value="12-2026">📋 Reunión 12-2026</option>
+                      <option value="13-2026">📋 Reunión 13-2026</option>
+                      <option value="14-2026">📋 Reunión 14-2026</option>
+                      <option value="15-2026">📋 Reunión 15-2026</option>
+                      <option value="16-2026">📋 Reunión 16-2026</option>
+                      <option value="17-2026">📋 Reunión 17-2026</option>
+                      <option value="18-2026">📋 Reunión 18-2026</option>
+                      <option value="19-2026">📋 Reunión 19-2026</option>
+                      <option value="20-2026">📋 Reunión 20-2026</option>
+                      <option value="21-2026">📋 Reunión 21-2026</option>
+                      <option value="22-2026">📋 Reunión 22-2026</option>
+                      <option value="23-2026">📋 Reunión 23-2026</option>
+                      <option value="24-2026">📋 Reunión 24-2026</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="filtroTipo">Filtrar por Tipo</label>
+                    <select id="filtroTipo" onchange="filtrarDatos()" class="form-select">
+                      <option value="">📋 Todos los tipos</option>
+                      <option value="DECISION">⚖️ Decisiones</option>
+                      <option value="NOTIFICACION">📧 Notificaciones</option>
+                      <option value="VARIOS">📂 Varios</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <button onclick="limpiarFiltros()" class="btn btn-secondary btn-sm">
+                    <span>🧹</span><span>Limpiar</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="estadoCargaDatos" class="loading">
+                <div class="spinner"></div>
+                <span>Cargando datos...</span>
+              </div>
+
+              <div id="contenedorTabla" class="hidden">
+                <div class="table-container">
+                  <table class="table" role="table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Fecha</th>
+                        <th scope="col">Usuario</th>
+                        <th scope="col">Registro</th>
+                        <th scope="col">Tipo Solicitud</th>
+                        <th scope="col">Experto</th>
+                        <th scope="col">Tipo Decisión</th>
+                        <th scope="col">Resolución</th>
+                        <th scope="col">Tipo Notificación</th>
+                        <th scope="col">Motivo</th>
+                        <th scope="col">Acta</th>
+                        <th scope="col">Esquema</th>
+                        <th scope="col">Nombre Establecimiento</th>
+                        <th scope="col">Norma</th>
+                        <th scope="col">Archivos</th>
+                        <th scope="col">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tablaDatos"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div id="sinDatos" class="text-center hidden">
+                <div style="font-size:4rem;">📋</div>
+                <h3 style="font-size:1.25rem; font-weight:600; margin:1rem 0;">No hay elementos registrados</h3>
+                <p style="color:var(--oga-text-soft);">Use el formulario para agregar elementos</p>
+              </div>
+
+              <div class="text-center">
+                <button onclick="cargarDatos()" class="btn btn-primary">
+                  <span>🔄</span><span>Actualizar Datos</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- Documentos -->
+        <section id="content-documentos" class="tab-content hidden" role="tabpanel">
+          <article class="card">
+            <header class="card-header">
+              <h2 class="card-title">
+                <span style="font-size:1.4em;">📄</span>
+                Generar Documentos
+              </h2>
+            </header>
+            <div class="card-body">
+              <div id="selectorAgendaDocumentos" class="alert alert-warning" role="alert">
+                <p class="text-center">Seleccione una agenda para generar sus documentos</p>
+              </div>
+
+              <div class="form-section" style="margin-bottom: 1.5rem;">
+                <div class="flex justify-between items-center">
+                  <h3 style="font-weight:600; margin:0;">
+                    <span>📁</span> Archivos en Carpeta "Agendas Creadas"
+                  </h3>
+                  <button onclick="verificarArchivosCarpeta()" class="btn btn-primary btn-sm">
+                    <span>🔄</span><span>Verificar Archivos</span>
+                  </button>
+                </div>
+                <div id="estadoVerificacion" class="hidden" style="margin-top: 1rem;">
+                  <div class="loading">
+                    <div class="spinner"></div>
+                    <span>Verificando archivos en la carpeta...</span>
+                  </div>
+                </div>
+                <div id="listadoArchivos" style="margin-top: 1rem;">
+                  <p style="color:var(--oga-text-soft); font-style:italic;">Presiona "Verificar Archivos" para ver los documentos disponibles</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2">
+                <div class="card alert-info">
+                  <div class="card-body text-center">
+                    <div style="font-size:3rem; margin-bottom:1rem;">📋</div>
+                    <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:0.5rem;">Agenda Profesional</h3>
+                    <p style="font-size:0.875rem; margin-bottom:1rem;">Genera un documento Word con todos los puntos de la agenda ordenados y formateados</p>
+                    <button onclick="generarDocumento('agenda')" class="btn btn-primary">
+                      <span>📋</span><span>Generar Agenda Profesional</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="card alert-success">
+                  <div class="card-body text-center">
+                    <div style="font-size:3rem; margin-bottom:1rem;">📗</div>
+                    <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:0.5rem;">Excel Detallado</h3>
+                    <p style="font-size:0.875rem; margin-bottom:1rem;">Exporta todos los datos de la agenda en formato Excel</p>
+                    <button onclick="generarDocumento('excel')" class="btn btn-success">
+                      <span>📗</span><span>Exportar a Excel</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="estadoGeneracion" class="alert alert-info hidden" role="status" aria-live="polite">
+                <div class="flex items-center">
+                  <div class="spinner"></div>
+                  <span style="margin-left:1rem;">Generando documento... Por favor espere.</span>
+                </div>
+              </div>
+
+              <div id="resultadoGeneracion" class="hidden" role="region" aria-live="polite"></div>
+            </div>
+          </article>
+        </section>
+
+        <!-- Aprobación -->
+        <section id="content-aprobacion" class="tab-content hidden" role="tabpanel">
+          <article class="card">
+            <header class="card-header">
+              <h2 class="card-title">
+                <span style="font-size:1.4em;">✅</span>
+                Aprobación de Agenda
+              </h2>
+            </header>
+            <div class="card-body">
+              <div id="selectorAgendaAprobacion" class="alert alert-warning" role="alert">
+                <p class="text-center">Seleccione una agenda para proceder con su aprobación</p>
+              </div>
+
+              <div id="infoAgendaAprobacion" class="form-section hidden">
+                <div class="form-section-title">📋 Información de la Agenda</div>
+                <div class="grid grid-cols-2">
+                  <div><strong>Nombre:</strong> <span id="infoNombreAgenda"></span></div>
+                  <div><strong>Número de Reunión:</strong> <span id="infoNumeroReunion"></span></div>
+                  <div><strong>Fecha de Reunión:</strong> <span id="infoFechaReunion"></span></div>
+                  <div><strong>Total de Elementos:</strong> <span id="infoTotalElementos"></span></div>
+                </div>
+              </div>
+
+              <div id="confirmacionAprobacion" class="hidden">
+                <div class="alert alert-warning">
+                  <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;">
+                    <span style="margin-right:0.5rem;">🎯</span>Aprobación Final de la Agenda
+                  </h3>
+                  <p style="margin-bottom:1rem;">¿Desea aprobar esta agenda y registrarla oficialmente en el sistema?</p>
+                  <div class="alert" style="background:#fef3c7; border-color:#f59e0b; margin-bottom:1rem;">
+                    <p style="font-size:0.875rem;"><strong>⚠️ Importante:</strong> Una vez aprobada, la agenda se archivará en la hoja "Agenda_Votacion" y habilitará las votaciones.</p>
+                  </div>
+                </div>
+
+                <div class="flex justify-center gap-4">
+                  <button onclick="confirmarAprobacion()" class="btn btn-success">
+                    <span>✅</span><span>SÍ - Aprobar y Archivar Agenda</span>
+                  </button>
+                  <button onclick="cancelarAprobacion()" class="btn btn-danger">
+                    <span>❌</span><span>NO - Cancelar</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="opcionesAgenda" class="hidden" style="margin-top:2rem; padding-top:2rem; border-top:1px solid var(--oga-border);">
+                <div class="alert alert-error">
+                  <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:0.5rem;">
+                    <span style="margin-right:0.5rem;">🗑️</span>Eliminar Agenda
+                  </h3>
+                  <p style="font-size:0.875rem; margin-bottom:1rem;">Esta acción eliminará permanentemente la agenda y todos sus elementos.</p>
+                  <button onclick="mostrarConfirmacionEliminar()" class="btn btn-danger btn-sm">
+                    <span>🗑️</span><span>Eliminar Agenda</span>
+                  </button>
+                </div>
+              </div>
+
+              <div id="estadoAprobacion" class="alert alert-info hidden" role="status" aria-live="polite">
+                <div class="flex items-center">
+                  <div class="spinner"></div>
+                  <span style="margin-left:1rem;">Procesando aprobación y archivo... Por favor espere.</span>
+                </div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- Votaciones -->
+        <section id="content-votaciones" class="tab-content hidden" role="tabpanel">
+          <article class="card">
+            <header class="card-header">
+              <h2 class="card-title">
+                <span style="font-size:1.4em;">🗳️</span>
+                Sistema de Votaciones (Controlado)
+              </h2>
+            </header>
+            <div class="card-body">
+              
+              <!-- NUEVO: Panel de Control de Acceso -->
+              <div id="panelControlAcceso" class="panel-control-votaciones hidden">
+                <h3>🔐 Control de Acceso - Solo Usuarios Autorizados</h3>
+                <p>Solo Carlos Archila, Estephanie Ajuchán, Lidia Sanchez y Jonatan Alvarado pueden enviar votaciones desde info@oga.org.gt</p>
+              </div>
+
+              <!-- Panel de Debug del Sistema -->
+              <div class="form-section" style="margin-bottom: 1.5rem; background: var(--oga-blue-light); border-color: var(--oga-blue);">
+                <div class="form-section-title" style="color: var(--oga-blue-dark);">
+                  <span>🔬</span>Debug del Sistema de Dos Hojas
+                </div>
+                <div class="text-right">
+                  <button onclick="ejecutarDebugSistema()" class="btn btn-info btn-sm">
+                    <span>🔬</span><span>Ejecutar Debug</span>
+                  </button>
+                </div>
+                <div id="resultadoDebugSistema" style="margin-top: 1rem; font-family: monospace; font-size: 0.875rem; background: var(--oga-bg-surface); padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--oga-border); display: none;" role="region" aria-live="polite"></div>
+              </div>
+
+              <!-- Selector de agenda para votación -->
+              <div class="form-section" style="margin-bottom: 1.5rem;">
+                <div class="form-section-title">
+                  <span>📋</span>Seleccionar Agenda para Votación
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="agendaParaVotar">Agenda para Votar:</label>
+                  <select id="agendaParaVotar" class="form-select" onchange="onAgendaSeleccionadaVotacion()">
+                    <option value="">🔄 Cargando agendas disponibles...</option>
+                  </select>
+                  <div class="form-help">Solo se muestran agendas aprobadas (incluyendo archivadas) disponibles para votación</div>
+                </div>
+                <div class="text-right">
+                  <button id="actualizarListaAgendas" onclick="cargarAgendasDisponiblesVotacion()" class="btn btn-secondary btn-sm">
+                    <span>🔄</span><span>Actualizar Lista</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Panel de información de agenda seleccionada -->
+              <div id="infoAgendaVotacion" class="form-section hidden" style="background:var(--oga-success-light); border-color:var(--oga-success);">
+                <div class="form-section-title" style="color:var(--oga-success-dark);">
+                  <span>📋</span>Información de la Agenda Seleccionada
+                </div>
+                <div id="detallesAgendaVotacion" class="grid grid-cols-2"></div>
+              </div>
+
+              <!-- Opciones de envío específicas -->
+              <div id="opcionesEnvioEspecifico" class="form-section hidden">
+                <div class="form-section-title">
+                  <span>📤</span>Configuración de Envío
+                </div>
+                <div class="grid grid-cols-2">
+                  <div class="form-group">
+                    <label class="form-label" for="modoPruebaVotacion">Modo de Envío:</label>
+                    <select id="modoPruebaVotacion" class="form-select">
+                      <option value="false">📧 Producción (Envío Real)</option>
+                      <option value="true">🧪 Modo Prueba</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="maxEnviarVotacion">Límite de Envíos (opcional):</label>
+                    <input type="number" id="maxEnviarVotacion" class="form-input" 
+                           placeholder="Vacío = enviar a todos" min="1" max="100">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botones de acción específicos -->
+              <div id="accionesVotacionEspecifica" class="hidden" style="margin: 1.5rem 0;">
+                <div class="flex gap-4 flex-wrap justify-center">
+                  <button id="btnEnviarVotacionEspecifica" onclick="enviarVotacionesAgendaEspecifica()" class="btn btn-primary" disabled>
+                    <span>📧</span><span>Enviar Invitaciones</span>
+                  </button>
+                  <button id="btnVerEstadisticasEspecifica" onclick="verEstadisticasAgendaEspecifica()" class="btn btn-info" disabled>
+                    <span>📊</span><span>Ver Estadísticas</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Resultados del envío específico -->
+              <div id="resultadoVotacionEspecifica" class="hidden" style="margin-top:1rem;" role="region" aria-live="polite"></div>
+
+              <!-- Panel de estadísticas mejorado -->
+              <div id="estadisticasVotacion" class="form-section hidden">
+                <div class="form-section-title">
+                  <span>📊</span>Estadísticas de Votación (Por Tipo de Decisión)
+                </div>
+                <div id="contenidoEstadisticas"></div>
+              </div>
+
+              <!-- SEPARADOR -->
+              <div style="border-top: 2px solid var(--oga-border); margin: 2rem 0; padding-top: 2rem;">
+                <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem; color:var(--oga-text-soft);">
+                  🔄 Sistema Legacy (Agenda Actual)
+                </h3>
+                
+                <!-- Validación de estado de agenda actual -->
+                <div id="validacionVotacion" class="alert alert-info">
+                  <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:0.5rem;">
+                    <span>🔒</span>Validación de Estado (Agenda Actual)
+                  </h3>
+                  <p id="mensajeValidacion" style="margin-bottom:1rem;">Verificando estado de la agenda actual...</p>
+                  <button onclick="verificarEstadoVotacion()" class="btn btn-primary btn-sm">
+                    <span>🔄</span><span>Verificar Estado</span>
+                  </button>
+                </div>
+
+                <!-- Panel de envío legacy -->
+                <div id="panelEnvioVotaciones" class="alert alert-success hidden">
+                  <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:0.5rem;">✅ Enviar Invitaciones (Agenda Actual)</h3>
+                  <p style="font-size:0.875rem; margin-bottom:1rem;">La agenda actual está APROBADA. Método de envío tradicional.</p>
+                  <div class="flex gap-4 flex-wrap">
+                    <button onclick="invitarVotaciones(false)" class="btn btn-success">
+                      <span>📤</span><span>Enviar Votación (Producción)</span>
+                    </button>
+                    <button onclick="invitarVotaciones(true)" class="btn btn-warning">
+                      <span>🧪</span><span>Enviar Votación (Prueba)</span>
+                    </button>
+                    <button onclick="cargarEstadisticasVotos()" class="btn btn-primary">
+                      <span>🔄</span><span>Actualizar Estadísticas</span>
+                    </button>
+                  </div>
+                  <div id="resultadoEnvioVotaciones" style="margin-top:1rem; font-size:0.875rem;" role="region" aria-live="polite"></div>
+                </div>
+
+                <!-- Bloqueo de votaciones -->
+                <div id="bloqueoVotaciones" class="bloqueo-votacion hidden" role="alert">
+                  <p><strong>🚫 VOTACIONES BLOQUEADAS:</strong> <span id="razonBloqueo"></span></p>
+                  <p style="font-size:0.875rem; margin-top:0.5rem;">Para habilitar las votaciones, vaya a la pestaña "Aprobación" y apruebe la agenda actual.</p>
+                </div>
+
+                <div id="panelEstadisticas" class="hidden">
+                  <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;">
+                    <span style="font-size:1.5rem; margin-right:0.5rem;">📈</span>Estadísticas de Votos por Registro (Agenda Actual)
+                  </h3>
+                  <div id="resumenVotosGenerales" class="form-section" style="margin-bottom:1.5rem;"></div>
+                  <div class="form-section">
+                    <h4 style="font-weight:600; margin-bottom:1rem; display:flex; align-items:center;">
+                      <span style="margin-right:0.5rem;">📋</span>Resultados por Registro de Acreditación
+                    </h4>
+                    <div id="contenedorEstadisticasDetalladas" class="flex flex-col gap-6" style="flex-direction: column; gap: 1.5rem; display: flex;"></div>
+                  </div>
+                </div>
+
+                <div id="sinEstadisticas" class="text-center" style="padding:2rem 0; color:var(--oga-text-soft);">
+                  Sistema legacy: Use el selector de agenda arriba para mayor funcionalidad.
+                </div>
+              </div>
+
+            </div>
+          </article>
+        </section>
+
+        <!-- Estadísticas -->
+        <section id="content-estadisticas" class="tab-content hidden" role="tabpanel">
+          <article class="card">
+            <header class="card-header">
+              <h2 class="card-title">
+                <span style="font-size:1.4em;">📈</span>
+                Estadísticas por Reunión (Mejoradas)
+              </h2>
+            </header>
+            <div class="card-body">
+              <div class="form-section">
+                <div class="grid grid-cols-2">
+                  <div class="form-group">
+                    <label class="form-label" for="selectReunionEstadisticas">Seleccionar Reunión</label>
+                    <select id="selectReunionEstadisticas" onchange="cargarEstadisticasReunionEspecifica()" class="form-select">
+                      <option value="">-- Seleccione una reunión --</option>
+                      <option value="01-2026">Reunión 01-2026</option>
+                      <option value="02-2026">Reunión 02-2026</option>
+                      <option value="03-2026">Reunión 03-2026</option>
+                      <option value="04-2026">Reunión 04-2026</option>
+                      <option value="05-2026">Reunión 05-2026</option>
+                      <option value="06-2026">Reunión 06-2026</option>
+                      <option value="07-2026">Reunión 07-2026</option>
+                      <option value="08-2026">Reunión 08-2026</option>
+                      <option value="09-2026">Reunión 09-2026</option>
+                      <option value="10-2026">Reunión 10-2026</option>
+                      <option value="11-2026">Reunión 11-2026</option>
+                      <option value="12-2026">Reunión 12-2026</option>
+                      <option value="13-2026">Reunión 13-2026</option>
+                      <option value="14-2026">Reunión 14-2026</option>
+                      <option value="15-2026">Reunión 15-2026</option>
+                      <option value="16-2026">Reunión 16-2026</option>
+                      <option value="17-2026">Reunión 17-2026</option>
+                      <option value="18-2025">Reunión 18-2025</option>
+                      <option value="19-2026">Reunión 19-2026</option>
+                      <option value="20-2026">Reunión 20-2026</option>
+                      <option value="21-2026">Reunión 21-2026</option>
+                      <option value="22-2026">Reunión 22-2026</option>
+                      <option value="23-2026">Reunión 23-2026</option>
+                      <option value="24-2026">Reunión 24-2026</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Acciones</label>
+                    <div class="flex gap-2">
+                      <button onclick="cargarAgendaActualEstadisticas()" class="btn btn-primary btn-sm">
+                        <span>📋</span><span>Agenda Actual</span>
+                      </button>
+                      <button onclick="limpiarEstadisticas()" class="btn btn-secondary btn-sm">
+                        <span>🧹</span><span>Limpiar</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div id="estadisticasContenido" class="hidden">
+                 <div id="contenedorPrincipalEstadisticas" class="flex flex-col gap-6"></div>
+              </div>
+              <div id="sinEstadisticasReunion" class="text-center" style="padding:3rem 0; color:var(--oga-text-soft);">
+                <div style="font-size:4rem;">📊</div>
+                <h3 style="font-size:1.25rem; font-weight:600; margin:1rem 0;">Seleccione una reunión</h3>
+                <p>Use el selector arriba para ver las estadísticas de votación de una reunión específica.</p>
+              </div>
+            </div>
+          </article>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Modal personalizado -->
+    <div id="modalConfirmacion" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitulo">
+      <div class="modal-content">
+        <header class="modal-header" id="modalTitulo"></header>
+        <div class="modal-body" id="modalMensaje"></div>
+        <div class="modal-actions">
+          <button id="modalCancelar" onclick="cerrarModal()" class="btn btn-secondary btn-sm">Salir al Panel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Overlay de bloqueo del sistema -->
+    <div id="systemLockOverlay" class="system-lock-overlay" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+      <div class="lock-waves">
+        <div class="lock-wave"></div>
+        <div class="lock-wave"></div>
+        <div class="lock-wave"></div>
+      </div>
+      <div class="system-lock-content">
+        <div class="lock-icon">🔙</div>
+        <div class="lock-spinner"></div>
+        <h2 class="lock-title" id="lockTitle">Volviendo al Menú</h2>
+        <p class="lock-message" id="lockMessage">
+          Cerrando la agenda y regresando al menú principal...<br>
+          <small>Por favor espera un momento</small>
+        </p>
+        <div class="lock-progress">
+          <div class="lock-progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scripts completos -->
+  <script>
+    // Estado global optimizado
+    var agendaActiva = null;
+    var datosTabla = [];
+    var datosFiltrados = [];
+    var archivosOGASeleccionados = [];
+    var documentosAdicionalesSeleccionados = [];
+    var usuarioActual = null;
+    var MAX_FILES = 10;
+
+    // Control de búsqueda obligatoria
+    var registroBuscadoOK = false;
+
+    // Variables para votaciones con agendas archivadas
+    var agendasDisponiblesVotacion = [];
+    var agendaSeleccionadaVotacion = null;
+
+    // NUEVO: Lista de usuarios autorizados para votaciones
+    var USUARIOS_AUTORIZADOS_VOTACION = [
+      'carchila@oga.org.gt',
+      'eajuchan@oga.org.gt',
+      'lsanchez@oga.org.gt',
+      'jalvarado.oga@gmail.com',
+      'info@oga.org.gt'
+    ];
+
+    // ============ DETECTOR DE TEMA AUTOMÁTICO ============
+    function configurarTemaAutomatico() {
+      try {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        function aplicarTema(e) {
+          const prefersDark = e.matches;
+          const savedTheme = localStorage.getItem('temaPreferidoAgendaOGA');
+          
+          if (!savedTheme) {
+            setTheme(prefersDark ? 'dark' : 'light');
+            actualizarBotonTema();
+          }
+        }
+        
+        // Configurar listener
+        if (mediaQuery.addEventListener) {
+          mediaQuery.addEventListener('change', aplicarTema);
+        } else if (mediaQuery.addListener) {
+          mediaQuery.addListener(aplicarTema);
+        }
+        
+        // Aplicar tema inicial
+        aplicarTema(mediaQuery);
+        
+      } catch (e) {
+        console.warn('Error configurando tema automático:', e);
+      }
+    }
+
+    // ============ INICIALIZACIÓN OPTIMIZADA ============
+    function inicializarConsejoOGA() {
+      if (window.__CONSEJO_OGA_INIT__) return;
+      window.__CONSEJO_OGA_INIT__ = true;
+
+      configurarTemaAutomatico();
+      actualizarBotonTema();
+      configurarFormularios();
+      configurarEventosGlobales();
+      actualizarListaAgendas();
+      testComunicacion();
+
+      if (window.google?.script?.run?.getUsuarioActual) {
+        google.script.run
+          .withSuccessHandler(aplicarPermisosUI)
+          .withFailureHandler(err => console.warn('No se pudieron cargar permisos:', err))
+          .getUsuarioActual();
+      }
+
+      setTimeout(autoSeleccionarAgendaActiva, 1000);
+
+      const regInput = document.getElementById('registroAcreditacion');
+      if (regInput) {
+        regInput.addEventListener('input', () => {
+          registroBuscadoOK = false;
+          limpiarCamposAutomaticos();
+          reevaluarRequisitoBusqueda();
+        });
+      }
+
+      reevaluarRequisitoBusqueda();
+
+      if (window.OGA && typeof window.OGA.onUnmount === 'function') {
+        window.OGA.onUnmount(() => {
+          try {
+            Object.keys(intervalosContador || {}).forEach(k => clearInterval(intervalosContador[k]));
+          } catch (_) {}
+          window.__CONSEJO_OGA_INIT__ = false;
+        });
+      }
+    }
+
+    inicializarConsejoOGA();
+
+    // ============ CONFIGURACIÓN DE EVENTOS ============
+    function configurarEventosGlobales() {
+      // Tema
+      const btnTema = document.getElementById('toggleDarkMode');
+      if (btnTema) {
+        btnTema.addEventListener('click', toggleTheme);
+      }
+
+      // Modal
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            cerrarModal();
+          }
+        });
+      }
+
+      // Escape para cerrar modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          cerrarModal();
+        }
+      });
+
+      // Prevenir zoom en inputs en iOS
+      document.addEventListener('touchstart', () => {});
+    }
+
+    function configurarFormularios() {
+      const formNueva = document.getElementById('formNuevaAgenda');
+      const formElemento = document.getElementById('formAgregarElemento');
+      
+      if (formNueva) {
+        formNueva.addEventListener('submit', (e) => {
+          e.preventDefault();
+          crearNuevaAgenda();
+        });
+      }
+      
+      if (formElemento) {
+        formElemento.addEventListener('submit', (e) => {
+          e.preventDefault();
+          guardarElemento();
+        });
+      }
+    }
+
+    // ============ GESTIÓN DE TEMA MEJORADA ============
+    function setTheme(mode) {
+      const root = document.documentElement;
+      if (mode === 'dark') {
+        root.classList.add('dark');
+        root.classList.remove('light');
+        try {
+          localStorage.setItem('temaPreferidoAgendaOGA', 'dark');
+        } catch (e) {
+          console.warn('No se pudo guardar tema:', e);
+        }
+      } else {
+        root.classList.add('light');
+        root.classList.remove('dark');
+        try {
+          localStorage.setItem('temaPreferidoAgendaOGA', 'light');
+        } catch (e) {
+          console.warn('No se pudo guardar tema:', e);
+        }
+      }
+    }
+
+    function toggleTheme() {
+      const root = document.documentElement;
+      const isDark = root.classList.contains('dark');
+      setTheme(isDark ? 'light' : 'dark');
+      actualizarBotonTema();
+    }
+
+    function actualizarBotonTema() {
+      const root = document.documentElement;
+      const isDark = root.classList.contains('dark');
+      
+      const textoTema = document.getElementById('textoTema');
+      const iconTema = document.getElementById('iconTema');
+      const btn = document.getElementById('toggleDarkMode');
+      
+      if (textoTema) textoTema.textContent = isDark ? 'Claro' : 'Oscuro';
+      if (iconTema) iconTema.textContent = isDark ? '🌙' : '🌓';
+      if (btn) btn.className = isDark ? 'btn btn-primary' : 'btn btn-warning';
+    }
+
+    // ============ CONTROL DE ACCESO PARA VOTACIONES (NUEVO) ============
+    function esUsuarioAutorizadoVotacion(usuario) {
+      // ✅ WebApp: el backend ya calcula permisos desde la hoja Usuarios (Col E = "Resolucion")
+      return !!(usuario && usuario.autorizadoVotar);
+    }
+function aplicarPermisosUI(usuario) {
+      try {
+        usuarioActual = usuario;
+        
+        // Control de creación de agendas
+        const seccionCrear = document.getElementById('seccionCrearAgenda');
+        if (!usuario || !usuario.autorizadoCrear) {
+          if (seccionCrear) seccionCrear.style.display = 'none';
+        } else {
+          if (seccionCrear) seccionCrear.style.display = 'block';
+        }
+
+        // NUEVO: Control de votaciones
+        const panelControl = document.getElementById('panelControlAcceso');
+        const botonesVotacion = document.querySelectorAll('#btnEnviarVotacionEspecifica, [onclick*="invitarVotaciones"]');
+        
+        if (!esUsuarioAutorizadoVotacion(usuario)) {
+          // Usuario NO autorizado para votaciones
+          if (panelControl) {
+            panelControl.classList.remove('hidden');
+            panelControl.innerHTML = `
+              <h3>🚫 Acceso Restringido</h3>
+              <p><strong>Usuario actual:</strong> ${usuario?.email || 'No identificado'}</p>
+              <p>Solo Carlos Archila, Estephanie Ajuchán, Lidia Sanchez y Jonatan Alvarado pueden enviar votaciones.</p>
+              <p>Si necesita enviar votaciones, contacte a uno de los usuarios autorizados.</p>
+            `;
+          }
+          
+          // Deshabilitar botones de votación
+          botonesVotacion.forEach(btn => {
+            btn.disabled = true;
+            btn.style.opacity = '0.5';
+            btn.title = 'No tienes permisos para enviar votaciones';
+          });
+          
+        } else {
+          // Usuario autorizado
+          if (panelControl) {
+            panelControl.classList.add('hidden');
+          }
+          
+          // Habilitar botones de votación
+          botonesVotacion.forEach(btn => {
+            btn.disabled = false;
+            btn.style.opacity = '1';
+            btn.title = '';
+          });
+        }
+        
+        console.log('🔐 Control de acceso aplicado:', {
+          email: usuario?.email,
+          autorizadoCrear: usuario?.autorizadoCrear,
+          autorizadoVotar: esUsuarioAutorizadoVotacion(usuario)
+        });
+        
+      } catch (e) {
+        console.warn('Error aplicando permisos:', e);
+      }
+    }
+
+    // ============ VALIDACIÓN DE BÚSQUEDA ============
+    function requiereBusquedaRegistro() {
+      const tipo = document.getElementById('solicitudCNA')?.value;
+      return tipo !== 'VARIOS';
+    }
+
+    function limpiarCamposAutomaticos() {
+      document.getElementById('nombreEstablecimiento').value = '';
+      document.getElementById('esquema').value = '';
+      document.getElementById('norma').value = '';
+    }
+
+    function reevaluarRequisitoBusqueda() {
+      const btnGuardar = document.getElementById('btnGuardarElemento');
+      if (!btnGuardar) return;
+
+      const tipo = document.getElementById('solicitudCNA')?.value || '';
+      const nombre = document.getElementById('nombreEstablecimiento')?.value?.trim();
+      const esquema = document.getElementById('esquema')?.value?.trim();
+      const norma = document.getElementById('norma')?.value?.trim();
+      const ayuda = document.getElementById('ayudaBusquedaRegistro');
+
+      if (requiereBusquedaRegistro()) {
+        if (!registroBuscadoOK || !nombre || !esquema || !norma) {
+          btnGuardar.disabled = true;
+          if (ayuda) {
+            ayuda.classList.add('ayuda-busqueda-obligatoria');
+            ayuda.textContent = 'Debe realizar la búsqueda (🔍) y cargar Nombre del Establecimiento, Esquema y Norma antes de guardar.';
+          }
+        } else {
+          btnGuardar.disabled = false;
+          if (ayuda) {
+            ayuda.classList.remove('ayuda-busqueda-obligatoria');
+            ayuda.textContent = 'Búsqueda realizada correctamente ✅ (Incluyendo Norma)';
+          }
+        }
+      } else {
+        btnGuardar.disabled = false;
+        if (ayuda) {
+          ayuda.classList.remove('ayuda-busqueda-obligatoria');
+          ayuda.textContent = 'En el tipo VARIOS no es necesaria la búsqueda del registro.';
+        }
+      }
+    }
+
+// FUNCIÓN INTELIGENTE: Renderiza estadísticas donde se le indique (targetId)
+    function mostrarEstadisticasDetalladasMejoradas(datos, targetId) {
+      // Si no se pasa ID, usa un valor por defecto para seguridad
+      const containerId = targetId || 'contenedorPrincipalEstadisticas';
+      const container = document.getElementById(containerId);
+      
+      if (!container) {
+         console.error("❌ Error: No se encontró el contenedor con ID:", containerId);
+         return;
+      }
+
+      // Limpiar contenedor antes de pintar
+      container.innerHTML = '';
+
+      if (!datos || !datos.data) {
+         container.innerHTML = '<div class="alert alert-error">No hay datos para mostrar</div>';
+         return;
+      }
+
+      const { aFavor, enContra, abstencion, total } = datos.data;
+      
+      // HTML del Resumen General (Tarjetas de colores - AHORA RESPONSIVE GRID)
+      let htmlContent = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+          <div class="text-center p-4 rounded-lg border" style="background:var(--oga-success-light); border-color:var(--oga-success); padding:1rem;">
+            <div class="text-3xl font-bold" style="color:var(--oga-success-dark); font-size:1.8rem;">${aFavor}</div>
+            <div class="text-sm font-semibold" style="color:var(--oga-success-dark);">A Favor</div>
+          </div>
+          <div class="text-center p-4 rounded-lg border" style="background:var(--oga-error-light); border-color:var(--oga-error); padding:1rem;">
+            <div class="text-3xl font-bold" style="color:var(--oga-error-dark); font-size:1.8rem;">${enContra}</div>
+            <div class="text-sm font-semibold" style="color:var(--oga-error-dark);">En Contra</div>
+          </div>
+          <div class="text-center p-4 rounded-lg border" style="background:var(--oga-warning-light); border-color:var(--oga-warning); padding:1rem;">
+            <div class="text-3xl font-bold" style="color:var(--oga-warning-dark); font-size:1.8rem;">${abstencion}</div>
+            <div class="text-sm font-semibold" style="color:var(--oga-warning-dark);">Abstención</div>
+          </div>
+          <div class="text-center p-4 rounded-lg border" style="background:var(--oga-bg-surface); border-color:var(--oga-blue); padding:1rem;">
+            <div class="text-3xl font-bold" style="color:var(--oga-blue-dark); font-size:1.8rem;">${total}</div>
+            <div class="text-sm font-semibold" style="color:var(--oga-blue-dark);">Total Votos</div>
+          </div>
+        </div>
+        
+        <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:0.5rem; padding:0.75rem 1rem; background:var(--oga-bg-muted); border-radius:0.5rem; border:1px solid var(--oga-border); margin-bottom:1.5rem;">
+           <span style="font-size:0.875rem; color:var(--oga-text-soft);">📅 Reunión: <strong>${datos.reunion}</strong></span>
+           <span style="font-size:0.875rem; color:var(--oga-text-soft);">🕒 Actualizado: ${datos.ultimaActualizacion}</span>
+        </div>
+      `;
+
+      if (!datos.registros || !datos.registros.length) {
+        container.innerHTML = htmlContent + `
+          <div class="text-center py-8" style="padding: 3rem; border: 2px dashed var(--oga-border); border-radius: 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📊</div>
+            <h3 style="font-size: 1.25rem; font-weight: 600;">Sin datos detallados</h3>
+            <p style="color: var(--oga-text-soft);">Aún no se han registrado votos detallados para esta reunión.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Agrupar datos por tipo
+      const registrosPorTipo = {};
+      datos.registros.forEach(reg => {
+        const tipo = reg.tipoDecision || 'General';
+        if (!registrosPorTipo[tipo]) registrosPorTipo[tipo] = [];
+        registrosPorTipo[tipo].push(reg);
+      });
+
+      // Generar tarjetas de detalle por cada tipo
+      Object.entries(registrosPorTipo).forEach(([tipo, registros]) => {
+        const totalTipo = registros.length;
+        
+        // Contenedor principal del tipo (usamos GRID para que las tarjetas se acomoden solas)
+        htmlContent += `
+          <div class="estadisticas-por-tipo" style="margin-bottom: 2rem; border:none; padding:0; background:transparent;">
+            <div class="tipo-decision-header" style="background:var(--oga-bg-muted); padding:1rem; border-radius:0.5rem 0.5rem 0 0; border:1px solid var(--oga-border); border-bottom:none; display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                 <span style="font-size:1.25rem;">📂</span>
+                 <h3 class="tipo-decision-title" style="margin:0;">${tipo}</h3>
+              </div>
+              <span class="pill pill-blue">${totalTipo} casos</span>
+            </div>
+            
+            <div style="border:1px solid var(--oga-border); border-top:none; border-radius:0 0 0.5rem 0.5rem; padding:1.5rem; background:var(--oga-bg-surface);">
+              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+        `;
+        
+        registros.forEach(reg => {
+          const { aFavor, enContra, abstencion } = reg.votos;
+          const total = reg.totalVotos;
+          const porcentaje = reg.porcentajeAFavor;
+          const puedeGenerar = reg.puedeGenerarResolucion;
+          
+          const pFavor = total > 0 ? (aFavor / total) * 100 : 0;
+          const pContra = total > 0 ? (enContra / total) * 100 : 0;
+          const pAbs = total > 0 ? (abstencion / total) * 100 : 0;
+
+          let estadoBadge = puedeGenerar 
+            ? `<span class="pill pill-success" style="font-size:0.75rem;">✅ APROBADO (${porcentaje}%)</span>`
+            : (enContra > aFavor ? `<span class="pill pill-danger" style="font-size:0.75rem;">❌ RECHAZADO</span>` : `<span class="pill pill-warning" style="font-size:0.75rem;">⚖️ SIN MAYORÍA</span>`);
+            
+          let borderStyle = puedeGenerar 
+            ? 'border-left: 5px solid var(--oga-success);' 
+            : (enContra > aFavor ? 'border-left: 5px solid var(--oga-error);' : 'border-left: 5px solid var(--oga-warning);');
+
+          // Tarjeta individual
+          htmlContent += `
+            <div class="card" style="margin-bottom: 0; overflow:hidden; ${borderStyle} box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+              <div class="card-body" style="padding: 1.25rem;">
+                
+                <div style="margin-bottom: 1rem;">
+                    <h4 style="font-weight:700; font-size:1.1rem; color:var(--oga-text); margin:0 0 0.5rem 0; word-break: break-word;">${reg.registro}</h4>
+                    <div style="display:flex; flex-wrap:wrap; gap:0.5rem; align-items:center;">
+                        ${estadoBadge}
+                        ${reg.resolucion ? `<span style="font-size:0.75rem; color:var(--oga-success-dark); background:#dcfce7; padding:2px 6px; border-radius:4px;">📜 Res: ${reg.resolucion}</span>` : ''}
+                    </div>
+                </div>
+
+                <div style="font-size:0.75rem; color:var(--oga-text-muted); display:flex; justify-content:space-between; margin-bottom:0.25rem; font-weight:600;">
+                   <span>Progreso: ${total} votos</span><span>Meta: 51%</span>
+                </div>
+                <div class="consenso-bar-container" style="height:8px; margin-bottom:1rem;">
+                  <div class="consenso-segment bg-favor" style="width: ${pFavor}%" title="A Favor: ${aFavor}"></div>
+                  <div class="consenso-segment bg-contra" style="width: ${pContra}%" title="En Contra: ${enContra}"></div>
+                  <div class="consenso-segment bg-abstencion" style="width: ${pAbs}%" title="Abstención: ${abstencion}"></div>
+                </div>
+                
+                ${puedeGenerar 
+                   ? `<button onclick="generarResolucion('${reg.registro}', '${datos.reunion}')" class="btn btn-sm btn-success" style="width:100%; margin-bottom:1rem;"><span>📜</span> Generar Resolución</button>`
+                   : ''
+                 }
+
+                <details class="group" style="background:var(--oga-bg-muted); border-radius:0.5rem; border:1px solid var(--oga-border);">
+                  <summary style="cursor:pointer; padding:0.75rem; font-weight:600; color:var(--oga-text-soft); display:flex; justify-content:space-between; align-items:center; list-style:none;">
+                     <span style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem;">👥 Ver detalle (${reg.votantes.length})</span>
+                     <span style="font-size:0.8rem;">▼</span>
+                  </summary>
+                  <div style="padding:0.75rem; border-top:1px solid var(--oga-border); background:var(--oga-bg-page); max-height:200px; overflow-y:auto;">
+                    <table class="voters-table" style="width:100%; font-size:0.75rem;">
+                        <tbody>
+                          ${reg.votantes.map(v => {
+                             let badgeColor = '#fef3c7'; // warning
+                             let textColor = '#b45309';
+                             if(v.voto.toUpperCase().includes('FAVOR')) { badgeColor = '#dcfce7'; textColor='#166534'; }
+                             if(v.voto.toUpperCase().includes('CONTRA')) { badgeColor = '#fee2e2'; textColor='#991b1b'; }
+                             
+                             const com = reg.comentarios.find(c => c.nombre === v.nombre);
+                             // Si hay comentario, mostramos un icono
+                             const comIcon = com ? `<span title="${com.comentario}" style="cursor:help;">💬</span>` : '';
+                             
+                             return `
+                               <tr style="border-bottom:1px solid var(--oga-border-light);">
+                                 <td style="padding:4px 0;">
+                                   <div style="font-weight:600;">${v.nombre}</div>
+                                   <div style="color:var(--oga-text-muted); font-size:0.7rem;">${v.institucion}</div>
+                                 </td>
+                                 <td style="text-align:right; vertical-align:top; padding:4px 0;">
+                                   <span style="background:${badgeColor}; color:${textColor}; padding:2px 6px; border-radius:4px; font-weight:600;">${v.voto}</span>
+                                   ${comIcon}
+                                 </td>
+                               </tr>
+                               ${com ? `<tr><td colspan="2" style="padding:2px 0 8px 0; color:var(--oga-text-soft); font-style:italic; font-size:0.7rem;">"${com.comentario}"</td></tr>` : ''}
+                             `;
+                          }).join('')}
+                        </tbody>
+                      </table>
+                  </div>
+                </details>
+              </div>
+            </div>
+          `;
+        });
+        htmlContent += `</div></div></div>`; // Cierra grid tarjetas, border box, container tipo
+      });
+      
+      // Inyectar HTML en el contenedor correcto
+      container.innerHTML = htmlContent;
+    }
+
+    // ============ GESTIÓN DE AGENDAS ============
+    
+    function actualizarListaAgendas() {
+      const lista = document.getElementById('listaAgendas');
+      if (!lista) return;
+
+      lista.innerHTML = '<div class="loading"><div class="spinner"></div><span>Cargando agendas...</span></div>';
+
+      if (window.google?.script?.run?.obtenerTodasLasAgendasConsejo) {
+        google.script.run
+          .withSuccessHandler(mostrarAgendas)
+          .withFailureHandler(err => {
+            lista.innerHTML = `<div class="alert alert-error"><p>❌ Error: ${err.message}</p></div>`;
+          })
+          .obtenerTodasLasAgendasConsejo();
+      } else {
+        lista.innerHTML = '<div class="alert alert-warning"><p>⚠️ No hay conexión con el backend</p></div>';
+      }
+    }
+
+    function mostrarAgendas(agendas) {
+      const lista = document.getElementById('listaAgendas');
+      if (!lista) return;
+
+      if (!agendas || agendas.length === 0) {
+        lista.innerHTML = `
+          <div class="text-center" style="padding:2rem;">
+            <div style="font-size:3rem; margin-bottom:1rem;">📋</div>
+            <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:0.5rem;">No hay agendas</h3>
+            <p style="color:var(--oga-text-soft);">Cree una nueva agenda para comenzar</p>
+          </div>
+        `;
+        return;
+      }
+
+      const html = agendas.map(agenda => {
+        let estadoClass = 'pill pill-gray';
+        let estadoIcon = '📋';
+        
+        switch(agenda.estado) {
+          case 'ACTIVA':
+            estadoClass = 'pill pill-blue';
+            estadoIcon = '🟢';
+            break;
+          case 'APROBADA':
+            estadoClass = 'pill pill-success';
+            estadoIcon = '✅';
+            break;
+          case 'VENCIDA':
+            estadoClass = 'pill pill-warning';
+            estadoIcon = '⏰';
+            break;
+          case 'PENDIENTE_APROBACION':
+            estadoClass = 'pill pill-purple';
+            estadoIcon = '⚖️';
+            break;
+        }
+
+        return `
+          <div class="card ${agenda.estado === 'APROBADA' ? 'estado-aprobada' : agenda.estado === 'PENDIENTE_APROBACION' ? 'estado-pendiente' : ''}">
+            <div class="card-body">
+              <div class="flex justify-between items-start mb-3">
+                <div>
+                  <h3 class="text-lg font-semibold mb-1">${agenda.nombre}</h3>
+                  <p class="text-sm" style="color:var(--oga-text-muted);">Reunión: ${agenda.numeroReunion}</p>
+                </div>
+                <div class="${estadoClass}">${estadoIcon} ${agenda.estado}</div>
+              </div>
+              
+              <div class="grid grid-cols-2 gap-4 text-sm mb-3">
+                <div><strong>Fecha Inicio:</strong> ${agenda.fechaInicio || 'N/A'}</div>
+                <div><strong>Fecha Fin:</strong> ${agenda.fechaFin || 'N/A'}</div>
+                <div><strong>Fecha Reunión:</strong> ${agenda.fechaReunion || 'N/A'}</div>
+                <div><strong>Hora Límite:</strong> ${agenda.horaLimite || 'N/A'}</div>
+                <div><strong>Elementos:</strong> ${agenda.totalRegistros || 0}</div>
+                <div><strong>Creado por:</strong> ${agenda.creadoPor || 'N/A'}</div>
+              </div>
+
+              <div class="text-xs" style="color:var(--oga-text-muted); margin-bottom:1rem;">
+                ${agenda.mensajeEstado}
+              </div>
+              
+              <button onclick="seleccionarAgenda('${agenda.numeroReunion}')" 
+                      class="btn btn-primary btn-sm">
+                <span>📋</span><span>Seleccionar Agenda</span>
+              </button>
+            </div>
+            ${agenda.estado === 'ACTIVA' ? mostrarContadorTiempo(agenda) : ''}
+          </div>
+        `;
+      }).join('');
+
+      lista.innerHTML = html;
+    }
+
+    function mostrarContadorTiempo(agenda) {
+      if (agenda.estado !== 'ACTIVA') return '';
+      
+      return `
+        <div class="contador-tiempo-tarjeta" id="contador-${agenda.numeroReunion}">
+          <div style="font-size:0.875rem; margin-bottom:0.5rem; opacity:0.9;">⏰ Tiempo restante para agregar elementos</div>
+          <div class="contador-display" id="display-${agenda.numeroReunion}">Cargando...</div>
+          <div class="contador-barra">
+            <div class="contador-barra-fill" id="barra-${agenda.numeroReunion}"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    function seleccionarAgenda(numeroReunion) {
+      if (window.google?.script?.run?.obtenerConfiguracionAgendaConsejo) {
+        google.script.run
+          .withSuccessHandler(config => {
+            if (config) {
+              agendaActiva = config;
+              mostrarNotificacion(`📋 Agenda "${config.nombre}" seleccionada`, 'success');
+              actualizarInterfazAgendaSeleccionada(config);
+              
+              // Iniciar contador si está activa
+              if (config.estado === 'ACTIVA') {
+                iniciarContadorTiempo(config.numeroReunion);
+              }
+            } else {
+              mostrarNotificacion('❌ No se pudo obtener la configuración de la agenda', 'error');
+            }
+          })
+          .withFailureHandler(err => {
+            mostrarNotificacion(`❌ Error: ${err.message}`, 'error');
+          })
+          .obtenerConfiguracionAgendaConsejo(numeroReunion);
+      }
+    }
+
+    function autoSeleccionarAgendaActiva() {
+      if (window.google?.script?.run?.obtenerTodasLasAgendasConsejo) {
+        google.script.run
+          .withSuccessHandler(agendas => {
+            if (agendas && agendas.length > 0) {
+              const activa = agendas.find(a => a.estado === 'ACTIVA' || a.estado === 'PENDIENTE_APROBACION');
+              if (activa) {
+                console.log('📋 Auto-seleccionando agenda activa:', activa.numeroReunion);
+                seleccionarAgenda(activa.numeroReunion);
+              }
+            }
+          })
+          .withFailureHandler(err => {
+            console.warn('No se pudo auto-seleccionar agenda:', err.message);
+          })
+          .obtenerTodasLasAgendasConsejo();
+      }
+    }
+
+    function actualizarInterfazAgendaSeleccionada(config) {
+      // Actualizar formulario de agregar
+      const acta = document.getElementById('acta');
+      if (acta) acta.value = `Reunión ${config.numeroReunion}`;
+
+      // Actualizar selectores de agenda en otros tabs
+      const selectorAgregar = document.getElementById('selectorAgenda');
+      const selectorDocumentos = document.getElementById('selectorAgendaDocumentos');
+      const selectorAprobacion = document.getElementById('selectorAgendaAprobacion');
+
+      const mensajeExito = `
+        <div class="alert alert-success">
+          <p><strong>✅ Agenda Seleccionada:</strong> ${config.nombre} (${config.numeroReunion})</p>
+          <p><strong>Estado:</strong> ${config.estadoDetallado} - ${config.mensajeEstado}</p>
+        </div>
+      `;
+
+      if (selectorAgregar) selectorAgregar.innerHTML = mensajeExito;
+      if (selectorDocumentos) selectorDocumentos.innerHTML = mensajeExito;
+      if (selectorAprobacion) selectorAprobacion.innerHTML = mensajeExito;
+    }
+
+    // ============ CONTADOR DE TIEMPO EN VIVO ============
+    
+    var intervalosContador = {};
+
+    function iniciarContadorTiempo(numeroReunion) {
+      // Limpiar intervalo anterior si existe
+      if (intervalosContador[numeroReunion]) {
+        clearInterval(intervalosContador[numeroReunion]);
+        delete intervalosContador[numeroReunion];
+      }
+
+      function actualizarContador() {
+        if (window.google?.script?.run?.obtenerEstadoTiempoAgenda) {
+          google.script.run
+            .withSuccessHandler(estado => {
+              mostrarEstadoTiempo(numeroReunion, estado);
+            })
+            .withFailureHandler(() => {
+              mostrarEstadoTiempo(numeroReunion, { success: false, expirada: true });
+            })
+            .obtenerEstadoTiempoAgenda();
+        }
+      }
+
+      // Primera actualización inmediata
+      actualizarContador();
+      
+      // Actualizar cada 30 segundos
+      intervalosContador[numeroReunion] = setInterval(actualizarContador, 30000);
+    }
+
+    function mostrarEstadoTiempo(numeroReunion, estado) {
+      const display = document.getElementById(`display-${numeroReunion}`);
+      const barra = document.getElementById(`barra-${numeroReunion}`);
+      const contador = document.getElementById(`contador-${numeroReunion}`);
+
+      if (!display || !estado.success) {
+        if (display) display.textContent = 'Error obteniendo tiempo';
+        if (barra) barra.style.width = '0%';
+        return;
+      }
+
+      if (estado.expirada) {
+        if (display) display.textContent = '⏰ TIEMPO AGOTADO';
+        if (barra) barra.style.width = '0%';
+        if (contador) contador.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+        
+        // Limpiar intervalo
+        if (intervalosContador[numeroReunion]) {
+          clearInterval(intervalosContador[numeroReunion]);
+          delete intervalosContador[numeroReunion];
+        }
+        
+        // Actualizar lista de agendas
+        setTimeout(() => actualizarListaAgendas(), 2000);
+        return;
+      }
+
+      if (estado.tiempo) {
+        if (display) display.textContent = `${estado.tiempo.texto} (${estado.tiempo.textoLegible})`;
+        
+        // Calcular porcentaje de tiempo restante (estimado)
+        let porcentaje = 50; // Default
+        if (estado.tiempoRestante && estado.fechaLimite) {
+          const ahora = new Date().getTime();
+          const limite = new Date(estado.fechaLimite).getTime();
+          const inicio = limite - (7 * 24 * 60 * 60 * 1000); // Estimado: 7 días antes
+          const total = limite - inicio;
+          const restante = limite - ahora;
+          porcentaje = Math.max(0, Math.min(100, (restante / total) * 100));
+        }
+        
+        if (barra) barra.style.width = `${porcentaje}%`;
+        
+        // Cambiar color según urgencia
+        if (contador) {
+          if (estado.tiempo.clase === 'critico') {
+            contador.style.background = 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)';
+          } else if (estado.tiempo.clase === 'urgente') {
+            contador.style.background = 'linear-gradient(135deg, #d97706 0%, #b45309 100%)';
+          } else {
+            contador.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+          }
+        }
+      }
+    }
+
+    function mostrarInfoTiempo() {
+      if (window.google?.script?.run?.obtenerEstadoTiempoAgenda) {
+        google.script.run
+          .withSuccessHandler(estado => {
+            let mensaje = '';
+            if (estado.success) {
+              mensaje = `
+                <strong>Reunión:</strong> ${estado.numeroReunion}<br>
+                <strong>Estado:</strong> ${estado.estado}<br>
+                <strong>Tiempo restante:</strong> ${estado.tiempo ? estado.tiempo.textoLegible : 'N/A'}<br>
+                <strong>Fecha límite:</strong> ${estado.fechaLimite ? new Date(estado.fechaLimite).toLocaleString('es-ES') : 'N/A'}
+              `;
+            } else {
+              mensaje = estado.message || 'No hay agenda activa';
+            }
+            
+            mostrarModal('⏰ Información del Tiempo', mensaje, [
+              { texto: 'Cerrar', clase: 'btn-secondary', onclick: 'cerrarModal()' }
+            ]);
+          })
+          .withFailureHandler(err => {
+            mostrarModal('❌ Error', `Error obteniendo información: ${err.message}`, [
+              { texto: 'Cerrar', clase: 'btn-secondary', onclick: 'cerrarModal()' }
+            ]);
+          })
+          .obtenerEstadoTiempoAgenda();
+      }
+    }
+
+    // ============ FORMULARIOS ============
+
+    function crearNuevaAgenda() {
+      const form = document.getElementById('formNuevaAgenda');
+      const formData = new FormData(form);
+      
+      const datos = {
+        nombre: formData.get('nombre') || document.getElementById('nombreAgenda')?.value?.trim(),
+        numeroReunion: formData.get('numeroReunion') || document.getElementById('numeroReunion')?.value?.trim(),
+        fechaInicio: formData.get('fechaInicio') || document.getElementById('fechaInicio')?.value,
+        fechaFin: formData.get('fechaFin') || document.getElementById('fechaFin')?.value,
+        fechaReunion: formData.get('fechaReunion') || document.getElementById('fechaReunion')?.value,
+        horaLimite: formData.get('horaLimite') || document.getElementById('horaLimite')?.value || '23:59'
+      };
+
+      // Validaciones básicas
+      if (!datos.numeroReunion || datos.numeroReunion.length < 3) {
+        mostrarNotificacion('❌ Complete el número de reunión', 'error');
+        return;
+      }
+      if (!datos.fechaInicio || !datos.fechaFin) {
+        mostrarNotificacion('❌ Complete las fechas de inicio y fin', 'error');
+        return;
+      }
+      if (!datos.fechaReunion) {
+        mostrarNotificacion('❌ Complete la fecha de la reunión', 'error');
+        return;
+      }
+
+      // Validar rango de fechas
+      const inicio = new Date(datos.fechaInicio);
+      const fin = new Date(datos.fechaFin);
+      const diffDays = Math.ceil(Math.abs(fin - inicio) / (1000 * 60 * 60 * 24));
+      if (diffDays > 62) {
+        mostrarNotificacion('❌ El rango de fechas no puede ser mayor a 2 meses', 'error');
+        return;
+      }
+
+      if (window.google?.script?.run?.crearAgendaConsejo) {
+        const btn = form.querySelector('button[type="submit"]');
+        if (btn) {
+          btn.disabled = true;
+          btn.innerHTML = '<span>⏳</span><span>Creando...</span>';
+        }
+
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = '<span>🗓️</span><span>Crear Nueva Agenda</span>';
+            }
+            
+            if (resultado.success) {
+              mostrarNotificacion(resultado.message, 'success');
+              form.reset();
+              actualizarListaAgendas();
+              setTimeout(() => seleccionarAgenda(resultado.config.numeroReunion), 1000);
+            } else {
+              mostrarNotificacion(`❌ ${resultado.message}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            if (btn) {
+              btn.disabled = false;
+              btn.innerHTML = '<span>🗓️</span><span>Crear Nueva Agenda</span>';
+            }
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .crearAgendaConsejo(datos.nombre, datos.numeroReunion, datos.fechaInicio, datos.fechaFin, datos.fechaReunion, datos.horaLimite);
+      }
+    }
+
+// ============ CARGAR SIGUIENTE REUNIÓN (BOTÓN AZUL) ============
+
+function cargarSiguienteReunion() {
+  const numeroInput = document.getElementById('numeroReunion');
+  const nombreInput = document.getElementById('nombreAgenda');
+  
+  // Cambiar el botón a estado de "Cargando" para que sepas que funciona
+  const btn = document.querySelector('button[onclick="cargarSiguienteReunion()"]');
+  const textoOriginal = btn ? btn.innerHTML : '🔄';
+  if (btn) {
+    btn.innerHTML = '<div class="spinner" style="width:15px;height:15px;border-width:2px;"></div>';
+    btn.disabled = true;
+  }
+
+  if (window.google && window.google.script) {
+    google.script.run
+      .withSuccessHandler(numero => {
+        // Restaurar botón
+        if (btn) {
+          btn.innerHTML = textoOriginal;
+          btn.disabled = false;
+        }
+
+        if (numeroInput) numeroInput.value = numero;
+        // Lógica para auto-generar el nombre
+        if (nombreInput) nombreInput.value = `Reunión Consejo Nacional de Acreditación ${numero}`;
+        
+        mostrarNotificacion(`📋 Número de reunión cargado: ${numero}`, 'success');
+      })
+      .withFailureHandler(err => {
+        // Restaurar botón en caso de error
+        if (btn) {
+          btn.innerHTML = textoOriginal;
+          btn.disabled = false;
+        }
+        mostrarNotificacion(`❌ Error cargando número: ${err.message}`, 'error');
+      })
+      .obtenerSiguienteNumeroReunion();
+  } else {
+    console.error("Google Script Run no está disponible");
+    if (btn) btn.disabled = false;
+  }
+}
+
+    function cargarUsuarioActivo() {
+      const correoInput = document.getElementById('correoElemento');
+      if (!correoInput) return;
+
+      correoInput.value = 'Cargando...';
+      correoInput.disabled = true;
+
+      if (window.google?.script?.run?.buscarUsuarioActivoEnHoja) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            correoInput.disabled = false;
+            if (resultado.exito) {
+              correoInput.value = resultado.nombreCompleto || resultado.correo;
+              if (resultado.esSystemFallback) {
+                mostrarNotificacion('⚠️ Usuario no encontrado en la hoja, usando fallback', 'warning');
+              } else {
+                mostrarNotificacion('✅ Usuario cargado correctamente', 'success');
+              }
+            } else {
+              correoInput.value = 'Error al cargar usuario';
+              mostrarNotificacion(`❌ ${resultado.mensaje}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            correoInput.disabled = false;
+            correoInput.value = 'Error de conexión';
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .buscarUsuarioActivoEnHoja();
+      }
+    }
+
+    // ============ BÚSQUEDA DE ESTABLECIMIENTO ============
+
+    function buscarEstablecimiento() {
+      const registro = document.getElementById('registroAcreditacion')?.value?.trim();
+      if (!registro) {
+        mostrarNotificacion('❌ Ingrese un registro de acreditación', 'error');
+        return;
+      }
+
+      const btnBuscar = document.getElementById('btnBuscarRegistro');
+      const registroInput = document.getElementById('registroAcreditacion');
+      
+      if (btnBuscar) {
+        btnBuscar.disabled = true;
+        btnBuscar.innerHTML = '<span>🔍</span><span>Buscando...</span>';
+      }
+      
+      if (registroInput) {
+        registroInput.classList.remove('campo-invalido-busqueda');
+      }
+
+      if (window.google?.script?.run?.buscarPorRegistro) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (btnBuscar) {
+              btnBuscar.disabled = false;
+              btnBuscar.innerHTML = '<span>🔍</span><span>Buscar</span>';
+            }
+            
+            if (resultado.exito) {
+              document.getElementById('nombreEstablecimiento').value = resultado.nombre || '';
+              document.getElementById('esquema').value = resultado.esquema || '';
+              document.getElementById('norma').value = resultado.norma || '';
+              
+              registroBuscadoOK = true;
+              reevaluarRequisitoBusqueda();
+              
+              mostrarNotificacion(`✅ Establecimiento encontrado: ${resultado.nombre}`, 'success');
+            } else {
+              limpiarCamposAutomaticos();
+              registroBuscadoOK = false;
+              reevaluarRequisitoBusqueda();
+              
+              if (registroInput) {
+                registroInput.classList.add('campo-invalido-busqueda');
+              }
+              
+              mostrarNotificacion(`❌ ${resultado.mensaje}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            if (btnBuscar) {
+              btnBuscar.disabled = false;
+              btnBuscar.innerHTML = '<span>🔍</span><span>Buscar</span>';
+            }
+            
+            limpiarCamposAutomaticos();
+            registroBuscadoOK = false;
+            reevaluarRequisitoBusqueda();
+            
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .buscarPorRegistro(registro);
+      }
+    }
+
+    // ============ MANEJO DE CAMPOS DINÁMICOS ============
+
+    function mostrarCamposEspecificos() {
+      const tipo = document.getElementById('solicitudCNA')?.value;
+      
+      // Ocultar todos los campos específicos
+      document.getElementById('camposDecision')?.classList.add('hidden');
+      document.getElementById('camposNotificacion')?.classList.add('hidden');
+      document.getElementById('camposVarios')?.classList.add('hidden');
+      
+      // Mostrar campos según el tipo
+      switch(tipo) {
+        case 'DECISION':
+          document.getElementById('camposDecision')?.classList.remove('hidden');
+          break;
+        case 'NOTIFICACION':
+          document.getElementById('camposNotificacion')?.classList.remove('hidden');
+          break;
+        case 'VARIOS':
+          document.getElementById('camposVarios')?.classList.remove('hidden');
+          break;
+      }
+      
+      // Reevaluar requisitos
+      reevaluarRequisitoBusqueda();
+    }
+
+    // ============ MANEJO DE ARCHIVOS ============
+
+    function manejarArchivosOGA(input) {
+      manejarArchivos(input, archivosOGASeleccionados, 'listaArchivosOGA', 'carpetaOGA', 'enlaceCarpetaOGA');
+    }
+
+    function manejarDocumentosAdicionales(input) {
+      manejarArchivos(input, documentosAdicionalesSeleccionados, 'listaDocumentosAdicionales', 'carpetaDocumentos', 'enlaceCarpetaDocumentos');
+    }
+
+// ============ MANEJO DE ARCHIVOS CON VALIDACIÓN DE NOMBRE ============
+
+    function manejarArchivos(input, arregloDestino, listaId, carpetaId, enlaceId) {
+      const archivos = Array.from(input.files);
+      
+      // Verificar límite de cantidad
+      if (arregloDestino.length + archivos.length > MAX_FILES) {
+        mostrarNotificacion(`❌ Máximo ${MAX_FILES} archivos permitidos`, 'error');
+        input.value = '';
+        return;
+      }
+
+      // Definir prefijos requeridos SOLO para el input de adjuntos OGA
+      const prefijosRequeridos = ['OGA-FAC-090', 'OGA-FAC-078', 'OGA-FAC-014', 'OGA-FAC-003', 'Reconocimiento'];
+
+      // Procesar archivos
+      archivos.forEach(archivo => {
+        
+        // 1. Validación de Tamaño (10MB)
+        if (archivo.size > 75 * 1024 * 1024) { 
+          mostrarNotificacion(`❌ Archivo "${archivo.name}" es muy grande (máx. 10MB)`, 'error');
+          return; 
+        }
+
+        // 2. Validación de Nombre (SOLO si el input es 'adjuntosOGA')
+        if (input.id === 'adjuntosOGA') {
+            const nombreMayus = archivo.name.toUpperCase();
+            const cumpleFormato = prefijosRequeridos.some(prefijo => nombreMayus.startsWith(prefijo));
+
+            if (!cumpleFormato) {
+                mostrarNotificacion(
+                    `⛔ Error en "${archivo.name}": Debe iniciar con OGA-FAC-090, 078, 014 o 003.`, 
+                    'error'
+                );
+                return; // Saltamos este archivo, no se agrega
+            }
+        }
+
+        // Si pasa las validaciones, lo leemos
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const contenidoBase64 = e.target.result.split(',')[1];
+          arregloDestino.push({
+            name: archivo.name,
+            content: contenidoBase64,
+            type: archivo.type,
+            size: archivo.size
+          });
+          
+          actualizarListaArchivos(arregloDestino, listaId, carpetaId, enlaceId);
+        };
+        reader.readAsDataURL(archivo);
+      });
+
+      // Limpiar input para permitir seleccionar el mismo archivo si se corrigió el error
+      input.value = '';
+    }
+
+    function actualizarListaArchivos(archivos, listaId, carpetaId, enlaceId) {
+      const lista = document.getElementById(listaId);
+      const carpeta = document.getElementById(carpetaId);
+      const enlace = document.getElementById(enlaceId);
+      
+      if (!lista) return;
+
+      if (archivos.length === 0) {
+        lista.innerHTML = '';
+        if (carpeta) carpeta.classList.add('hidden');
+        return;
+      }
+
+      const html = archivos.map((archivo, index) => `
+        <div class="file-item">
+          <div>
+            <div style="font-weight:500;">${archivo.name}</div>
+            <div style="font-size:0.75rem; color:var(--oga-text-muted);">
+              ${(archivo.size / 1024).toFixed(1)} KB - ${archivo.type}
+            </div>
+          </div>
+          <button type="button" onclick="eliminarArchivo(${index}, '${listaId}', '${carpetaId}', '${enlaceId}')" 
+                  class="file-remove" title="Eliminar archivo">
+            ❌
+          </button>
+        </div>
+      `).join('');
+
+      lista.innerHTML = html;
+      
+      if (carpeta) {
+        carpeta.classList.remove('hidden');
+        if (enlace) enlace.href = '#';
+      }
+    }
+
+    function eliminarArchivo(index, listaId, carpetaId, enlaceId) {
+      let arregloArchivos;
+      
+      if (listaId === 'listaArchivosOGA') {
+        arregloArchivos = archivosOGASeleccionados;
+      } else if (listaId === 'listaDocumentosAdicionales') {
+        arregloArchivos = documentosAdicionalesSeleccionados;
+      } else {
+        return;
+      }
+
+      if (index >= 0 && index < arregloArchivos.length) {
+        arregloArchivos.splice(index, 1);
+        actualizarListaArchivos(arregloArchivos, listaId, carpetaId, enlaceId);
+        mostrarNotificacion('🗑️ Archivo eliminado', 'info');
+      }
+    }
+
+    // ============ GUARDAR ELEMENTO ============
+
+    function guardarElemento() {
+      const form = document.getElementById('formAgregarElemento');
+      if (!form) return;
+
+      // Validar agenda activa
+      if (!agendaActiva) {
+        mostrarNotificacion('❌ Seleccione una agenda primero', 'error');
+        return;
+      }
+
+      // Recolectar datos del formulario
+      const datos = {
+        correo: document.getElementById('correoElemento')?.value?.trim(),
+        registroAcreditacion: document.getElementById('registroAcreditacion')?.value?.trim(),
+        nombreEstablecimiento: document.getElementById('nombreEstablecimiento')?.value?.trim(),
+        esquema: document.getElementById('esquema')?.value?.trim(),
+        norma: document.getElementById('norma')?.value?.trim(),
+        solicitudCNA: document.getElementById('solicitudCNA')?.value,
+        nombreExperto: document.getElementById('nombreExperto')?.value?.trim(),
+        tipoDecision: document.getElementById('tipoDecision')?.value,
+        resolucion: document.getElementById('resolucion')?.value?.trim(),
+        tipoNotificacion: document.getElementById('tipoNotificacion')?.value,
+        motivoNotificacion: document.getElementById('motivoNotificacion')?.value?.trim(),
+        tituloVarios: document.getElementById('tituloVarios')?.value?.trim(),
+        acta: document.getElementById('acta')?.value?.trim(),
+        adjuntosOGA: archivosOGASeleccionados,
+        adjuntarDocumentos: documentosAdicionalesSeleccionados
+      };
+
+      // Validaciones
+      if (!datos.correo || !datos.solicitudCNA) {
+        mostrarNotificacion('❌ Complete todos los campos obligatorios', 'error');
+        return;
+      }
+
+      if (datos.solicitudCNA !== 'VARIOS' && !requiereBusquedaRegistro() && !registroBuscadoOK) {
+        mostrarNotificacion('❌ Debe realizar la búsqueda del registro', 'error');
+        return;
+      }
+
+      const btnGuardar = document.getElementById('btnGuardarElemento');
+      if (btnGuardar) {
+        btnGuardar.disabled = true;
+        btnGuardar.innerHTML = '<span>💾</span><span>Guardando...</span>';
+      }
+
+      if (window.google?.script?.run?.guardarDatosAgendaConsejo) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (btnGuardar) {
+              btnGuardar.disabled = false;
+              btnGuardar.innerHTML = '<span>💾</span><span>Guardar Elemento</span>';
+            }
+            
+            if (resultado.success) {
+              mostrarNotificacion(resultado.message, 'success');
+              limpiarFormulario();
+              
+              // Actualizar resolución si se generó
+              if (resultado.resolucionGenerada) {
+                document.getElementById('resolucion').value = resultado.resolucionGenerada;
+              }
+            } else {
+              mostrarNotificacion(`❌ ${resultado.message}`, 'error');
+              
+              if (resultado.tiempoAgotado) {
+                setTimeout(() => actualizarListaAgendas(), 2000);
+              }
+            }
+          })
+          .withFailureHandler(error => {
+            if (btnGuardar) {
+              btnGuardar.disabled = false;
+              btnGuardar.innerHTML = '<span>💾</span><span>Guardar Elemento</span>';
+            }
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .guardarDatosAgendaConsejo(datos);
+      }
+    }
+
+    function limpiarFormulario() {
+      const form = document.getElementById('formAgregarElemento');
+      if (!form) return;
+
+      // Limpiar campos específicos
+      ['registroAcreditacion', 'nombreEstablecimiento', 'esquema', 'norma', 'nombreExperto', 'resolucion', 'motivoNotificacion', 'tituloVarios'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.value = '';
+      });
+
+      // Resetear selects
+      ['solicitudCNA', 'tipoDecision', 'tipoNotificacion'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) element.selectedIndex = 0;
+      });
+
+      // Limpiar archivos
+      archivosOGASeleccionados.length = 0;
+      documentosAdicionalesSeleccionados.length = 0;
+      actualizarListaArchivos([], 'listaArchivosOGA', 'carpetaOGA', 'enlaceCarpetaOGA');
+      actualizarListaArchivos([], 'listaDocumentosAdicionales', 'carpetaDocumentos', 'enlaceCarpetaDocumentos');
+
+      // Ocultar campos específicos
+      document.getElementById('camposDecision')?.classList.add('hidden');
+      document.getElementById('camposNotificacion')?.classList.add('hidden');
+      document.getElementById('camposVarios')?.classList.add('hidden');
+
+      // Resetear validaciones
+      registroBuscadoOK = false;
+      reevaluarRequisitoBusqueda();
+
+      mostrarNotificacion('🧹 Formulario limpiado', 'info');
+    }
+
+    // ============ DATOS Y FILTROS ============
+
+    function cargarDatos() {
+      const contenedor = document.getElementById('contenedorTabla');
+      const estado = document.getElementById('estadoCargaDatos');
+      const sinDatos = document.getElementById('sinDatos');
+      
+      if (estado) estado.classList.remove('hidden');
+      if (contenedor) contenedor.classList.add('hidden');
+      if (sinDatos) sinDatos.classList.add('hidden');
+
+      if (window.google?.script?.run?.obtenerDatosAgendaConsejoParaEdicion) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (estado) estado.classList.add('hidden');
+            
+            if (resultado.success && resultado.data && resultado.data.length > 0) {
+              datosTabla = resultado.data;
+              datosFiltrados = [...datosTabla];
+              mostrarDatosEnTabla();
+              if (contenedor) contenedor.classList.remove('hidden');
+            } else {
+              if (sinDatos) sinDatos.classList.remove('hidden');
+            }
+          })
+          .withFailureHandler(error => {
+            if (estado) estado.classList.add('hidden');
+            if (sinDatos) {
+              sinDatos.innerHTML = `
+                <div style="text-align:center; padding:3rem;">
+                  <div style="font-size:4rem;">❌</div>
+                  <h3>Error cargando datos</h3>
+                  <p>${error.message}</p>
+                </div>
+              `;
+              sinDatos.classList.remove('hidden');
+            }
+          })
+          .obtenerDatosAgendaConsejoParaEdicion();
+      }
+    }
+
+    function mostrarDatosEnTabla() {
+      const tbody = document.getElementById('tablaDatos');
+      if (!tbody || !datosFiltrados) return;
+
+      const html = datosFiltrados.map(item => `
+        <tr>
+          <td>${item.marcaTemporal || ''}</td>
+          <td>${item.correo || ''}</td>
+          <td>${item.registroAcreditacion || ''}</td>
+          <td><span class="pill ${getPillClass(item.solicitudCNA)}">${item.solicitudCNA || ''}</span></td>
+          <td>${item.nombreExperto || ''}</td>
+          <td>${item.tipoDecision || ''}</td>
+          <td>${item.resolucion || ''}</td>
+          <td>${item.tipoNotificacion || ''}</td>
+          <td style="max-width:200px; word-wrap:break-word;">${item.motivoNotificacion || ''}</td>
+          <td>${item.acta || ''}</td>
+          <td>${item.esquema || ''}</td>
+          <td style="max-width:250px; word-wrap:break-word;">${item.nombreEstablecimiento || ''}</td>
+          <td>${item.norma || ''}</td>
+          <td>
+            ${item.adjuntosOGA ? `<a href="${item.adjuntosOGA}" target="_blank" class="btn btn-sm btn-info">📁 OGA</a>` : ''}
+            ${item.adjuntarDocumentos ? `<a href="${item.adjuntarDocumentos}" target="_blank" class="btn btn-sm btn-secondary">📎 Docs</a>` : ''}
+          </td>
+          <td>
+            <button onclick="eliminarElemento(${item.id})" class="btn btn-sm btn-danger" title="Eliminar elemento">
+              🗑️
+            </button>
+          </td>
+        </tr>
+      `).join('');
+
+      tbody.innerHTML = html;
+    }
+
+    function getPillClass(tipo) {
+      switch(tipo) {
+        case 'DECISION': return 'pill-blue';
+        case 'NOTIFICACION': return 'pill-purple';
+        case 'VARIOS': return 'pill-gray';
+        default: return 'pill-gray';
+      }
+    }
+
+    function filtrarDatos() {
+      if (!datosTabla || datosTabla.length === 0) return;
+
+      const texto = document.getElementById('busquedaTexto')?.value?.toLowerCase().trim() || '';
+      const reunion = document.getElementById('filtroReunion')?.value || '';
+      const tipo = document.getElementById('filtroTipo')?.value || '';
+
+      datosFiltrados = datosTabla.filter(item => {
+        let cumpleTexto = true;
+        let cumpleReunion = true;
+        let cumpleTipo = true;
+
+        // Filtro de texto (buscar en todos los campos)
+        if (texto) {
+          const textoItem = Object.values(item).join(' ').toLowerCase();
+          cumpleTexto = textoItem.includes(texto);
+        }
+
+        // Filtro de reunión
+        if (reunion) {
+          cumpleReunion = (item.acta || '').includes(reunion);
+        }
+
+        // Filtro de tipo
+        if (tipo) {
+          cumpleTipo = item.solicitudCNA === tipo;
+        }
+
+        return cumpleTexto && cumpleReunion && cumpleTipo;
+      });
+
+      mostrarDatosEnTabla();
+    }
+
+    function limpiarFiltros() {
+      document.getElementById('busquedaTexto').value = '';
+      document.getElementById('filtroReunion').selectedIndex = 0;
+      document.getElementById('filtroTipo').selectedIndex = 0;
+      
+      datosFiltrados = [...datosTabla];
+      mostrarDatosEnTabla();
+    }
+
+    function eliminarElemento(id) {
+      mostrarModal(
+        '🗑️ Confirmar Eliminación',
+        `¿Está seguro de que desea eliminar el elemento #${id}? Esta acción no se puede deshacer.`,
+        [
+          { texto: 'Cancelar', clase: 'btn-secondary', onclick: 'cerrarModal()' },
+          { texto: 'Eliminar', clase: 'btn-danger', onclick: `confirmarEliminacion(${id})` }
+        ]
+      );
+    }
+
+    function confirmarEliminacion(id) {
+      cerrarModal();
+      
+      if (window.google?.script?.run?.eliminarElementoAgendaConsejo) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (resultado.success) {
+              mostrarNotificacion(resultado.message, 'success');
+              cargarDatos(); // Recargar datos
+            } else {
+              mostrarNotificacion(`❌ ${resultado.message}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .eliminarElementoAgendaConsejo(id);
+      }
+    }
+
+    // ============ DOCUMENTOS ============
+
+    function cargarAgendaParaDocumentos() {
+      if (agendaActiva) {
+        document.getElementById('selectorAgendaDocumentos').innerHTML = `
+          <div class="alert alert-success">
+            <p><strong>📋 Agenda Seleccionada:</strong> ${agendaActiva.nombre}</p>
+          </div>
+        `;
+      }
+    }
+
+    function generarDocumento(tipo) {
+      if (!agendaActiva) {
+        mostrarNotificacion('❌ Seleccione una agenda primero', 'error');
+        return;
+      }
+
+      const estado = document.getElementById('estadoGeneracion');
+      const resultado = document.getElementById('resultadoGeneracion');
+      
+      if (estado) estado.classList.remove('hidden');
+      if (resultado) resultado.classList.add('hidden');
+
+      if (window.google?.script?.run?.generarDocumentoAgendaConsejo) {
+        google.script.run
+          .withSuccessHandler(resp => {
+            if (estado) estado.classList.add('hidden');
+            if (resultado) {
+              resultado.classList.remove('hidden');
+              if (resp.success) {
+                resultado.innerHTML = `
+                  <div class="alert alert-success">
+                    <h4 style="margin:0 0 0.5rem 0;">✅ ${resp.message}</h4>
+                    <a href="${resp.url}" target="_blank" class="btn btn-primary">
+                      <span>📄</span><span>Abrir Documento</span>
+                    </a>
+                  </div>
+                `;
+                mostrarNotificacion('✅ Documento generado exitosamente', 'success');
+              } else {
+                resultado.innerHTML = `
+                  <div class="alert alert-error">
+                    <p><strong>❌ Error:</strong> ${resp.message}</p>
+                  </div>
+                `;
+                mostrarNotificacion(`❌ ${resp.message}`, 'error');
+              }
+            }
+          })
+          .withFailureHandler(error => {
+            if (estado) estado.classList.add('hidden');
+            if (resultado) {
+              resultado.classList.remove('hidden');
+              resultado.innerHTML = `
+                <div class="alert alert-error">
+                  <p><strong>❌ Error:</strong> ${error.message}</p>
+                </div>
+              `;
+            }
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .generarDocumentoAgendaConsejo(tipo);
+      }
+    }
+
+    function verificarArchivosCarpeta() {
+      const estado = document.getElementById('estadoVerificacion');
+      const listado = document.getElementById('listadoArchivos');
+      
+      if (estado) estado.classList.remove('hidden');
+
+      if (window.google?.script?.run?.verificarArchivosEnCarpetaAgendas) {
+        google.script.run
+          .withSuccessHandler(resp => {
+            if (estado) estado.classList.add('hidden');
+            
+            if (resp.success) {
+              const html = resp.archivos.length > 0 ? 
+                resp.archivos.map(archivo => `
+                  <div class="file-item">
+                    <div>
+                      <div style="font-weight:500;">
+                        ${getFileIcon(archivo.tipo)} ${archivo.nombre}
+                      </div>
+                      <div style="font-size:0.75rem; color:var(--oga-text-muted);">
+                        ${new Date(archivo.fechaModificacion).toLocaleString('es-ES')} 
+                        ${archivo.reunion ? `- Reunión: ${archivo.reunion}` : ''}
+                      </div>
+                    </div>
+                    <a href="${archivo.url}" target="_blank" class="btn btn-sm btn-primary">Abrir</a>
+                  </div>
+                `).join('') : 
+                '<p style="color:var(--oga-text-soft); font-style:italic;">No hay archivos en la carpeta</p>';
+
+              listado.innerHTML = `
+                <div>
+                  <p style="font-weight:500; margin-bottom:0.5rem;">
+                    📁 <a href="${resp.carpetaUrl || '#'}" target="_blank">Ver carpeta completa</a> 
+                    (${resp.archivos.length} archivos)
+                  </p>
+                  ${html}
+                </div>
+              `;
+            } else {
+              listado.innerHTML = `<p style="color:var(--oga-error);">${resp.message}</p>`;
+            }
+          })
+          .withFailureHandler(error => {
+            if (estado) estado.classList.add('hidden');
+            listado.innerHTML = `<p style="color:var(--oga-error);">Error: ${error.message}</p>`;
+          })
+          .verificarArchivosEnCarpetaAgendas();
+      }
+    }
+
+    function getFileIcon(tipo) {
+      switch(tipo) {
+        case 'document': return '📄';
+        case 'spreadsheet': return '📊';
+        case 'folder': return '📁';
+        default: return '📎';
+      }
+    }
+
+    // ============ APROBACIÓN ============
+
+    function cargarAgendaParaAprobacion() {
+      if (agendaActiva) {
+        const info = document.getElementById('infoAgendaAprobacion');
+        const confirmacion = document.getElementById('confirmacionAprobacion');
+        const opciones = document.getElementById('opcionesAgenda');
+        const selector = document.getElementById('selectorAgendaAprobacion');
+
+        if (selector) {
+          selector.innerHTML = `
+            <div class="alert alert-success">
+              <p><strong>📋 Agenda Seleccionada:</strong> ${agendaActiva.nombre} (${agendaActiva.numeroReunion})</p>
+              <p><strong>Estado Actual:</strong> ${agendaActiva.estado || agendaActiva.estadoDetallado}</p>
+            </div>
+          `;
+        }
+
+        if (info) {
+          info.classList.remove('hidden');
+          document.getElementById('infoNombreAgenda').textContent = agendaActiva.nombre || '';
+          document.getElementById('infoNumeroReunion').textContent = agendaActiva.numeroReunion || '';
+          document.getElementById('infoFechaReunion').textContent = agendaActiva.fechaReunion || '';
+          document.getElementById('infoTotalElementos').textContent = agendaActiva.totalRegistros || 0;
+        }
+
+        // CORREGIDO: Mostrar botón de aprobación en más estados
+        const estadosAprobables = ['ACTIVA', 'VENCIDA', 'PENDIENTE_APROBACION', 'CERRADA'];
+        const estadoActual = agendaActiva.estado || agendaActiva.estadoDetallado;
+        
+        if (estadosAprobables.includes(estadoActual) && confirmacion) {
+          confirmacion.classList.remove('hidden');
+          
+          // Actualizar mensaje según el estado
+          const alertElement = confirmacion.querySelector('.alert');
+          if (alertElement) {
+            let mensajeEstado = '';
+            switch(estadoActual) {
+              case 'VENCIDA':
+                mensajeEstado = '⏰ Esta agenda ha vencido el plazo pero aún puede ser aprobada.';
+                break;
+              case 'PENDIENTE_APROBACION':
+                mensajeEstado = '⚖️ Esta agenda está pendiente de aprobación.';
+                break;
+              case 'CERRADA':
+                mensajeEstado = '🔒 Esta agenda ha sido cerrada y está lista para aprobación.';
+                break;
+              default:
+                mensajeEstado = '✅ Esta agenda está activa y lista para aprobación.';
+            }
+            
+            alertElement.innerHTML = `
+              <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:1rem;">
+                <span style="margin-right:0.5rem;">🎯</span>Aprobación Final de la Agenda
+              </h3>
+              <p style="margin-bottom:0.5rem;">${mensajeEstado}</p>
+              <p style="margin-bottom:1rem;">¿Desea aprobar esta agenda y registrarla oficialmente en el sistema?</p>
+              <div class="alert" style="background:#fef3c7; border-color:#f59e0b; margin-bottom:1rem;">
+                <p style="font-size:0.875rem;"><strong>⚠️ Importante:</strong> Una vez aprobada, la agenda se archivará en la hoja "Agenda_Votacion" y habilitará las votaciones.</p>
+              </div>
+            `;
+          }
+        } else if (estadoActual === 'APROBADA') {
+          // Si ya está aprobada, mostrar mensaje informativo
+          if (confirmacion) {
+            confirmacion.classList.remove('hidden');
+            confirmacion.innerHTML = `
+              <div class="alert alert-info">
+                <h3 style="font-size:1.125rem; font-weight:600; margin-bottom:0.5rem;">
+                  <span style="margin-right:0.5rem;">✅</span>Agenda Ya Aprobada
+                </h3>
+                <p>Esta agenda ya ha sido aprobada y archivada. Las votaciones están disponibles en la pestaña "Votaciones".</p>
+              </div>
+            `;
+          }
+        }
+
+        if (opciones) opciones.classList.remove('hidden');
+        
+        console.log('📋 Agenda cargada para aprobación:', {
+          nombre: agendaActiva.nombre,
+          estado: estadoActual,
+          puedeAprobar: estadosAprobables.includes(estadoActual)
+        });
+      } else {
+        // Si no hay agenda activa, mostrar mensaje de ayuda
+        const selector = document.getElementById('selectorAgendaAprobacion');
+        if (selector) {
+          selector.innerHTML = `
+            <div class="alert alert-warning">
+              <p class="text-center"><strong>⚠️ No hay agenda seleccionada</strong></p>
+              <p class="text-center">Vaya al tab "Sistema" y seleccione una agenda para continuar con la aprobación.</p>
+              <div class="text-center" style="margin-top: 1rem;">
+                <button onclick="mostrarTab('sistema')" class="btn btn-primary btn-sm">
+                  <span>🗓️</span><span>Ir a Sistema</span>
+                </button>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+
+    function confirmarAprobacion() {
+      if (!agendaActiva) {
+        mostrarNotificacion('❌ No hay agenda seleccionada', 'error');
+        return;
+      }
+
+      const estado = document.getElementById('estadoAprobacion');
+      if (estado) estado.classList.remove('hidden');
+
+      if (window.google?.script?.run?.aprobarAgendaConsejo) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (estado) estado.classList.add('hidden');
+            
+            if (resultado.success) {
+              mostrarNotificacion(resultado.message, 'success');
+              document.getElementById('confirmacionAprobacion')?.classList.add('hidden');
+              actualizarListaAgendas();
+              
+              // Limpiar agenda activa
+              agendaActiva = null;
+            } else {
+              mostrarNotificacion(`❌ ${resultado.message}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            if (estado) estado.classList.add('hidden');
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .aprobarAgendaConsejo(agendaActiva.id);
+      }
+    }
+
+    function cancelarAprobacion() {
+      document.getElementById('confirmacionAprobacion')?.classList.add('hidden');
+      mostrarNotificacion('ℹ️ Aprobación cancelada', 'info');
+    }
+
+    function mostrarConfirmacionEliminar() {
+      mostrarModal(
+        '🗑️ Eliminar Agenda',
+        `¿Está seguro de que desea eliminar PERMANENTEMENTE la agenda "${agendaActiva?.nombre}"? Esta acción eliminará todos los elementos y no se puede deshacer.`,
+        [
+          { texto: 'Cancelar', clase: 'btn-secondary', onclick: 'cerrarModal()' },
+          { texto: 'SÍ - Eliminar', clase: 'btn-danger', onclick: 'confirmarEliminacionAgenda()' }
+        ]
+      );
+    }
+
+    function confirmarEliminacionAgenda() {
+      cerrarModal();
+      
+      if (!agendaActiva) {
+        mostrarNotificacion('❌ No hay agenda seleccionada', 'error');
+        return;
+      }
+
+      if (window.google?.script?.run?.eliminarAgendaConsejo) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (resultado.success) {
+              mostrarNotificacion(resultado.message, 'success');
+              agendaActiva = null;
+              actualizarListaAgendas();
+              mostrarTab('sistema'); // Volver al tab principal
+            } else {
+              mostrarNotificacion(`❌ ${resultado.message}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .eliminarAgendaConsejo(agendaActiva.id);
+      }
+    }
+
+    // ============ VOTACIONES ============
+
+    function cargarAgendasDisponiblesVotacion() {
+      const select = document.getElementById('agendaParaVotar');
+      if (!select) return;
+
+      select.innerHTML = '<option value="">🔄 Cargando agendas...</option>';
+
+      if (window.google?.script?.run?.cargarAgendasDisponiblesVotacion) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            select.innerHTML = '<option value="">-- Seleccione una agenda --</option>';
+            
+            if (resultado.success && resultado.agendas && resultado.agendas.length > 0) {
+              agendasDisponiblesVotacion = resultado.agendas;
+              
+              resultado.agendas.forEach(agenda => {
+                const option = document.createElement('option');
+                option.value = agenda.numeroReunion;
+                option.textContent = `📋 ${agenda.nombre} (${agenda.numeroReunion}) - ${agenda.tipo}`;
+                select.appendChild(option);
+              });
+              
+              mostrarNotificacion(`📋 ${resultado.agendas.length} agenda(s) disponible(s) para votación`, 'info');
+            } else {
+              select.innerHTML = '<option value="">No hay agendas disponibles</option>';
+              mostrarNotificacion('⚠️ No hay agendas aprobadas para votación', 'warning');
+            }
+          })
+          .withFailureHandler(error => {
+            select.innerHTML = '<option value="">Error cargando agendas</option>';
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .cargarAgendasDisponiblesVotacion();
+      }
+    }
+
+    function onAgendaSeleccionadaVotacion() {
+      const select = document.getElementById('agendaParaVotar');
+      const numeroReunion = select?.value;
+      
+      if (!numeroReunion) {
+        ocultarSeccionesVotacion();
+        return;
+      }
+
+      const agenda = agendasDisponiblesVotacion.find(a => a.numeroReunion === numeroReunion);
+      if (!agenda) {
+        mostrarNotificacion('❌ Agenda no encontrada', 'error');
+        return;
+      }
+
+      agendaSeleccionadaVotacion = agenda;
+      mostrarInformacionAgendaVotacion(agenda);
+      habilitarOpcionesVotacion();
+    }
+
+    function mostrarInformacionAgendaVotacion(agenda) {
+      const info = document.getElementById('infoAgendaVotacion');
+      const detalles = document.getElementById('detallesAgendaVotacion');
+      
+      if (info && detalles) {
+        detalles.innerHTML = `
+          <div><strong>Nombre:</strong> ${agenda.nombre}</div>
+          <div><strong>Número:</strong> ${agenda.numeroReunion}</div>
+          <div><strong>Estado:</strong> ${agenda.tipo}</div>
+          <div><strong>Registros:</strong> ${agenda.totalRegistros || 'N/A'}</div>
+        `;
+        info.classList.remove('hidden');
+      }
+    }
+
+    function habilitarOpcionesVotacion() {
+      document.getElementById('opcionesEnvioEspecifico')?.classList.remove('hidden');
+      document.getElementById('accionesVotacionEspecifica')?.classList.remove('hidden');
+      
+      const btnEnviar = document.getElementById('btnEnviarVotacionEspecifica');
+      const btnEstadisticas = document.getElementById('btnVerEstadisticasEspecifica');
+      
+      if (btnEnviar) btnEnviar.disabled = false;
+      if (btnEstadisticas) btnEstadisticas.disabled = false;
+    }
+
+    function ocultarSeccionesVotacion() {
+      document.getElementById('infoAgendaVotacion')?.classList.add('hidden');
+      document.getElementById('opcionesEnvioEspecifico')?.classList.add('hidden');
+      document.getElementById('accionesVotacionEspecifica')?.classList.add('hidden');
+      document.getElementById('resultadoVotacionEspecifica')?.classList.add('hidden');
+      document.getElementById('estadisticasVotacion')?.classList.add('hidden');
+      
+      agendaSeleccionadaVotacion = null;
+    }
+
+    // ============ FUNCIÓN MEJORADA PARA ENVÍO DE VOTACIONES ============
+    function enviarVotacionesAgendaEspecifica() {
+      // NUEVA VALIDACIÓN: Verificar permisos de usuario
+      if (!esUsuarioAutorizadoVotacion(usuarioActual?.email)) {
+        mostrarNotificacion('🚫 No tienes permisos para enviar votaciones. Contacta a un usuario autorizado.', 'error');
+        return;
+      }
+
+      if (!agendaSeleccionadaVotacion) {
+        mostrarNotificacion('⚠️ Debe seleccionar una agenda primero', 'warning');
+        return;
+      }
+      
+      const numeroReunion = agendaSeleccionadaVotacion.numeroReunion;
+      const modoPrueba = document.getElementById('modoPruebaVotacion')?.value === 'true';
+      const maxEnviar = parseInt(document.getElementById('maxEnviarVotacion')?.value) || null;
+      const resultadoDiv = document.getElementById('resultadoVotacionEspecifica');
+      
+      console.log('🗳️ Enviando votaciones para agenda (usuario autorizado):', {
+        numeroReunion,
+        modoPrueba,
+        maxEnviar,
+        usuario: usuarioActual?.email,
+        agenda: agendaSeleccionadaVotacion
+      });
+      
+      // Deshabilitar botón y mostrar estado
+      const btnEnviar = document.getElementById('btnEnviarVotacionEspecifica');
+      if (btnEnviar) {
+        btnEnviar.disabled = true;
+        btnEnviar.innerHTML = '<span style="margin-right: 0.5rem;">📤</span>Enviando...';
+      }
+      if (resultadoDiv) resultadoDiv.classList.add('hidden');
+      
+      // Llamar función de backend
+      google.script.run
+        .withSuccessHandler(function(result) {
+          console.log('✅ Resultado envío votaciones específica:', result);
+          
+          // Restaurar botón
+          if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.innerHTML = '<span>📧</span><span>Enviar Invitaciones</span>';
+          }
+          
+          // Mostrar resultado
+          if (result.success && resultadoDiv) {
+            resultadoDiv.innerHTML = `
+              <div class="alert alert-success">
+                <h4 style="margin: 0 0 0.5rem 0; font-weight: 600;">✅ Envío Completado desde info@oga.org.gt</h4>
+                <p style="margin: 0 0 0.5rem 0;">${result.message}</p>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                  ${result.enviados ? `<span style="padding: 0.25rem 0.5rem; background: var(--oga-success-light); color: var(--oga-success-dark); border-radius: 0.25rem; font-size: 0.875rem;">✅ Exitosos: ${result.enviados.length}</span>` : ''}
+                  ${result.errores && result.errores.length > 0 ? `<span style="padding: 0.25rem 0.5rem; background: var(--oga-error-light); color: var(--oga-error-dark); border-radius: 0.25rem; font-size: 0.875rem;">❌ Errores: ${result.errores.length}</span>` : ''}
+                </div>
+              </div>
+            `;
+            mostrarNotificacion(`✅ Votaciones enviadas desde info@oga.org.gt para ${numeroReunion}`, 'success');
+          } else if (resultadoDiv) {
+            resultadoDiv.innerHTML = `
+              <div class="alert" style="background: var(--oga-error-light); border-color: var(--oga-error);">
+                <h4 style="margin: 0 0 0.5rem 0; font-weight: 600; color: var(--oga-error-dark);">❌ Error en Envío</h4>
+                <p style="margin: 0; color: var(--oga-error-dark);">${result.message}</p>
+              </div>
+            `;
+            mostrarNotificacion(`❌ ${result.message}`, 'error');
+          }
+          
+          if (resultadoDiv) resultadoDiv.classList.remove('hidden');
+        })
+        .withFailureHandler(function(error) {
+          console.error('❌ Error enviando votaciones específica:', error);
+          
+          // Restaurar botón
+          if (btnEnviar) {
+            btnEnviar.disabled = false;
+            btnEnviar.innerHTML = '<span>📧</span><span>Enviar Invitaciones</span>';
+          }
+          
+          if (resultadoDiv) {
+            resultadoDiv.innerHTML = `
+              <div class="alert" style="background: var(--oga-error-light); border-color: var(--oga-error);">
+                <h4 style="margin: 0 0 0.5rem 0; font-weight: 600; color: var(--oga-error-dark);">❌ Error de Conexión</h4>
+                <p style="margin: 0; color: var(--oga-error-dark);">Error interno: ${error.message}</p>
+              </div>
+            `;
+            resultadoDiv.classList.remove('hidden');
+          }
+          
+          mostrarNotificacion('❌ Error interno: ' + error.message, 'error');
+        })
+        .enviarInvitacionesVotacionEspecifica(numeroReunion, modoPrueba, maxEnviar);
+    }
+
+// 1. Para la pestaña VOTACIONES (Usa el ID 'contenidoEstadisticas')
+    function verEstadisticasAgendaEspecifica() {
+      if(!agendaSeleccionadaVotacion) return;
+      
+      const divContenido = document.getElementById('contenidoEstadisticas');
+      
+      document.getElementById('estadisticasVotacion').classList.remove('hidden');
+      divContenido.innerHTML = '<div class="loading"><div class="spinner"></div><span>Cargando...</span></div>';
+      
+      google.script.run.withSuccessHandler(res => {
+        // Le mandamos 'contenidoEstadisticas' como targetId
+        mostrarEstadisticasDetalladasMejoradas(
+           {...res, reunion: agendaSeleccionadaVotacion.numeroReunion, ultimaActualizacion: new Date().toLocaleTimeString()},
+           'contenidoEstadisticas' 
+        );
+      }).cargarEstadisticasAgendaEspecifica(agendaSeleccionadaVotacion.numeroReunion);
+    }
+
+    // 2. Para la pestaña ESTADÍSTICAS (Usa el ID 'contenedorPrincipalEstadisticas')
+    function cargarEstadisticasReunionEspecifica() {
+      const reunion = document.getElementById('selectReunionEstadisticas').value;
+      if(!reunion) return;
+      
+      const divContenido = document.getElementById('contenedorPrincipalEstadisticas');
+
+      document.getElementById('estadisticasContenido').classList.remove('hidden');
+      document.getElementById('sinEstadisticasReunion').classList.add('hidden');
+      divContenido.innerHTML = '<div class="loading"><div class="spinner"></div><span>Cargando...</span></div>';
+      
+      google.script.run.withSuccessHandler(res => {
+        // Le mandamos 'contenedorPrincipalEstadisticas' como targetId
+        mostrarEstadisticasDetalladasMejoradas(
+            {...res, reunion: reunion, ultimaActualizacion: new Date().toLocaleTimeString()},
+            'contenedorPrincipalEstadisticas'
+        );
+      }).obtenerEstadisticasVotosPorReunion(reunion);
+    }
+
+    function verificarEstadoVotacion() {
+      const validacion = document.getElementById('validacionVotacion');
+      const mensaje = document.getElementById('mensajeValidacion');
+      const panelEnvio = document.getElementById('panelEnvioVotaciones');
+      const bloqueo = document.getElementById('bloqueoVotaciones');
+      const panelEstadisticas = document.getElementById('panelEstadisticas');
+      const razonBloqueo = document.getElementById('razonBloqueo');
+
+      if (mensaje) mensaje.textContent = 'Verificando estado...';
+
+      if (window.google?.script?.run?.verificarEstadoVotacion) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (resultado.disponible) {
+              if (panelEnvio) panelEnvio.classList.remove('hidden');
+              if (bloqueo) bloqueo.classList.add('hidden');
+              if (mensaje) mensaje.textContent = resultado.mensaje;
+              mostrarNotificacion('✅ Sistema de votaciones disponible', 'success');
+            } else {
+              if (panelEnvio) panelEnvio.classList.add('hidden');
+              if (bloqueo) bloqueo.classList.remove('hidden');
+              if (razonBloqueo) razonBloqueo.textContent = resultado.mensaje;
+              if (mensaje) mensaje.textContent = resultado.mensaje;
+            }
+          })
+          .withFailureHandler(error => {
+            if (panelEnvio) panelEnvio.classList.add('hidden');
+            if (bloqueo) bloqueo.classList.remove('hidden');
+            if (razonBloqueo) razonBloqueo.textContent = 'Error de conexión';
+            if (mensaje) mensaje.textContent = `Error: ${error.message}`;
+          })
+          .verificarEstadoVotacion();
+      }
+    }
+
+    function cargarEstadisticasVotos() {
+      const panelEstadisticas = document.getElementById('panelEstadisticas');
+      const contenedor = document.getElementById('contenedorEstadisticasDetalladas');
+      const resumen = document.getElementById('resumenVotosGenerales');
+      const sinEstadisticas = document.getElementById('sinEstadisticas');
+
+      if (window.google?.script?.run?.cargarEstadisticasVotos) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (resultado.success && resultado.data.total > 0) {
+              if (panelEstadisticas) panelEstadisticas.classList.remove('hidden');
+              if (sinEstadisticas) sinEstadisticas.classList.add('hidden');
+              
+              mostrarEstadisticasDetalladasMejoradas({
+                ...resultado,
+                ultimaActualizacion: new Date().toLocaleString('es-ES')
+              });
+            } else {
+              if (panelEstadisticas) panelEstadisticas.classList.add('hidden');
+              if (sinEstadisticas) sinEstadisticas.classList.remove('hidden');
+            }
+          })
+          .withFailureHandler(error => {
+            console.warn('Error cargando estadísticas:', error.message);
+            if (panelEstadisticas) panelEstadisticas.classList.add('hidden');
+            if (sinEstadisticas) sinEstadisticas.classList.remove('hidden');
+          })
+          .cargarEstadisticasVotos();
+      }
+    }
+
+    function ejecutarDebugSistema() {
+      const resultado = document.getElementById('resultadoDebugSistema');
+      
+      if (resultado) {
+        resultado.textContent = 'Ejecutando debug...';
+        resultado.style.display = 'block';
+      }
+
+      if (window.google?.script?.run?.debugAgendasArchivadas) {
+        google.script.run
+          .withSuccessHandler(debug => {
+            if (resultado) {
+              resultado.innerHTML = `
+                <div><strong>🔬 DEBUG SISTEMA DE DOS HOJAS:</strong></div>
+                <div>Error: ${debug.error}</div>
+                <div>Agenda válida encontrada: ${debug.agendaValidaEncontrada}</div>
+                <div>Total agendas: ${debug.totalAgendas}</div>
+                <div><strong>Mensaje:</strong> ${debug.mensaje}</div>
+                
+                <div style="margin-top:1rem;"><strong>📋 Configuracion:</strong></div>
+                <div>Existe: ${debug.configuracion.existe}</div>
+                <div>Estado: ${debug.configuracion.estado}</div>
+                
+                <div style="margin-top:1rem;"><strong>🗳️ Agenda_Votacion:</strong></div>
+                <div>Existe: ${debug.votacion.existe}</div>
+                <div>Hay datos: ${debug.votacion.hayDatos}</div>
+                <div>Número Reunión (B2): ${debug.votacion.numeroReunion}</div>
+                <div>Estado Archivo (M2): ${debug.votacion.estadoArchivo}</div>
+                
+                <div style="margin-top:1rem; padding:0.5rem; background:var(--oga-bg-muted); border-radius:0.25rem;">
+                  <strong>Conclusión:</strong> ${debug.agendaValidaEncontrada ? '✅ Sistema OK' : '❌ Sistema necesita configuración'}
+                </div>
+              `;
+            }
+          })
+          .withFailureHandler(error => {
+            if (resultado) {
+              resultado.textContent = `Error en debug: ${error.message}`;
+            }
+          })
+          .debugAgendasArchivadas();
+      }
+    }
+
+    // ============ ESTADÍSTICAS ============
+
+    function cargarAgendaActualEstadisticas() {
+      const select = document.getElementById('selectReunionEstadisticas');
+      if (agendaActiva && select) {
+        select.value = agendaActiva.numeroReunion;
+        cargarEstadisticasReunionEspecifica();
+      }
+    }
+
+//    function cargarEstadisticasReunionEspecifica() {
+ //     const select = document.getElementById('selectReunionEstadisticas');
+ //     const reunion = select?.value;
+ //     
+ //     if (!reunion) {
+ //       limpiarEstadisticas();
+ //       return;
+ //     }
+ //     }
+
+ //     const contenido = document.getElementById('estadisticasContenido');
+ //     const contenido = document.getElementById('estadisticasContenido');
+ //     const sinEstadisticas = document.getElementById('sinEstadisticasReunion');
+ //     const resumen = document.getElementById('resumenEstadisticas');
+ //     const detalle = document.getElementById('detalleEstadisticas');
+
+ //     if (contenido) contenido.classList.remove('hidden');
+ //     if (sinEstadisticas) sinEstadisticas.classList.add('hidden');
+      
+ //     if (resumen) {
+ //       resumen.innerHTML = '<div class="loading"><div class="spinner"></div><span>Cargando estadísticas...</span></div>';
+ //     }
+
+ //     if (window.google?.script?.run?.obtenerEstadisticasVotosPorReunion) {
+ /*       google.script.run
+          .withSuccessHandler(resultado => {
+            if (resultado.success) {
+              mostrarEstadisticasCompletas(resultado, reunion);
+            } else {
+              if (resumen) {
+                resumen.innerHTML = `
+                  <div class="alert alert-warning">
+                    <p>⚠️ ${resultado.message || 'No hay estadísticas para esta reunión'}</p>
+                  </div>
+                `;
+              }
+              if (detalle) detalle.innerHTML = '';
+            }
+          })
+          .withFailureHandler(error => {
+            if (resumen) {
+              resumen.innerHTML = `
+                <div class="alert alert-error">
+                  <p>❌ Error: ${error.message}</p>
+                </div>
+              `;
+            }
+            if (detalle) detalle.innerHTML = '';
+          })
+          .obtenerEstadisticasVotosPorReunion(reunion);
+      }
+    }*/
+
+    function mostrarEstadisticasCompletas(datos, reunion) {
+      const resumen = document.getElementById('resumenEstadisticas');
+      const detalle = document.getElementById('detalleEstadisticas');
+      
+      if (resumen) {
+        const { aFavor, enContra, abstencion, total } = datos.data;
+        resumen.innerHTML = `
+          <div class="grid grid-cols-4 gap-4">
+            <div class="text-center p-4 rounded-lg border" style="background:var(--oga-success-light); border-color:var(--oga-success);">
+              <div class="text-2xl font-bold" style="color:var(--oga-success-dark);">${aFavor}</div>
+              <div class="text-sm" style="color:var(--oga-success-dark);">A Favor</div>
+            </div>
+            <div class="text-center p-4 rounded-lg border" style="background:var(--oga-error-light); border-color:var(--oga-error);">
+              <div class="text-2xl font-bold" style="color:var(--oga-error-dark);">${enContra}</div>
+              <div class="text-sm" style="color:var(--oga-error-dark);">En Contra</div>
+            </div>
+            <div class="text-center p-4 rounded-lg border" style="background:var(--oga-warning-light); border-color:var(--oga-warning);">
+              <div class="text-2xl font-bold" style="color:var(--oga-warning-dark);">${abstencion}</div>
+              <div class="text-sm" style="color:var(--oga-warning-dark);">Abstención</div>
+            </div>
+            <div class="text-center p-4 rounded-lg border" style="background:var(--oga-blue-light); border-color:var(--oga-blue);">
+              <div class="text-2xl font-bold" style="color:var(--oga-blue-dark);">${total}</div>
+              <div class="text-sm" style="color:var(--oga-blue-dark);">Total</div>
+            </div>
+          </div>
+          <p class="text-center text-sm" style="color:var(--oga-text-muted); margin-top:1rem;">
+            Reunión: ${reunion} | Última actualización: ${new Date().toLocaleString('es-ES')}
+          </p>
+        `;
+      }
+
+      if (detalle && datos.registrosPorTipo) {
+        // Usar la función mejorada para mostrar estadísticas por tipo
+        document.getElementById('contenedorEstadisticasDetalladas').innerHTML = '';
+        mostrarEstadisticasDetalladasMejoradas({
+          ...datos,
+          reunion: reunion,
+          ultimaActualizacion: new Date().toLocaleString('es-ES')
+        });
+      }
+    }
+
+    function limpiarEstadisticas() {
+      const contenido = document.getElementById('estadisticasContenido');
+      const sinEstadisticas = document.getElementById('sinEstadisticasReunion');
+      
+      if (contenido) contenido.classList.add('hidden');
+      if (sinEstadisticas) sinEstadisticas.classList.remove('hidden');
+    }
+
+    // ============ FUNCIONES DE BLOQUEO DEL SISTEMA (NUEVO) ============
+
+    function mostrarBloqueoSistema() {
+      const overlay = document.getElementById('systemLockOverlay');
+      const body = document.getElementById('appRoot') || document.body;
+      
+      if (overlay) {
+        // Bloquear scroll del body
+        body.classList.add('system-locked');
+        
+        // Mostrar overlay con animación
+        overlay.classList.add('show');
+        
+        // Actualizar mensaje si es necesario
+        const mensaje = document.getElementById('lockMessage');
+        if (mensaje) {
+          mensaje.innerHTML = `
+            Cerrando la agenda y regresando al menú principal...<br>
+            <small>Por favor espera un momento</small>
+          `;
+        }
+        
+        // Reiniciar animación de progreso
+        const progressBar = overlay.querySelector('.lock-progress-bar');
+        if (progressBar) {
+          progressBar.style.animation = 'none';
+          progressBar.offsetHeight; // Trigger reflow
+          progressBar.style.animation = 'lockProgress 3s ease-out forwards';
+        }
+        
+        console.log('🔒 Sistema bloqueado - volviendo al menú');
+      }
+    }
+
+    function ocultarBloqueoSistema() {
+      const overlay = document.getElementById('systemLockOverlay');
+      const body = document.getElementById('appRoot') || document.body;
+      
+      if (overlay) {
+        // Ocultar overlay con animación
+        overlay.classList.remove('show');
+        
+        // Restaurar scroll del body después de la animación
+        setTimeout(() => {
+          body.classList.remove('system-locked');
+        }, 400);
+        
+        console.log('🔓 Sistema desbloqueado');
+      }
+    }
+
+    // ============ UTILIDADES Y MODALES ============
+
+    function mostrarModal(titulo, mensaje, botones) {
+      const modal = document.getElementById('modalConfirmacion');
+      const modalTitulo = document.getElementById('modalTitulo');
+      const modalMensaje = document.getElementById('modalMensaje');
+      const modalCancelar = document.getElementById('modalCancelar');
+      const modalConfirmar = document.getElementById('modalConfirmar');
+
+      if (modalTitulo) modalTitulo.textContent = titulo;
+      if (modalMensaje) modalMensaje.innerHTML = mensaje;
+
+      // Configurar botones
+      if (botones && botones.length >= 2) {
+        if (modalCancelar) {
+          modalCancelar.textContent = botones[0].texto;
+          modalCancelar.className = `btn ${botones[0].clase || 'btn-secondary'} btn-sm`;
+          modalCancelar.onclick = new Function(botones[0].onclick || 'cerrarModal()');
+        }
+        if (modalConfirmar) {
+          modalConfirmar.textContent = botones[1].texto;
+          modalConfirmar.className = `btn ${botones[1].clase || 'btn-primary'} btn-sm`;
+          modalConfirmar.onclick = new Function(botones[1].onclick);
+        }
+      }
+
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function cerrarModal() {
+      const modal = document.getElementById('modalConfirmacion');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function mostrarNotificacion(mensaje, tipo = 'info') {
+      const notification = document.createElement('div');
+      notification.className = `notification ${tipo}`;
+      notification.innerHTML = `
+        <div class="notification-content">
+          <span>${mensaje}</span>
+          <button type="button" class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+        </div>
+      `;
+
+      document.body.appendChild(notification);
+
+      // Mostrar con animación
+      setTimeout(() => notification.classList.add('show'), 100);
+
+      // Auto-remover después de 5 segundos
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.classList.remove('show');
+          setTimeout(() => {
+            if (notification.parentNode) {
+              notification.remove();
+            }
+          }, 300);
+        }
+      }, 5000);
+    }
+
+    function testComunicacion() {
+      if (window.google?.script?.run?.testComunicacion) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            console.log('✅ Test comunicación exitoso:', resultado);
+            if (resultado.success) {
+              mostrarNotificacion(`✅ ${resultado.message}`, 'success');
+            } else {
+              mostrarNotificacion(`❌ Error en test: ${resultado.message}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            console.error('❌ Test comunicación fallido:', error);
+            mostrarNotificacion('❌ Error de comunicación con el servidor', 'error');
+          })
+          .testComunicacion();
+      } else {
+        console.warn('⚠️ No hay conexión con Google Apps Script');
+        mostrarNotificacion('⚠️ Modo offline - funcionalidad limitada', 'warning');
+      }
+    }
+
+function volverAlMenu() {
+  if (typeof mostrarBloqueoSistema === 'function') mostrarBloqueoSistema();
+
+  setTimeout(() => {
+    if (typeof ocultarBloqueoSistema === 'function') ocultarBloqueoSistema();
+
+    if (window.OGA && typeof window.OGA.irAlMenu === 'function') {
+      window.OGA.irAlMenu();
+      return;
+    }
+
+    if (window.OGA && typeof window.OGA.navegar === 'function') {
+      window.OGA.navegar('mostrarPanelMenu', 'Menú principal');
+      return;
+    }
+
+    console.warn('Consejo cargado fuera del App.html SPA: no existe window.OGA.irAlMenu().');
+  }, 900);
+}
+
+    // ============ GESTIÓN DE TABS ============
+
+    function mostrarTab(tabName) {
+      // Actualizar contenido
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('.tab').forEach(t => {
+        t.classList.remove('active');
+        t.setAttribute('aria-selected', 'false');
+      });
+      
+      const activeContent = document.getElementById(`content-${tabName}`); 
+      if (activeContent) {
+        activeContent.classList.remove('hidden');
+        activeContent.classList.add('fade-in');
+      }
+      
+      const activeTab = document.getElementById(`tab-${tabName}`); 
+      if (activeTab) {
+        activeTab.classList.add('active');
+        activeTab.setAttribute('aria-selected', 'true');
+      }
+
+      // Scroll suave al contenido
+      if (activeContent) {
+        activeContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      // Acciones específicas por tab
+      switch (tabName) {
+        case 'agregar':
+          setTimeout(() => cargarUsuarioActivo(), 500);
+          break;
+        case 'datos':
+          cargarDatos();
+          break;
+        case 'documentos':
+          cargarAgendaParaDocumentos();
+          break;
+        case 'aprobacion':
+          setTimeout(() => cargarAgendaParaAprobacion(), 100);
+          break;
+        case 'votaciones':
+          cargarAgendasDisponiblesVotacion();
+          cargarEstadisticasVotos();
+          verificarEstadoVotacion();
+          break;
+        case 'estadisticas':
+          cargarAgendaActualEstadisticas();
+          break;
+      }
+    }
+
+    // ============ FUNCIONES WRAPPER PARA COMPATIBILIDAD ============
+
+    function invitarVotaciones(modoPrueba, maxEnviar = null) {
+      // VALIDAR PERMISOS PRIMERO
+      if (!esUsuarioAutorizadoVotacion(usuarioActual?.email)) {
+        mostrarNotificacion('🚫 No tienes permisos para enviar votaciones. Solo usuarios autorizados pueden hacer esto.', 'error');
+        return;
+      }
+
+      if (window.google?.script?.run?.invitarVotaciones) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            const div = document.getElementById('resultadoEnvioVotaciones');
+            if (div && resultado.success) {
+              div.innerHTML = `✅ ${resultado.message}`;
+              mostrarNotificacion('✅ Votaciones enviadas desde info@oga.org.gt', 'success');
+            } else if (div) {
+              div.innerHTML = `❌ ${resultado.message}`;
+              mostrarNotificacion(`❌ ${resultado.message}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            const div = document.getElementById('resultadoEnvioVotaciones');
+            if (div) {
+              div.innerHTML = `❌ Error: ${error.message}`;
+            }
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .invitarVotaciones(modoPrueba, maxEnviar);
+      }
+    }
+
+    function generarResolucion(registro, reunion) {
+      if (window.google?.script?.run?.generarResolucion) {
+        google.script.run
+          .withSuccessHandler(resultado => {
+            if (resultado.success) {
+              mostrarNotificacion(`✅ ${resultado.message}`, 'success');
+              // Recargar estadísticas si es necesario
+            } else {
+              mostrarNotificacion(`❌ ${resultado.message}`, 'error');
+            }
+          })
+          .withFailureHandler(error => {
+            mostrarNotificacion(`❌ Error: ${error.message}`, 'error');
+          })
+          .generarResolucion(registro, reunion);
+      }
+    }
+
+    // ============ DEBUG Y DESARROLLO ============
+    window.agendaDebug = {
+      cargarDatos: actualizarListaAgendas,
+      agendaActual: () => agendaActiva,
+      usuarioActual: () => usuarioActual,
+      permisosVotacion: () => esUsuarioAutorizadoVotacion(usuarioActual?.email),
+      mostrarBloqueo: mostrarBloqueoSistema,
+      ocultarBloqueo: ocultarBloqueoSistema,
+      reiniciarContador: () => {
+        if (agendaActiva) {
+          iniciarContadorTiempo(agendaActiva.numeroReunion);
+        }
+      },
+      estado: () => ({
+        agendaActiva,
+        archivosOGA: archivosOGASeleccionados.length,
+        documentosAdicionales: documentosAdicionalesSeleccionados.length,
+        registroBuscadoOK,
+        usuarioAutorizadoVotar: esUsuarioAutorizadoVotacion(usuarioActual?.email)
+      })
+    };
+    
+    console.log('🚀 Sistema de Agenda OGA v22 Mejorado cargado');
+    console.log('📋 Debug disponible en: window.agendaDebug');
+    console.log('⏰ Sistema de tiempo integrado y optimizado');
+    console.log('📱 UI mejorada con texto nítido en ambos modos');
+    console.log('🔐 Control de acceso para votaciones implementado');
+    console.log('📊 Estadísticas mejoradas por tipo de decisión');
+    console.log('🔒 Sistema de bloqueo animado implementado');
+    console.log('♿ Optimizado para accesibilidad');
+
+    // ============ AUTOMATIZACIÓN DE FECHA (LÓGICA CLIENTE) ============
+
+function detectarFechaInteligente() {
+  const btn = document.querySelector('button[onclick="detectarFechaInteligente()"]');
+  const infoSpan = document.getElementById('infoOrigenFecha');
+  const inputFecha = document.getElementById('fechaReunion');
+  
+  // UI Loading state
+  const textoOriginal = btn.innerHTML;
+  btn.innerHTML = '<div class="spinner" style="width:15px;height:15px;border-width:2px;"></div>';
+  btn.disabled = true;
+  infoSpan.innerHTML = '<span style="color:var(--oga-text-muted);">Consultando calendario...</span>';
+
+  google.script.run
+    .withSuccessHandler(res => {
+      btn.innerHTML = textoOriginal;
+      btn.disabled = false;
+
+      if (res.success) {
+        // 1. Asignar fecha al input
+        inputFecha.value = res.fechaInput;
+        
+        // 2. Feedback visual
+        let colorBadge = 'var(--oga-success)';
+        let icono = '✅';
+        
+        if (res.origen === 'FECHA EXTRAORDINARIA') {
+            colorBadge = 'var(--oga-warning-dark)';
+            icono = '⚡'; // Rayo para extraordinaria
+        } else if (res.origen.includes('SEGUNDA')) {
+            icono = '🗓️';
+        }
+        
+        infoSpan.innerHTML = `<span style="color:${colorBadge}">${icono} ${res.origen} (${res.mes}) detectada</span>`;
+        mostrarNotificacion(`📅 Fecha establecida: ${res.fechaDisplay}`, 'success');
+        
+        // 3. Auto-llenar rango de fechas (Inicio y Fin)
+        sugerirRangoFechas(res.fechaInput);
+        
+      } else {
+        infoSpan.innerHTML = `<span style="color:var(--oga-error);">⚠️ ${res.message}</span>`;
+        mostrarNotificacion(res.message, 'warning');
+      }
+    })
+    .withFailureHandler(err => {
+      btn.innerHTML = textoOriginal;
+      btn.disabled = false;
+      infoSpan.innerHTML = '<span style="color:var(--oga-error);">Error de conexión</span>';
+      mostrarNotificacion(`❌ Error: ${err.message}`, 'error');
+    })
+    .obtenerSiguienteFechaReunion();
+}
+
+// ============ LOGICA DRAG & DROP (FALTABA ESTO) ============
+
+    // Inicializar Drag & Drop al cargar la página
+    // NOTA: Esto se agrega al listener que ya tienes o se pone independiente así:
+    (function() {
+       // Esperar a que el DOM esté listo
+       const initDD = () => {
+           inicializarDragAndDrop('dropZoneOGA', 'adjuntosOGA', manejarArchivosOGA);
+           inicializarDragAndDrop('dropZoneDocs', 'adjuntarDocumentos', manejarDocumentosAdicionales);
+       };
+       
+       if (document.readyState === 'loading') {
+         document.addEventListener('DOMContentLoaded', initDD);
+       } else {
+         initDD();
+       }
+    })();
+
+    function inicializarDragAndDrop(dropZoneId, inputId, callbackFuncion) {
+      const dropZone = document.getElementById(dropZoneId);
+      const input = document.getElementById(inputId);
+
+      if (!dropZone || !input) return;
+
+      // Prevenir comportamientos por defecto
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+      });
+
+      function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      // Efectos visuales al arrastrar
+      ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'), false);
+      });
+
+      ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'), false);
+      });
+
+      // Manejar el evento DROP
+      dropZone.addEventListener('drop', (e) => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        if (files.length > 0) {
+          // Crear un input simulado para pasar a la función existente
+          const inputSimulado = {
+             files: files,
+             id: input.id, 
+             value: '' 
+          };
+          
+          // Usamos la función callback adecuada (OGA o Docs)
+          if (typeof callbackFuncion === 'function') {
+             // Si la función espera el elemento 'this' (el input), le pasamos el simulado
+             // Como tus funciones manejarArchivosOGA llaman a manejarArchivos, esto funcionará:
+             if (inputId === 'adjuntosOGA') {
+                 manejarArchivos(inputSimulado, archivosOGASeleccionados, 'listaArchivosOGA', 'carpetaOGA', 'enlaceCarpetaOGA');
+             } else {
+                 manejarArchivos(inputSimulado, documentosAdicionalesSeleccionados, 'listaDocumentosAdicionales', 'carpetaDocumentos', 'enlaceCarpetaDocumentos');
+             }
+          }
+        }
+      });
+    }
+
+function sugerirRangoFechas(fechaReunionStr) {
+  // Solo sugiere si los campos están vacíos para no borrar trabajo manual
+  const inicioInput = document.getElementById('fechaInicio');
+  const finInput = document.getElementById('fechaFin');
+  
+  // Si ya tienen datos, no sobreescribir
+  if (inicioInput.value && finInput.value) return;
+
+  const fechaBase = new Date(fechaReunionStr + 'T00:00:00');
+  
+  // REGLA DE NEGOCIO PARA RANGO:
+  // Inicio = 15 días antes de la reunión
+  const inicio = new Date(fechaBase);
+  inicio.setDate(inicio.getDate() - 15);
+  
+  // Fin = 1 día después de la reunión
+  const fin = new Date(fechaBase);
+  fin.setDate(fin.getDate() + 1);
+
+  // Helper para formato YYYY-MM-DD
+  const fmt = d => d.toISOString().split('T')[0];
+  
+  if (!inicioInput.value) inicioInput.value = fmt(inicio);
+  if (!finInput.value) finInput.value = fmt(fin);
+  
+  mostrarNotificacion('📅 Rango de fechas sugerido automáticamente', 'info');
+}
+  </script>

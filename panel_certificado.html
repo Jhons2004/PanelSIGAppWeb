@@ -1,0 +1,400 @@
+<style>
+  .cert-body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #eff6ff 0%, #eef2ff 50%, #faf5ff 100%);
+    padding: 1.5rem;
+    font-family: 'Segoe UI', sans-serif;
+  }
+  .dark .cert-body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #1a0a2e 100%);
+  }
+
+  .cert-card {
+    max-width: 680px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 1.25rem;
+    box-shadow: 0 10px 40px rgba(93,92,222,.12);
+    border: 1px solid #e5e7eb;
+    padding: 2.5rem;
+    margin-bottom: 1.5rem;
+    animation: certFadeIn .4s ease-out;
+  }
+  .dark .cert-card {
+    background: #1e293b;
+    border-color: #334155;
+    box-shadow: 0 10px 40px rgba(0,0,0,.4);
+  }
+
+  @keyframes certFadeIn {
+    from { opacity:0; transform: translateY(14px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .cert-header { text-align: center; margin-bottom: 2rem; }
+  .cert-icon {
+    width: 64px; height: 64px;
+    background: linear-gradient(135deg, #5D5CDE, #7c3aed);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.75rem;
+  }
+  .cert-title {
+    font-size: 1.75rem; font-weight: 700;
+    color: #1e293b; margin: 0 0 .4rem;
+  }
+  .dark .cert-title { color: #f1f5f9; }
+  .cert-subtitle { color: #64748b; font-size: .95rem; margin: 0; }
+  .dark .cert-subtitle { color: #94a3b8; }
+
+  .cert-theme-btn {
+    float: right;
+    padding: .65rem;
+    background: #f1f5f9;
+    border: none; border-radius: .75rem;
+    cursor: pointer; font-size: 1.1rem;
+    transition: background .2s, transform .15s;
+  }
+  .cert-theme-btn:hover { background: #e2e8f0; transform: scale(1.05); }
+  .dark .cert-theme-btn { background: #334155; }
+  .dark .cert-theme-btn:hover { background: #475569; }
+
+  .cert-form { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .cert-label {
+    display: block; font-size: .875rem; font-weight: 600;
+    color: #374151; margin-bottom: .4rem;
+  }
+  .dark .cert-label { color: #cbd5e1; }
+
+  .cert-input, .cert-select {
+    width: 100%; padding: .75rem 1rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: .75rem; font-size: 1rem;
+    background: white; color: #111827;
+    transition: border-color .2s, box-shadow .2s;
+    outline: none; box-sizing: border-box;
+  }
+  .dark .cert-input, .dark .cert-select {
+    background: #0f172a; border-color: #475569;
+    color: #f1f5f9;
+  }
+  .cert-input:focus, .cert-select:focus {
+    border-color: #5D5CDE;
+    box-shadow: 0 0 0 3px rgba(93,92,222,.15);
+  }
+  .cert-input[readonly] {
+    background: #f8fafc; cursor: not-allowed; color: #64748b;
+  }
+  .dark .cert-input[readonly] { background: #1e293b; color: #64748b; }
+
+  .cert-btn {
+    padding: .8rem 1.5rem; border: none; border-radius: .75rem;
+    font-size: 1rem; font-weight: 600; cursor: pointer;
+    transition: transform .15s, box-shadow .2s, opacity .2s;
+    display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  }
+  .cert-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.15); }
+  .cert-btn:disabled { opacity: .55; cursor: not-allowed; transform: none !important; }
+
+  .cert-btn-primary {
+    background: linear-gradient(135deg, #5D5CDE, #7c3aed);
+    color: white; flex: 1;
+  }
+  .cert-btn-green {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white; width: 100%;
+  }
+  .cert-btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white; flex: 1;
+  }
+
+  .cert-actions { display: flex; gap: 1rem; margin-top: .5rem; }
+
+  /* Tabla instalaciones */
+  .cert-instalaciones {
+    max-width: 680px; margin: 0 auto;
+    background: white; border-radius: 1.25rem;
+    box-shadow: 0 10px 40px rgba(93,92,222,.1);
+    border: 1px solid #e5e7eb; padding: 1.5rem;
+    animation: certFadeIn .35s ease-out;
+  }
+  .dark .cert-instalaciones { background: #1e293b; border-color: #334155; }
+
+  .cert-table-wrap { overflow-x: auto; border-radius: .75rem; border: 1px solid #e5e7eb; }
+  .dark .cert-table-wrap { border-color: #334155; }
+  .cert-table { width: 100%; border-collapse: collapse; }
+  .cert-table th {
+    background: #f8fafc; padding: .75rem 1rem;
+    text-align: left; font-size: .75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em; color: #64748b;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .dark .cert-table th { background: #0f172a; color: #94a3b8; border-color: #334155; }
+  .cert-table td {
+    padding: .75rem 1rem; font-size: .875rem;
+    color: #1e293b; border-bottom: 1px solid #f1f5f9;
+  }
+  .dark .cert-table td { color: #e2e8f0; border-color: #1e293b; }
+  .cert-table tr:last-child td { border-bottom: none; }
+  .cert-table tr:hover td { background: #f8fafc; }
+  .dark .cert-table tr:hover td { background: #0f172a; }
+
+  /* Toast */
+  #cert-toast {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    background: #1e293b; color: white;
+    padding: .85rem 1.25rem; border-radius: .75rem;
+    font-size: .9rem; font-weight: 500;
+    box-shadow: 0 8px 24px rgba(0,0,0,.25);
+    z-index: 9999; opacity: 0;
+    transform: translateY(12px);
+    transition: opacity .3s, transform .3s;
+    pointer-events: none;
+  }
+  #cert-toast.visible { opacity: 1; transform: translateY(0); }
+</style>
+
+<div class="cert-body" id="certRoot">
+
+  <div class="cert-card">
+    <button class="cert-theme-btn" onclick="certToggleTheme()" title="Cambiar tema" id="certThemeBtn">🌙</button>
+
+    <div class="cert-header">
+      <div class="cert-icon">📄</div>
+      <h1 class="cert-title">Generar Certificado</h1>
+      <p class="cert-subtitle">Complete los datos para generar el certificado de acreditación</p>
+    </div>
+
+    <form id="certForm" class="cert-form" onsubmit="certEnviar(event)">
+
+      <div>
+        <label class="cert-label" for="certRegistro">🪪 Registro de acreditación</label>
+        <input
+          type="text" id="certRegistro" required autocomplete="off"
+          oninput="this.value = this.value.toUpperCase()"
+          class="cert-input"
+          placeholder="Ingrese el registro de acreditación"
+        >
+      </div>
+
+      <button type="button" class="cert-btn cert-btn-green" onclick="certVerInstalaciones()">
+        🔍 Ver instalaciones
+      </button>
+
+      <div>
+        <label class="cert-label" for="certOficial">👤 Oficial de acreditación</label>
+        <select id="certOficial" required class="cert-select">
+          <option value="">Cargando oficiales...</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="cert-label" for="certFecha">📅 Fecha de emisión</label>
+        <input type="text" id="certFecha" readonly class="cert-input">
+      </div>
+
+      <div class="cert-actions">
+        <button type="submit" id="certBtnEnviar" class="cert-btn cert-btn-primary">
+          📄 Generar certificado
+        </button>
+        <button type="button" id="certBtnVolver" class="cert-btn cert-btn-danger" onclick="window.OGA.irAlMenu()">
+          ✕ Volver
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Tabla instalaciones (oculta inicialmente) -->
+  <div id="certInstalaciones" class="cert-instalaciones" style="display:none;">
+    <div style="display:flex; align-items:center; gap:.75rem; margin-bottom:1.25rem;">
+      <div style="width:38px;height:38px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:.6rem;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🏢</div>
+      <h3 style="font-size:1.1rem;font-weight:700;color:#1e293b;margin:0;" class="cert-title" id="certInstTitle">Instalaciones encontradas</h3>
+    </div>
+    <div class="cert-table-wrap">
+      <table class="cert-table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Dirección</th>
+            <th>Acreditado desde</th>
+          </tr>
+        </thead>
+        <tbody id="certTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<div id="cert-toast"></div>
+
+<script>
+  // ── Tema ──────────────────────────────────────────
+  (function() {
+    // Heredar tema del App.html padre si existe
+    const isDark = document.documentElement.classList.contains('dark');
+    if (isDark) document.getElementById('certRoot')?.classList.add('dark');
+    document.getElementById('certThemeBtn').textContent = isDark ? '☀️' : '🌙';
+  })();
+
+  function certToggleTheme() {
+    const root = document.getElementById('certRoot');
+    const isDark = root.classList.toggle('dark');
+    document.getElementById('certThemeBtn').textContent = isDark ? '☀️' : '🌙';
+  }
+
+  // ── Toast ─────────────────────────────────────────
+  function certToast(msg) {
+    const el = document.getElementById('cert-toast');
+    el.textContent = msg;
+    el.classList.add('visible');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('visible'), 4000);
+  }
+
+  // ── Carga inicial ─────────────────────────────────
+  (function init() {
+    // Oficiales
+    google.script.run
+      .withSuccessHandler(oficiales => {
+        const sel = document.getElementById('certOficial');
+        sel.innerHTML = '<option value="">Seleccione un oficial...</option>';
+        (oficiales || []).forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o; opt.textContent = o;
+          sel.appendChild(opt);
+        });
+      })
+      .withFailureHandler(err => {
+        document.getElementById('certOficial').innerHTML =
+          '<option value="">Error cargando oficiales</option>';
+        console.error('obtenerOficiales:', err);
+      })
+      .obtenerOficiales();
+
+    // Fecha
+    google.script.run
+      .withSuccessHandler(f => { document.getElementById('certFecha').value = f; })
+      .withFailureHandler(() => {
+        document.getElementById('certFecha').value = new Date().toLocaleString('es-GT');
+      })
+      .obtenerFechaHoraActual();
+  })();
+
+  // ── Ver instalaciones ─────────────────────────────
+  function certVerInstalaciones() {
+    const registro = document.getElementById('certRegistro').value.trim();
+    if (!registro) { certToast('⚠️ Ingresá un registro de acreditación.'); return; }
+
+    const btn = document.querySelector('.cert-btn-green');
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⏳ Buscando...';
+
+    google.script.run
+      .withSuccessHandler(html => {
+        btn.disabled = false; btn.innerHTML = orig;
+
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+        const filas = tmp.querySelectorAll('tbody tr');
+        const tbody = document.getElementById('certTbody');
+        const wrap  = document.getElementById('certInstalaciones');
+
+        tbody.innerHTML = '';
+
+        if (!filas.length) {
+          certToast('❌ No se encontraron instalaciones.');
+          wrap.style.display = 'none';
+          return;
+        }
+
+        filas.forEach(fila => {
+          fila.querySelectorAll('td').forEach(td => {
+            td.style.padding = '.75rem 1rem';
+            td.style.fontSize = '.875rem';
+          });
+          tbody.appendChild(fila);
+        });
+
+        document.getElementById('certInstTitle').textContent =
+          `Instalaciones encontradas (${filas.length})`;
+
+        wrap.style.display = 'block';
+        wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        certToast(`✅ ${filas.length} instalación(es) encontrada(s).`);
+      })
+      .withFailureHandler(err => {
+        btn.disabled = false; btn.innerHTML = orig;
+        certToast('❌ Error al buscar instalaciones.');
+        console.error(err);
+      })
+      .obtenerHTMLInstalaciones(registro);
+  }
+
+  // ── Enviar formulario ─────────────────────────────
+  function certEnviar(e) {
+    e.preventDefault();
+
+    const datos = {
+      registro: document.getElementById('certRegistro').value.trim(),
+      oficial:  document.getElementById('certOficial').value,
+      fecha:    document.getElementById('certFecha').value
+    };
+
+    if (!datos.registro || !datos.oficial || !datos.fecha) {
+      certToast('⚠️ Completá todos los campos obligatorios.');
+      return;
+    }
+
+    const btnEnviar = document.getElementById('certBtnEnviar');
+    const btnVolver = document.getElementById('certBtnVolver');
+    const origEnviar = btnEnviar.innerHTML;
+
+    btnEnviar.disabled = true;
+    btnVolver.disabled = true;
+    btnEnviar.innerHTML = '⏳ Generando...';
+
+    // Overlay de carga del SPA padre
+    if (window.OGA) OGA.overlay('Generando certificado...');
+
+    google.script.run
+      .withSuccessHandler(msg => {
+        if (window.OGA) OGA.overlay(null);
+
+        const esExito = msg.includes('éxito') || msg.startsWith('✨') || msg.startsWith('✅');
+
+        if (esExito) {
+          certToast('✅ ' + msg);
+          // Limpiar form y recargar fecha
+          document.getElementById('certForm').reset();
+          google.script.run
+            .withSuccessHandler(f => { document.getElementById('certFecha').value = f; })
+            .obtenerFechaHoraActual();
+          document.getElementById('certInstalaciones').style.display = 'none';
+
+          // Volver al menú después de mostrar el éxito
+          setTimeout(() => window.OGA.irAlMenu(), 2000);
+
+        } else {
+          btnEnviar.disabled = false;
+          btnVolver.disabled = false;
+          btnEnviar.innerHTML = origEnviar;
+          certToast('❌ ' + msg);
+        }
+      })
+      .withFailureHandler(err => {
+        if (window.OGA) OGA.overlay(null);
+        btnEnviar.disabled = false;
+        btnVolver.disabled = false;
+        btnEnviar.innerHTML = origEnviar;
+        certToast('❌ Error: ' + (err.message || 'Error desconocido'));
+        console.error('generarCertificadoManual:', err);
+      })
+      .generarCertificadoManual(datos);
+  }
+</script>

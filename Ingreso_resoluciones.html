@@ -1,0 +1,719 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+  #resRoot {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: #0d1117;
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+    display: block;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  #resRoot::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 75% 15%, rgba(37,99,235,.15) 0%, transparent 50%),
+      radial-gradient(circle at 20% 85%, rgba(124,58,237,.1) 0%, transparent 50%),
+      radial-gradient(rgba(255,255,255,.032) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .res-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* ── Breadcrumb ── */
+  .res-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    font-size: .8rem;
+    font-weight: 500;
+    color: rgba(255,255,255,.35);
+  }
+  .res-breadcrumb button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,.5);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 0;
+    transition: color .2s;
+  }
+  .res-breadcrumb button:hover { color: #60a5fa; }
+
+  /* ── Badge + Header ── */
+  .res-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124,58,237,.18);
+    border: 1px solid rgba(124,58,237,.35);
+    color: #c4b5fd;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .res-badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #a78bfa;
+    box-shadow: 0 0 6px #a78bfa;
+    animation: res-pulse 2s infinite;
+  }
+  @keyframes res-pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  .res-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .res-title {
+    font-size: 2.1rem;
+    font-weight: 900;
+    color: #f1f5f9;
+    margin: 0 0 8px;
+    letter-spacing: -.04em;
+    line-height: 1.05;
+  }
+  .res-subtitle {
+    color: rgba(255,255,255,.4);
+    font-size: .88rem;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .res-btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .83rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.6);
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+    flex-shrink: 0;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+  .res-btn-back:hover {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    border-color: rgba(255,255,255,.2);
+  }
+
+  /* ── Cards ── */
+  .res-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    transition: border-color .3s;
+  }
+  .res-card:focus-within { border-color: rgba(124,58,237,.4); }
+
+  .res-card-hdr {
+    padding: 14px 22px;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(0,0,0,.1);
+  }
+  .res-card-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #7c3aed;
+    box-shadow: 0 0 7px rgba(124,58,237,.8);
+  }
+  .res-card-hdr-label {
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+  }
+
+  .res-card-body { padding: 22px; }
+
+  /* ── Campos ── */
+  .res-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .res-field { display: flex; flex-direction: column; }
+  .res-field label {
+    font-size: .71rem;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+    margin-bottom: 7px;
+  }
+  .res-field input,
+  .res-field textarea {
+    font-family: 'DM Sans', sans-serif;
+    padding: 11px 14px;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 10px;
+    font-size: .9rem;
+    width: 100%;
+    background: rgba(255,255,255,.05);
+    color: #f1f5f9;
+    outline: none;
+    transition: border-color .2s, background .2s;
+    box-sizing: border-box;
+  }
+  .res-field input::placeholder,
+  .res-field textarea::placeholder { color: rgba(255,255,255,.2); }
+  .res-field input:focus,
+  .res-field textarea:focus {
+    border-color: rgba(124,58,237,.6);
+    background: rgba(124,58,237,.07);
+  }
+  .res-field input[style*="text-transform"],
+  #res-registro { text-transform: uppercase; }
+  .res-field textarea { resize: vertical; min-height: 88px; }
+  .res-field-hint {
+    font-size: .72rem;
+    color: rgba(255,255,255,.25);
+    margin-top: 5px;
+  }
+
+  /* ── Acciones ── */
+  .res-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 18px 22px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    background: rgba(0,0,0,.15);
+  }
+
+  .res-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 20px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .87rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: opacity .18s, transform .15s, box-shadow .18s;
+    white-space: nowrap;
+  }
+  .res-btn:hover   { opacity: .9; transform: translateY(-1px); }
+  .res-btn:active  { transform: translateY(0); }
+  .res-btn:disabled {
+    opacity: .3;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .res-btn-violet {
+    background: #7c3aed;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(124,58,237,.35);
+  }
+  .res-btn-violet:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(124,58,237,.55); }
+  .res-btn-ghost {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.1);
+    color: rgba(255,255,255,.65);
+  }
+  .res-btn-ghost:hover:not(:disabled) {
+    background: rgba(255,255,255,.11);
+    color: #fff;
+    border-color: rgba(255,255,255,.2);
+  }
+
+  /* ── Mensaje ── */
+  .res-msg {
+    padding: 13px 18px;
+    border-radius: 10px;
+    font-size: .87rem;
+    font-weight: 600;
+    display: none;
+    white-space: pre-line;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .res-msg.ok   { background: rgba(21,128,61,.14);  color: #86efac; border: 1px solid rgba(21,128,61,.28); }
+  .res-msg.warn { background: rgba(234,179,8,.09);  color: #fde68a; border: 1px solid rgba(234,179,8,.22); }
+  .res-msg.err  { background: rgba(220,38,38,.11);  color: #fca5a5; border: 1px solid rgba(220,38,38,.28); }
+
+  /* ── Links resultado ── */
+  .res-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .res-link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 11px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: #f1f5f9;
+    font-size: .87rem;
+    font-weight: 600;
+    transition: background .18s, border-color .18s, color .18s;
+  }
+  .res-link-item:hover {
+    background: rgba(124,58,237,.14);
+    border-color: rgba(124,58,237,.4);
+    color: #c4b5fd;
+  }
+  .res-link-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .res-link-sub  { font-size: .72rem; color: rgba(255,255,255,.35); font-weight: 400; margin-top: 2px; }
+
+  /* ── Overlay ── */
+  #res-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.65);
+    align-items: center; justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+  }
+  #res-overlay.show { display: flex; }
+  .res-ov-box {
+    background: #161b22;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 16px;
+    padding: 34px 40px;
+    text-align: center;
+    max-width: 360px; width: 90%;
+    box-shadow: 0 30px 60px rgba(0,0,0,.5);
+  }
+  .res-spinner {
+    width: 38px; height: 38px;
+    border: 3px solid rgba(255,255,255,.08);
+    border-top-color: #7c3aed;
+    border-radius: 50%;
+    animation: res-spin .8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes res-spin { to { transform: rotate(360deg); } }
+  .res-ov-title { font-size: 1rem; font-weight: 800; color: #f1f5f9; margin-bottom: 6px; }
+  .res-ov-msg   { font-size: .82rem; color: rgba(255,255,255,.4); white-space: pre-line; line-height: 1.5; }
+
+  @media (max-width: 580px) {
+    .res-grid-2 { grid-template-columns: 1fr; }
+    .res-links  { grid-template-columns: 1fr; }
+    .res-title  { font-size: 1.6rem; }
+    .res-header { flex-direction: column; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
+<div id="resRoot">
+  <div class="res-wrap">
+
+    <!-- Breadcrumb -->
+    <nav class="res-breadcrumb">
+      <button onclick="resIrMenu()">Menú</button>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1.5l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <button onclick="resIrSelector()">Resoluciones</button>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1.5l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Acreditación</span>
+    </nav>
+
+    <!-- Badge + Header -->
+    <div class="res-badge"><div class="res-badge-dot"></div>Módulo activo</div>
+
+    <div class="res-header">
+      <div>
+        <h1 class="res-title">Resolución de<br>Acreditación</h1>
+        <p class="res-subtitle">Ingresa el registro y el año de evaluación para generar la resolución oficial.</p>
+      </div>
+      <button class="res-btn-back" onclick="resIrSelector()">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2L3 6.5 8 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al selector
+      </button>
+    </div>
+
+    <!-- Mensaje -->
+    <div class="res-msg" id="res-msg"></div>
+
+    <!-- Card: Datos -->
+    <div class="res-card">
+      <div class="res-card-hdr">
+        <div class="res-card-dot"></div>
+        <span class="res-card-hdr-label">Datos de la resolución</span>
+      </div>
+      <div class="res-card-body">
+
+        <div class="res-field" style="margin-bottom:14px">
+          <label>Registro de acreditación</label>
+          <input type="text" id="res-registro" placeholder="Ej. LAB-123" autocomplete="off"/>
+        </div>
+
+        <div class="res-grid-2">
+          <div class="res-field">
+            <label>Año de evaluación</label>
+            <input type="number" id="res-anio" placeholder="2025" min="2000" max="2100"/>
+          </div>
+          <div></div>
+        </div>
+
+        <div class="res-field">
+          <label>Comentario del Consejo <span style="font-weight:400;text-transform:none;letter-spacing:0;color:rgba(255,255,255,.22)">(opcional)</span></label>
+          <textarea id="res-coment" placeholder="Texto adicional para {comentario consejo}"></textarea>
+          <div class="res-field-hint">Se insertará en el marcador {comentario consejo} del documento.</div>
+        </div>
+
+      </div>
+      <div class="res-actions">
+        <button class="res-btn res-btn-violet" id="res-btnGen" onclick="res_generar()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7.5 3l3.5 3.5-3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Generar Resolución
+        </button>
+        <button class="res-btn res-btn-ghost" onclick="resIrSelector()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2L3 6.5 8 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Regresar al selector
+        </button>
+      </div>
+    </div>
+
+    <!-- Card: Resultado (oculto) -->
+    <div class="res-card" id="res-resultado" style="display:none;">
+      <div class="res-card-hdr">
+        <div class="res-card-dot" style="background:#f59e0b;box-shadow:0 0 7px rgba(245,158,11,.7)"></div>
+        <span class="res-card-hdr-label">Archivos generados</span>
+      </div>
+      <div class="res-card-body">
+        <div class="res-links" id="res-links-grid"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Overlay -->
+<div id="res-overlay">
+  <div class="res-ov-box">
+    <div class="res-spinner"></div>
+    <div class="res-ov-title" id="res-ovTitulo">Generando resolución</div>
+    <div class="res-ov-msg"   id="res-ovMsg">Espere un momento...</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var NS = window.RES_ACRED = window.RES_ACRED || {};
+
+  function q(id) { return document.getElementById(id); }
+  function normalizar(s) { return String(s || '').toUpperCase().replace(/\s+/g,'').trim(); }
+  function extraerPrimeraURL(texto) {
+    var parts = String(texto || '').split(/\s+/);
+    for (var i = 0; i < parts.length; i++) {
+      if (/^https?:\/\//i.test(parts[i])) return parts[i].replace(/[),.;]+$/, '');
+    }
+    return '';
+  }
+  function escapeHtml(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+  function safeNavigateMenu() {
+    try {
+      if (window.OGA && typeof window.OGA.irAlMenu === 'function') return window.OGA.irAlMenu();
+    } catch (_) {}
+  }
+  function safeNavigateSelector() {
+    try {
+      if (window.OGA && typeof window.OGA.navegar === 'function') return window.OGA.navegar('mostrarmoduloselectoresolib');
+    } catch (_) {}
+  }
+  function safeDocUrl(res) {
+    if (res && typeof res === 'object') {
+      if (res.docUrl) return String(res.docUrl);
+      if (res.urlDoc) return String(res.urlDoc);
+      if (res.openUrl) return String(res.openUrl);
+      if (res.docId)  return 'https://docs.google.com/document/d/' + res.docId + '/edit';
+      return extraerPrimeraURL(JSON.stringify(res));
+    }
+    return extraerPrimeraURL(res);
+  }
+  function safePdfUrl(res) {
+    if (res && typeof res === 'object') {
+      if (res.pdfUrl) return String(res.pdfUrl);
+      if (res.pdfId)  return 'https://drive.google.com/open?id=' + res.pdfId;
+      var s = extraerPrimeraURL(JSON.stringify(res));
+      return (/drive\.google\.com|\.pdf$/i.test(s)) ? s : '';
+    }
+    var s2 = extraerPrimeraURL(res);
+    return (/drive\.google\.com|\.pdf$/i.test(s2)) ? s2 : '';
+  }
+  function ov(titulo, msg) {
+    q('res-ovTitulo').textContent = titulo || 'Procesando';
+    q('res-ovMsg').textContent = msg || 'Espere...';
+    q('res-overlay').classList.add('show');
+  }
+  function cvOv() { q('res-overlay').classList.remove('show'); }
+  function showMsg(texto, tipo) {
+    var el = q('res-msg');
+    el.textContent = texto || '';
+    el.className = 'res-msg ' + (tipo || 'ok');
+    el.style.display = 'block';
+  }
+  function clearMsg() {
+    var el = q('res-msg');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+  function bloquear(estado) {
+    var btn = q('res-btnGen');
+    if (btn) {
+      btn.disabled = !!estado;
+      if (estado) {
+        btn.innerHTML = 'Generando…';
+      } else {
+        btn.innerHTML =
+          '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5h9M7.5 3l3.5 3.5-3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+          ' Generar Resolución';
+      }
+    }
+    ['res-registro','res-anio','res-coment'].forEach(function(id) {
+      var el = q(id);
+      if (!el) return;
+      if (estado) el.setAttribute('disabled', 'disabled'); else el.removeAttribute('disabled');
+    });
+  }
+  function normalizarRespuesta(raw) {
+    raw = raw || {};
+    var docs = [];
+
+    if (Array.isArray(raw.documentos) && raw.documentos.length) {
+      docs = raw.documentos.slice();
+    } else if (Array.isArray(raw.resultados) && raw.resultados.length) {
+      docs = raw.resultados.slice();
+    } else if (raw.docId || raw.docUrl || raw.urlDoc || raw.openUrl) {
+      docs = [raw];
+    }
+
+    docs = docs.map(function(doc, idx) {
+      doc = doc || {};
+      var url = String(doc.urlDoc || doc.docUrl || doc.openUrl || '').trim();
+      var pdf = String(doc.pdfUrl || '').trim();
+      var docId = String(doc.docId || '').trim();
+      if (!url && docId) url = 'https://docs.google.com/document/d/' + docId + '/edit';
+      if (!pdf) pdf = safePdfUrl(doc);
+      return {
+        indice: idx + 1,
+        docId: docId,
+        urlDoc: url,
+        pdfUrl: pdf,
+        nombreArchivo: String(doc.nombreArchivo || ('Resolución ' + (idx + 1))).trim(),
+        tipoDocumento: String(doc.tipoDocumento || '').trim(),
+        tipoDecision: String(doc.tipoDecision || '').trim()
+      };
+    }).filter(function(doc) { return !!(doc.urlDoc || doc.pdfUrl || doc.docId); });
+
+    if (!docs.length) {
+      var singleUrl = safeDocUrl(raw);
+      var singlePdf = safePdfUrl(raw);
+      if (singleUrl || singlePdf) {
+        docs.push({
+          indice: 1,
+          docId: String(raw.docId || '').trim(),
+          urlDoc: singleUrl,
+          pdfUrl: singlePdf,
+          nombreArchivo: String(raw.nombreArchivo || 'Resolución generada').trim(),
+          tipoDocumento: String(raw.tipoDocumento || '').trim(),
+          tipoDecision: String(raw.tipoDecision || '').trim()
+        });
+      }
+    }
+
+    return {
+      ok: raw.ok !== false,
+      total: docs.length || Number(raw.total || 0) || 0,
+      multiple: !!raw.multiple || docs.length > 1,
+      mensaje: raw.mensaje || (docs.length > 1
+        ? ('Se generaron ' + docs.length + ' resoluciones correctamente.')
+        : 'Resolución generada correctamente.'),
+      documentos: docs,
+      firstDocUrl: docs.length ? docs[0].urlDoc : safeDocUrl(raw)
+    };
+  }
+  function renderResultados(resNorm) {
+    var docs = resNorm.documentos || [];
+    var html = docs.map(function(doc) {
+      var meta = [];
+      if (doc.tipoDocumento) meta.push(doc.tipoDocumento);
+      if (doc.tipoDecision) meta.push(doc.tipoDecision);
+      var metaTxt = meta.join(' · ') || 'Documento generado';
+
+      var anchors = [];
+      if (doc.urlDoc) {
+        anchors.push(
+          '<a class="res-link-item" href="' + escapeHtml(doc.urlDoc) + '" target="_blank" rel="noopener">' +
+            '<span class="res-link-icon">📄</span>' +
+            '<div><div>' + escapeHtml(doc.nombreArchivo || ('Resolución ' + doc.indice)) + '</div>' +
+            '<div class="res-link-sub">' + escapeHtml(metaTxt) + ' · Abrir documento editable</div></div>' +
+          '</a>'
+        );
+      }
+      if (doc.pdfUrl) {
+        anchors.push(
+          '<a class="res-link-item" href="' + escapeHtml(doc.pdfUrl) + '" target="_blank" rel="noopener">' +
+            '<span class="res-link-icon">📑</span>' +
+            '<div><div>PDF ' + escapeHtml(doc.nombreArchivo || ('Resolución ' + doc.indice)) + '</div>' +
+            '<div class="res-link-sub">' + escapeHtml(metaTxt) + ' · Abrir PDF generado</div></div>' +
+          '</a>'
+        );
+      }
+      return anchors.join('');
+    }).join('');
+
+    q('res-links-grid').innerHTML = html;
+    q('res-resultado').style.display = html ? 'block' : 'none';
+  }
+  function ejecutarGeneracion(registro, anio, opciones) {
+    var runner = google.script.run
+      .withSuccessHandler(function(raw) {
+        cvOv();
+        bloquear(false);
+
+        var res = normalizarRespuesta(raw);
+        if (!res.ok) {
+          showMsg(res.mensaje || 'No se pudo generar la resolución.', 'err');
+          return;
+        }
+
+        if (res.firstDocUrl) {
+          try { window.open(res.firstDocUrl, '_blank', 'noopener'); } catch (_) {}
+        }
+
+        renderResultados(res);
+        showMsg(res.mensaje, 'ok');
+
+        Swal.fire({
+          icon: 'success',
+          title: res.multiple ? '¡Resoluciones generadas!' : '¡Listo!',
+          text: res.multiple
+            ? ('Se generaron ' + res.total + ' resoluciones correctamente.')
+            : 'Documento generado correctamente.',
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#7c3aed',
+          background: '#161b22',
+          color: '#f1f5f9'
+        });
+      })
+      .withFailureHandler(function(err) {
+        cvOv();
+        bloquear(false);
+        var msg = (err && err.message) ? err.message : String(err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error al generar',
+          text: msg,
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#d33',
+          background: '#161b22',
+          color: '#f1f5f9'
+        });
+        showMsg(msg, 'err');
+      });
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+      if (typeof google.script.run.lib_generarResolucionFrontend === 'function') {
+        runner.lib_generarResolucionFrontend(registro, anio, opciones);
+      } else {
+        runner.lib_generarResolucion(registro, anio, opciones);
+      }
+    }
+  }
+
+  NS.irMenu = safeNavigateMenu;
+  NS.irSelector = safeNavigateSelector;
+  window.resIrMenu = safeNavigateMenu;
+  window.resIrSelector = safeNavigateSelector;
+
+  var regInput = q('res-registro');
+  var anioInput = q('res-anio');
+  if (anioInput && !anioInput.value) anioInput.value = String(new Date().getFullYear());
+
+  if (regInput) {
+    var fix = function() {
+      var antes = regInput.value;
+      var despues = normalizar(antes);
+      if (despues !== antes) regInput.value = despues;
+    };
+    regInput.addEventListener('input', fix);
+    regInput.addEventListener('change', fix);
+  }
+
+  document.addEventListener('keydown', function(e) {
+    var active = document.activeElement && document.activeElement.id;
+    if (e.key === 'Enter' && (active === 'res-registro' || active === 'res-anio')) {
+      e.preventDefault();
+      if (typeof window.res_generar === 'function') window.res_generar();
+    }
+  });
+
+  window.res_generar = function () {
+    clearMsg();
+    q('res-resultado').style.display = 'none';
+    q('res-links-grid').innerHTML = '';
+
+    if (regInput) regInput.value = normalizar(regInput.value);
+
+    var registro = normalizar((q('res-registro') || {}).value || '');
+    var anio = String((q('res-anio') || {}).value || '').trim();
+    var coment = String((q('res-coment') || {}).value || '');
+
+    if (!registro) return showMsg('Ingresa el Registro de Acreditación.', 'warn');
+    if (!anio || isNaN(Number(anio))) return showMsg('Ingresa el año de evaluación (numérico).', 'warn');
+
+    bloquear(true);
+    ov('Generando resolución…', 'Este proceso puede tardar unos segundos.\nPor favor no cierres la ventana.');
+
+    ejecutarGeneracion(registro, anio, {
+      generarPdf: false,
+      comentarioConsejo: coment
+    });
+  };
+})();
+</script>

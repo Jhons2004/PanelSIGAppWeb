@@ -1,0 +1,11 @@
+.clasp.json
+.clasprc.json
+.env
+.env.*
+!.env.example
+node_modules/
+*.zip
+*_BACKUP*/
+*.log
+credentials*.json
+*_secret*

@@ -1,0 +1,333 @@
+<style>
+  #boletas-root { font-family:'Segoe UI',sans-serif; background:#f5f7fb; min-height:100vh; padding:26px; box-sizing:border-box; }
+  #boletas-root .wrap { max-width:760px; margin:0 auto; }
+  #boletas-root .card { background:#fff; border-radius:14px; box-shadow:0 2px 10px rgba(0,0,0,.08); padding:22px; }
+  #boletas-root h1 { font-size:20px; margin:0 0 12px; color:#1f2937; }
+  #boletas-root label { display:block; font-weight:600; margin-top:12px; }
+  #boletas-root input, #boletas-root textarea, #boletas-root select, #boletas-root datalist, #boletas-root option {
+    width:100%; box-sizing:border-box; padding:10px; border:1px solid #d6dae1; border-radius:10px; margin-top:6px; font-size:14px; background:#fff;
+  }
+  #boletas-root textarea { min-height:90px; resize:vertical; }
+  #boletas-root .row { display:flex; gap:12px; flex-wrap:wrap; }
+  #boletas-root .row > div { flex:1 1 260px; min-width:260px; }
+  #boletas-root .btns { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; }
+  #boletas-root button { border:0; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  #boletas-root .primary { background:#0b5bd3; color:#fff; }
+  #boletas-root .secondary { background:#e5e7eb; color:#111827; }
+  #boletas-root .danger { background:#ef4444; color:#fff; }
+  #boletas-root .btn-outline { background:#fff; color:#111827; border:1px solid #d1d5db; }
+  #boletas-root .muted { color:#6b7280; font-size:12px; }
+  #boletas-root .section { margin-top:16px; padding:14px; border:1px dashed #e5e7eb; border-radius:10px; background:#fafbff; }
+  #boletas-root .grid { display:grid; grid-template-columns: 170px 1fr; gap:8px 12px; }
+  #boletas-root .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; font-weight:700; }
+  #boletas-root .ok { background:#e0f7ec; color:#065f46; }
+  #boletas-root .warn { background:#fef3c7; color:#92400e; }
+  #boletas-root .bad { background:#fee2e2; color:#991b1b; }
+  #boletas-root .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 14px; border-radius:10px; display:none; z-index:10000; }
+  #boletas-root .hidden { display:none; }
+  #boletas-root button[disabled] { opacity:.6; cursor:not-allowed; }
+  #boletas-root .section.disabled { opacity:.55; pointer-events:none; }
+  #boletas-root #overlay { position: fixed; inset: 0; z-index: 9998; background: rgba(255,255,255,.7); display: none; align-items: center; justify-content: center; font-weight: 700; color:#1f2937; }
+  #boletas-root #overlay.show { display:flex; }
+  #boletas-root .spinner { width:16px; height:16px; border:2px solid currentColor; border-top-color: transparent; border-radius:50%; display:inline-block; vertical-align:-2px; margin-right:8px; animation:boletaSpin 1s linear infinite; }
+  @keyframes boletaSpin { to { transform:rotate(360deg); } }
+  #boletas-root #confirmWrap { position:fixed; inset:0; z-index:10001; display:none; align-items:center; justify-content:center; background:rgba(17,24,39,.45); }
+  #boletas-root #confirmWrap.show { display:flex; }
+  #boletas-root .confirm-card{ width:min(560px, 92vw); background:#fff; border-radius:16px; padding:20px; box-shadow:0 10px 30px rgba(0,0,0,.15); text-align:center; }
+  #boletas-root .confirm-icon{ width:44px; height:44px; line-height:44px; margin:0 auto 8px; border-radius:50%; background:#e0f7ec; color:#065f46; font-weight:900; }
+  #boletas-root .confirm-title{ font-size:18px; margin:6px 0 4px; }
+  #boletas-root .confirm-text{ color:#4b5563; margin:0 0 14px; }
+  #boletas-root .confirm-actions{ display:flex; gap:10px; justify-content:center; }
+</style>
+
+<div id="boletas-root">
+  <div class="wrap">
+    <div class="card">
+      <h1>Anular / Modificar Boleta</h1>
+
+      <div class="row">
+        <div>
+          <label>Año de la boleta</label>
+          <input id="anio" type="text" placeholder="Ej. 2025" maxlength="4" inputmode="numeric">
+        </div>
+        <div>
+          <label>Correlativo</label>
+          <input id="corr" type="text" placeholder="Ej. 218" inputmode="numeric">
+          <div class="muted"></div>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="btnBuscar" class="primary" onclick="buscar()">Buscar Boleta</button>
+        <button class="secondary" onclick="regresar()">Regresar al Menú Principal</button>
+      </div>
+
+      <div id="preview" class="section hidden">
+        <div class="grid">
+          <div><strong>Identificador</strong></div><div id="p_ident"></div>
+          <div><strong>Registro OEC</strong></div><div id="p_oec"></div>
+          <div><strong>Estado</strong></div><div id="p_estado"></div>
+          <div><strong>Monto a cancelar</strong></div><div id="p_monto"></div>
+          <div><strong>Monto cancelado</strong></div><div id="p_montopag"></div>
+          <div><strong>Fecha de pago</strong></div><div id="p_fecha"></div>
+          <div><strong>Banco</strong></div><div id="p_banco"></div>
+          <div><strong>Referencia</strong></div><div id="p_ref"></div>
+          <div><strong>Concepto</strong></div><div id="p_concepto"></div>
+          <div><strong>Tasa de cambio</strong></div><div id="p_tasa"></div>
+          <div><strong>Monto USD</strong></div><div id="p_usd"></div>
+          <div><strong>Responsable</strong></div><div id="p_resp"></div>
+        </div>
+      </div>
+
+      <div id="acciones" class="btns hidden">
+        <button id="btnIrAnular" class="danger" onclick="mostrarSeccion('anular')" disabled>🧾 Anular boleta</button>
+        <button id="btnIrModificar" class="primary" onclick="mostrarSeccion('modificar')" disabled>✏️ Modificar boleta</button>
+      </div>
+
+      <div id="accionAnul" class="section hidden disabled">
+        <label>Motivo de anulación</label>
+        <textarea id="motivo" placeholder="Describe el motivo..." disabled></textarea>
+        <div class="btns">
+          <button id="btnAnular" class="danger" onclick="anular()" disabled>Anular Boleta</button>
+        </div>
+        <div class="muted">Solo se permite anular si el estado <strong>no</strong> es “Pagado”.</div>
+      </div>
+
+      <div id="accionMod" class="section hidden disabled">
+        <div class="row">
+          <div>
+            <label>Nuevo monto a cancelar (Q)</label>
+            <input id="montoNuevo" type="number" step="0.01" min="0" placeholder="Ej. 1250.00" disabled>
+          </div>
+          <div>
+            <label>Administrador</label>
+            <input id="supInput" list="supList" placeholder="Correo Administrador" disabled>
+            <datalist id="supList"></datalist>
+            <div class="muted" id="supHelp"></div>
+          </div>
+          <div>
+            <label>Clave del Administrador</label>
+            <input id="claveSup" type="password" autocomplete="off" disabled>
+          </div>
+        </div>
+
+        <label>Motivo de la modificación</label>
+        <textarea id="motivoMod" placeholder="Explica por qué se modifica…" disabled></textarea>
+
+        <div class="btns">
+          <button id="btnModificar" class="primary" onclick="modificar()" disabled>Modificar y reemitir PDF</button>
+        </div>
+        <div class="muted">No se puede modificar si la boleta está <strong>Pagada</strong> o <strong>Anulada</strong>.</div>
+      </div>
+
+      <div id="toast" class="toast"></div>
+    </div>
+  </div>
+
+  <div id="overlay">Procesando…</div>
+
+  <div id="confirmWrap" role="dialog" aria-modal="true">
+    <div class="confirm-card">
+      <div class="confirm-icon">✓</div>
+      <div class="confirm-title" id="confirmTitle">¡Listo!</div>
+      <div class="confirm-text" id="confirmText"></div>
+      <div class="confirm-actions">
+        <button id="confirmYes" class="primary">Sí, hacer otra</button>
+        <button id="confirmNo" class="btn-outline">No, volver al menú</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  let ultimo = null;
+  let buscando = false, anulando = false, modificando = false;
+
+  const $ = id => document.getElementById(id);
+  const soloDigitos = s => String(s || '').replace(/\D+/g, '');
+
+  function toast(msg){ const t=$('toast'); t.textContent=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',3200); }
+  function showOverlay(msg){ const o=$('overlay'); o.textContent=msg||'Procesando…'; o.classList.add('show'); }
+  function hideOverlay(){ $('overlay').classList.remove('show'); }
+  function lockBtn(id,txt){ const b=$(id); if(!b)return; if(!b.dataset.label)b.dataset.label=b.textContent; b.disabled=true; b.innerHTML=`<span class="spinner"></span>${txt||b.dataset.label}`; }
+  function unlockBtn(id){ const b=$(id); if(!b)return; b.disabled=false; b.innerHTML=b.dataset.label||b.textContent; }
+
+  function normEstado(e){ return String(e||"").replace(/\u00A0/g," ").replace(/\s+/g," ").trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+  function clasificaEstado(s){ const e=normEstado(s); return {esPagado:e==='pagado', esAnulado:e==='anulada'||e==='anulado'||e==='boleta anulada'}; }
+
+  function setAccionAnulEnabled(allowed){
+    const sec=$('accionAnul'), btn=$('btnAnular'), txt=$('motivo');
+    sec.classList.remove('hidden'); sec.classList.toggle('disabled', !allowed);
+    btn.disabled=!allowed; txt.disabled=!allowed;
+  }
+  function setAccionModEnabled(allowed){
+    const sec=$('accionMod'); sec.classList.remove('hidden'); sec.classList.toggle('disabled', !allowed);
+    ['btnModificar','montoNuevo','supInput','claveSup','motivoMod'].forEach(id=>$(id).disabled=!allowed);
+  }
+
+  function clearPreview(){
+    $('preview').classList.add('hidden');
+    ['p_ident','p_oec','p_estado','p_monto','p_montopag','p_fecha','p_banco','p_ref','p_concepto','p_tasa','p_usd','p_resp'].forEach(id=>$(id).textContent='');
+    ['motivo','montoNuevo','motivoMod','claveSup','supInput'].forEach(id=>$(id).value='');
+    $('acciones').classList.add('hidden');
+    $('btnIrAnular').disabled = true;
+    $('btnIrModificar').disabled = true;
+    ultimo=null;
+    ['accionAnul','accionMod'].forEach(id=>$(id).classList.add('hidden'));
+  }
+
+  function mostrarSeccion(cual){
+    if (!ultimo) return;
+    const { esPagado, esAnulado } = clasificaEstado(ultimo.estado);
+    const allowed = !(esPagado||esAnulado);
+    if (cual==='anular'){
+      setAccionModEnabled(false); $('accionMod').classList.add('hidden');
+      setAccionAnulEnabled(allowed); $('accionAnul').classList.remove('hidden');
+    } else {
+      setAccionAnulEnabled(false); $('accionAnul').classList.add('hidden');
+      setAccionModEnabled(allowed); $('accionMod').classList.remove('hidden');
+      if (allowed) cargarSupervisores();
+    }
+    window.scrollTo({ top: document.body.scrollHeight, behavior:'smooth' });
+  }
+
+  function regresar(){
+    if (window.OGA && typeof window.OGA.irAlMenu === 'function') window.OGA.irAlMenu();
+  }
+  function releaseBuscarUI(){ unlockBtn('btnBuscar'); hideOverlay(); buscando=false; $('corr').focus(); }
+  function releaseAnularUI(){ unlockBtn('btnAnular'); hideOverlay(); anulando=false; }
+  function releaseModificarUI(){ unlockBtn('btnModificar'); hideOverlay(); modificando=false; }
+
+  function buscar(){
+    if (buscando) return;
+    const anio=soloDigitos($('anio').value), corr=soloDigitos($('corr').value);
+    if (anio.length!==4){ toast('Ingresa el año (AAAA).'); return; }
+    if (!corr){ toast('Ingresa el correlativo.'); return; }
+
+    buscando=true; clearPreview(); lockBtn('btnBuscar','Buscando…'); showOverlay('Buscando…');
+
+    google.script.run
+      .withSuccessHandler(res=>{
+        if(!(res&&res.datos)){ toast('❌ '+(res&&res.error?res.error:'No encontrado.')); return releaseBuscarUI(); }
+        const d=res.datos; ultimo=d;
+
+        $('p_ident').textContent=d.identificador||''; $('p_oec').textContent=d.oec||'';
+        const estadoRaw=String(d.estado||'').trim();
+        const {esPagado,esAnulado}=clasificaEstado(estadoRaw);
+        const allowed=!(esPagado||esAnulado);
+
+        const pill=document.createElement('span');
+        pill.className='pill '+(esPagado?'bad':esAnulado?'warn':'ok'); pill.textContent=estadoRaw||'(sin estado)';
+        const cont=$('p_estado'); cont.innerHTML=''; cont.appendChild(pill);
+
+        $('p_monto').textContent=d.monto||''; $('p_montopag').textContent=d.montoCancelado||'';
+        $('p_fecha').textContent=d.fechaPago||''; $('p_banco').textContent=d.banco||''; $('p_ref').textContent=d.referencia||'';
+
+        const r=res.resumen||{};
+        $('p_concepto').textContent=r.concepto||''; $('p_tasa').textContent=(r.tasa??''); $('p_usd').textContent=(r.montoUSD??''); $('p_resp').textContent=r.responsable||'';
+
+        $('preview').classList.remove('hidden');
+        $('acciones').classList.remove('hidden');
+        $('btnIrAnular').disabled = !allowed;
+        $('btnIrModificar').disabled = !allowed;
+
+        if (esPagado) toast('Boleta Pagada. No puede anularse ni modificarse.');
+        else if (esAnulado) toast('La boleta ya está ANULADA.');
+        else toast('Boleta localizada. Puedes continuar.');
+        return releaseBuscarUI();
+      })
+      .withFailureHandler(err=>{ toast('❌ Error en la búsqueda: '+(err&&err.message||err)); return releaseBuscarUI(); })
+      .buscarBoletaParaModificar(anio, corr);
+  }
+
+  async function anular(){
+    if(!ultimo){ toast('Busca primero una boleta.'); return; }
+    if(anulando) return;
+    const motivo=$('motivo').value.trim(); if(!motivo){ toast('Indica el motivo de anulación.'); return; }
+    const anio=soloDigitos($('anio').value), corr=soloDigitos($('corr').value);
+
+    anulando=true; lockBtn('btnAnular','Anulando…'); showOverlay('Anulando…');
+    google.script.run
+      .withSuccessHandler(async r=>{
+        if(r&&r.ok){
+          toast('✅ Boleta anulada.');
+          const otra=await confirmDialog('¡Boleta anulada!','¿Deseas procesar otra boleta?');
+          if(otra) reset(); else regresar();
+        } else toast('❌ '+(r?.error||'Error al anular.'));
+        releaseAnularUI();
+      })
+      .withFailureHandler(e=>{ toast('❌ Error al anular: '+(e&&e.message||e)); releaseAnularUI(); })
+      .anularBoletaPorAnioCorrelativo({ anio, correlativo:corr, motivo });
+  }
+
+  async function modificar(){
+    if(!ultimo){ toast('Busca primero una boleta.'); return; }
+    if(modificando) return;
+
+    const nuevoMontoQ=Number($('montoNuevo').value||0);
+    const motivo=$('motivoMod').value.trim();
+    const supervisorCorreo=$('supInput').value.trim();
+    const supervisorClave=$('claveSup').value.trim();
+    const anio=soloDigitos($('anio').value), corr=soloDigitos($('corr').value);
+
+    if(!(nuevoMontoQ>0)) return toast('Ingresa un nuevo monto válido.');
+    if(motivo.length<5) return toast('Explica el motivo de la modificación (≥ 5 caracteres).');
+    if(!supervisorCorreo || !supervisorClave) return toast('Completa Administrador y clave.');
+
+    modificando=true; lockBtn('btnModificar','Modificando…'); showOverlay('Modificando y reemitiendo PDF…');
+    google.script.run
+      .withSuccessHandler(async r=>{
+        if(r&&r.ok){
+          toast('✅ Boleta modificada.');
+          if(r.urlPdf) window.open(r.urlPdf,'_blank');
+          const otra=await confirmDialog('¡Boleta modificada!','¿Deseas modificar otra boleta?');
+          if(otra) reset(); else regresar();
+        } else toast('❌ '+(r?.error||'Error al modificar.'));
+        releaseModificarUI();
+      })
+      .withFailureHandler(e=>{ toast('❌ Error al modificar: '+(e&&e.message||e)); releaseModificarUI(); })
+      .modificarBoletaPorAnioCorrelativo({ anio, correlativo:corr, nuevoMontoQ, motivo, supervisorCorreo, supervisorClave });
+  }
+
+  function reset(){
+    $('anio').value=''; $('corr').value=''; clearPreview(); $('anio').focus(); window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function confirmDialog(title,text){
+    return new Promise(res=>{
+      const w=$('confirmWrap'); $('confirmTitle').textContent=title; $('confirmText').textContent=text;
+      const yes=$('confirmYes'), no=$('confirmNo');
+      const onY=()=>{cleanup();res(true);} , onN=()=>{cleanup();res(false);}  
+      function cleanup(){ w.classList.remove('show'); yes.removeEventListener('click',onY); no.removeEventListener('click',onN); }
+      yes.addEventListener('click',onY); no.addEventListener('click',onN); w.classList.add('show');
+    });
+  }
+
+  function cargarSupervisores(){
+    const help=$('supHelp');
+    help.textContent='Cargando administradores…';
+    google.script.run
+      .withSuccessHandler(list=>{
+        const dl=$('supList'); dl.innerHTML='';
+        (list||[]).forEach(x=>{ const o=document.createElement('option'); o.value=x.correo; dl.appendChild(o); });
+        help.textContent = (list && list.length) ? 'Selecciona al Administrador.' : 'No se cargó la lista. Puedes escribir el correo manualmente.';
+      })
+      .withFailureHandler(()=>{ $('supHelp').textContent='No se pudo cargar el listado. Escribe el correo manualmente.'; })
+      .getSupervisoresAutorizados();
+  }
+
+  function attachQoL(){
+    const onlyDigits = ev => { const v=soloDigitos(ev.target.value); if(v!==ev.target.value) ev.target.value=v; };
+    $('anio').addEventListener('input',onlyDigits);
+    $('corr').addEventListener('input',onlyDigits);
+    const onEnter = ev => { if (ev.key==='Enter') buscar(); };
+    $('anio').addEventListener('keydown',onEnter);
+    $('corr').addEventListener('keydown',onEnter);
+    $('anio').focus();
+  }
+
+  (function initMenuBoletas(){
+    attachQoL();
+    if (window.OGA && typeof window.OGA.onUnmount === 'function') window.OGA.onUnmount(function(){});
+  })();
+</script>

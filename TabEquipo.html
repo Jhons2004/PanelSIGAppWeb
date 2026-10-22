@@ -1,0 +1,119 @@
+<section class="panel" id="panel-EQUIPO">
+  <h2>3. Equipo evaluador</h2>
+  <p class="lead">
+    Primero indique la cantidad de integrantes por rol. Los roles se generan
+    automáticamente y los nombres se seleccionan del padrón activo. Para cada
+    integrante se mostrará el área registrada en el padrón y el área asignada
+    específicamente para esta evaluación.
+  </p>
+
+  <div class="team-loading hidden" id="teamCatalogLoading">
+    Cargando padrón de evaluadores…
+  </div>
+
+  <div class="team-composition-wrap">
+    <h3>Composición del equipo</h3>
+
+    <table class="composition-table">
+      <thead>
+        <tr>
+          <th>Rol</th>
+          <th>Cantidad</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Oficial de Acreditación</td>
+          <td><input class="qty" type="number" value="1" readonly></td>
+          <td>OGA</td>
+        </tr>
+        <tr>
+          <td>Evaluador Líder</td>
+          <td>
+            <input id="eqLiderQty" class="qty" type="number" min="0" value="0"
+                   oninput="WAPP_UI_PRES.renderTeamAssignments()">
+          </td>
+          <td>
+            <select id="eqLiderTipo" onchange="WAPP_UI_PRES.renderTeamAssignments()">
+              <option>OGA</option>
+              <option>Externo</option>
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Evaluador Técnico</td>
+          <td>
+            <input id="eqTecnicoQty" class="qty" type="number" min="0" value="0"
+                   oninput="WAPP_UI_PRES.renderTeamAssignments()">
+          </td>
+          <td><span class="fixed-type">Externo</span></td>
+        </tr>
+        <tr>
+          <td>Experto Técnico</td>
+          <td>
+            <input id="eqExpertoQty" class="qty" type="number" min="0" value="0"
+                   oninput="WAPP_UI_PRES.onExpertCountChange()">
+          </td>
+          <td><span class="fixed-type">Externo</span></td>
+        </tr>
+        <tr>
+          <td>Evaluador de Acompañamiento</td>
+          <td>
+            <div class="split-count">
+              <label>OGA
+                <input id="eqAcompOgaQty" class="qty" type="number" min="0" value="0"
+                       disabled oninput="WAPP_UI_PRES.renderTeamAssignments()">
+              </label>
+              <label>Ext.
+                <input id="eqAcompExtQty" class="qty" type="number" min="0" value="0"
+                       disabled oninput="WAPP_UI_PRES.renderTeamAssignments()">
+              </label>
+            </div>
+          </td>
+          <td>Mixto</td>
+        </tr>
+        <tr>
+          <td>Personal en Formación</td>
+          <td>
+            <input id="eqFormacionQty" class="qty" type="number" min="0" value="0"
+                   oninput="WAPP_UI_PRES.renderTeamAssignments()">
+          </td>
+          <td>N/A</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="hint">
+      Si existe Experto Técnico, debe incluirse al menos un Evaluador de Acompañamiento.
+    </div>
+  </div>
+
+  <div class="team-assignment-wrap">
+    <h3>Asignación de integrantes</h3>
+
+    <div id="teamDaysPolicy" class="days-policy"></div>
+    <div class="hint days-adjust-hint">
+      Los días derivados de la predicción son valores sugeridos. Puede ajustarlos
+      según la planificación real, pero el campo aplicable no puede quedar en 0.
+    </div>
+
+    <div class="assignment-header" aria-hidden="true">
+      <div>Rol</div>
+      <div>Integrante / área</div>
+      <div>Correo</div>
+      <div>Tipo</div>
+      <div>Evaluación documental<br><span>(días)</span></div>
+      <div>Evaluación en sitio<br><span>(días)</span></div>
+      <div>Lugar de trabajo</div>
+    </div>
+
+    <div id="teamRows" class="team-assignments">
+      <div class="summary">Indique las cantidades para preparar el equipo.</div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" onclick="WAPP_UI_PRES.guardarEquipo()">Guardar equipo</button>
+  </div>
+</section>

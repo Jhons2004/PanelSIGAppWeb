@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- ✅ Librería SweetAlert2 -->
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background-color: #f9fafb; padding: 20px; }
+    .section { margin-bottom: 20px; padding: 15px; background: #fff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    label { font-weight: 600; display: block; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    button { background-color: #1a73e8; color: white; padding: 10px 20px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    button:hover { background-color: #1558b0; }
+  </style>
+</head>
+<body>
+
+<div class="section">
+  <label for="fechaResolucion">Fecha de Resolución</label>
+  <input type="date" id="fechaResolucion">
+
+  <label for="numReunion">Número de Reunión</label>
+  <input type="text" id="numReunion" disabled>
+
+  <label for="numResolucion">Número de Resolución</label>
+  <input type="text" id="numResolucion" disabled>
+
+  <label for="agenda">Archivo de Agenda</label>
+  <select id="agenda"></select>
+
+  <label for="experto">Experto</label>
+  <input type="text" id="experto">
+</div>
+
+<div class="section">
+  <label for="registro">Registro de Acreditación</label>
+  <input type="text" id="registro" oninput="forzarMayusculasYBuscar()">
+
+
+  <label for="nombreOEC">Nombre del OEC</label>
+  <input type="text" id="nombreOEC" disabled>
+
+  <label for="esquema">Esquema</label>
+  <input type="text" id="esquema" disabled>
+
+  <label for="norma">Norma</label>
+  <input type="text" id="norma" disabled>
+</div>
+
+<div class="section">
+  <label for="tipoDecision">Tipo de Decisión</label>
+  <select id="tipoDecision">
+    <option value="">Seleccionar</option>
+    <option>Otorgamiento (concesión Inicial)</option>
+    <option>Otorgamiento (ampliación)</option>
+    <option>Otorgamiento (reevaluación)</option>
+    <option>Otorgamiento (Transición de Norma)</option>
+    <option>Reducción(Infracción)</option>
+    <option>Suspensión(Infracción)</option>
+    <option>Reducción(Voluntario)</option>
+    <option>Suspensión(Voluntario)</option>
+    <option>Retiro(Voluntario)</option>
+    <option>Retiro(Infracción)</option>
+    <option>Reconocimiento de Acreditación</option>
+  </select>
+
+  <label for="comentarios">Comentarios</label>
+  <select id="comentarios">
+    <option value="">Seleccionar</option>
+    <option>Sin comentarios</option>
+    <option>Seguimiento normal</option>
+    <option>Seguimiento normal y seguimiento de acciones correctivas</option>
+    <option>Seguimiento acciones correctivas 6 meses</option>
+    <option>Evaluación no mayor a 3 meses</option>
+    <option>Informes trimestrales</option>
+  </select>
+</div>
+
+<button onclick="guardar()">Guardar Resolución</button>
+
+<script>
+let ultimaReunion = "";
+let nuevoCorrelativo = "";
+
+function forzarMayusculasYBuscar() {
+    const regInput = document.getElementById("registro");
+    regInput.value = regInput.value.toUpperCase();
+
+    const reg = regInput.value;
+    if (reg) {
+        google.script.run.withSuccessHandler(function (data) {
+            document.getElementById("nombreOEC").value = data.nombre || "";
+            document.getElementById("esquema").value = data.esquema || "";
+            document.getElementById("norma").value = data.norma || "";
+        }).buscarDatosOEC(reg);
+    }
+}
+
+function cargarDatos() {
+    console.log("✅ Iniciando cargarDatos...");
+
+    const hoy = new Date();
+    document.getElementById("fechaResolucion").value = hoy.toISOString().substring(0, 10);
+
+    google.script.run.withSuccessHandler(function (reunion) {
+        console.log("✅ Reunion recibida:", reunion);
+        ultimaReunion = reunion;
+        document.getElementById("numReunion").value = reunion;
+
+        google.script.run.withSuccessHandler(function (correlativo) {
+            console.log("✅ Correlativo recibido:", correlativo);
+            nuevoCorrelativo = correlativo;
+            document.getElementById("numResolucion").value = correlativo;
+        }).generarCorrelativoResolucion();
+
+        google.script.run.withSuccessHandler(function (lista) {
+            console.log("✅ Lista de agendas recibida:", lista);
+            poblarAgendas(lista);
+        }).obtenerArchivosAgenda();
+
+    }).obtenerProximaReunion();
+}
+
+function poblarAgendas(lista) {
+    const sel = document.getElementById("agenda");
+    sel.innerHTML = "";
+    lista.forEach(f => {
+        const opt = document.createElement("option");
+        opt.textContent = f.nombre;
+        opt.value = f.url;
+        sel.appendChild(opt);
+    });
+}
+
+function guardar() {
+    const data = {
+        reunion: ultimaReunion,
+        resolucion: nuevoCorrelativo,
+        fechaResolucion: document.getElementById("fechaResolucion").value,
+        agendaURL: document.getElementById("agenda").value,
+        tipoDecision: document.getElementById("tipoDecision").value,
+        comentarios: document.getElementById("comentarios").value,
+        registro: document.getElementById("registro").value,
+        nombreOEC: document.getElementById("nombreOEC").value,
+        esquema: document.getElementById("esquema").value,
+        norma: document.getElementById("norma").value,
+        experto: document.getElementById("experto").value
+    };
+
+    let camposFaltantes = [];
+          if (!data.fechaResolucion) camposFaltantes.push("Fecha de Resolución");
+          if (!data.reunion) camposFaltantes.push("Número de Reunión");
+          if (!data.resolucion) camposFaltantes.push("Número de Resolución");
+          if (!data.agendaURL) camposFaltantes.push("Archivo de Agenda");
+          if (!data.experto.trim()) camposFaltantes.push("Experto");
+          if (!data.registro.trim()) camposFaltantes.push("Registro de Acreditación");
+          if (!data.nombreOEC.trim()) camposFaltantes.push("Nombre del OEC");
+          if (!data.esquema.trim()) camposFaltantes.push("Esquema");
+          if (!data.norma.trim()) camposFaltantes.push("Norma");
+          if (!data.tipoDecision) camposFaltantes.push("Tipo de Decisión");
+          if (!data.comentarios) camposFaltantes.push("Comentarios");
+
+    document.querySelectorAll('input, select').forEach(el => el.style.borderColor = "");
+
+    if (camposFaltantes.length > 0) {
+        if (!data.fechaResolucion) document.getElementById("fechaResolucion").style.borderColor = "red";
+        if (!data.agendaURL) document.getElementById("agenda").style.borderColor = "red";
+        if (!data.experto.trim()) document.getElementById("experto").style.borderColor = "red";
+        if (!data.registro.trim()) document.getElementById("registro").style.borderColor = "red";
+        if (!data.tipoDecision) document.getElementById("tipoDecision").style.borderColor = "red";
+        if (!data.comentarios) document.getElementById("comentarios").style.borderColor = "red";
+
+        Swal.fire({
+            icon: 'error',
+            title: 'Campos obligatorios faltantes',
+            html: `<ul style="text-align:left;">${camposFaltantes.map(campo => `<li>${campo}</li>`).join('')}</ul>`,
+            confirmButtonText: 'Corregir'
+        });
+
+        return;
+    }
+    google.script.run.withSuccessHandler(function (msg) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Resolución guardada',
+            text: '¿Desea registrar otra resolución?',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, continuar registrando',
+            cancelButtonText: 'No, finalizar Registro'
+        }).then((result) => {
+    if (result.isConfirmed) {
+        google.script.run.withSuccessHandler(function (correlativo) {
+            nuevoCorrelativo = correlativo;
+            document.getElementById("numResolucion").value = correlativo;
+            document.getElementById("registro").value = "";
+            document.getElementById("nombreOEC").value = "";
+            document.getElementById("esquema").value = "";
+            document.getElementById("norma").value = "";
+            document.getElementById("experto").value = "";
+            document.getElementById("tipoDecision").value = "";
+            document.getElementById("comentarios").value = "";
+            document.querySelectorAll('input, select').forEach(el => el.style.borderColor = "");
+        }).generarCorrelativoResolucion();
+} else {
+    google.script.run.withSuccessHandler(function (nuevaReunion) {
+        console.log("✅ Nueva reunión creada:", nuevaReunion);
+
+        google.script.run.withSuccessHandler(function (respuestaReporte) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Reporte generado',
+                text: respuestaReporte,
+                confirmButtonText: 'Cerrar'
+            }).then(() => {
+                try {
+                    if (window.opener) {
+                        window.opener.postMessage({ tipo: "cerrarIngresoResoluciones" }, "*");
+                    }
+                } catch (e) {
+                    console.warn("No se pudo enviar mensaje a la ventana principal");
+                }
+
+                try {
+                    if (window.parent && window.parent.document) {
+                        const panelBotones = window.parent.document.getElementById("panelBotones");
+                        if (panelBotones) {
+                            panelBotones.style.display = "block";
+                        }
+                    }
+                } catch (e) {
+                    console.warn("No se pudo acceder al panel principal desde el iframe");
+                }
+
+                google.script.host.close();
+            });
+        }).generarReporteResumido();
+    }).crearNuevaReunion(data.fechaResolucion);
+}
+
+});
+
+    }).guardarResolucion(data);
+}
+
+// ✅ Ejecutar automáticamente al abrir el panel
+window.onload = cargarDatos;
+</script>
+
+
+</body>
+</html>

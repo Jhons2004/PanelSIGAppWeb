@@ -1,0 +1,57 @@
+<section class="panel" id="panel-DOCUMENTOS">
+  <h2>4. Vista previa y generación documental</h2>
+  <p class="lead">
+    Revise la información que alimentará los documentos antes de ejecutar
+    cualquier generación.
+  </p>
+
+  <div class="control-warning">
+    <div class="control-warning-icon">!</div>
+    <div>
+      <div class="control-warning-title">Control importante</div>
+      <div class="control-warning-text">
+        Antes de generar, revise fechas, integrantes, días y lugar de trabajo.
+      </div>
+    </div>
+  </div>
+
+  <div id="docPreviewLoading" class="team-loading hidden">
+    Preparando vista previa…
+  </div>
+
+  <div id="docPreview" class="doc-preview">
+    <div class="summary">
+      La vista previa se cargará después de guardar el equipo evaluador.
+    </div>
+  </div>
+
+  <div class="generation-gate">
+    <strong>Producción · generación controlada:</strong>
+    según el tipo de evaluación se generarán Presupuesto, Agenda, Informe y Boleta.
+    Los documentos se guardan en el expediente del OEC y en sus respaldos institucionales;
+    calendario y correo se procesan de acuerdo con los interruptores operativos vigentes.
+  </div>
+
+  <div class="preview-confirm">
+    <label class="check-row">
+      <input id="docPreviewConfirm" type="checkbox"
+             onchange="WAPP_UI_PRES.toggleGenerateReady()">
+      <span>
+        Confirmo que revisé la información mostrada y deseo continuar con
+        la generación documental.
+      </span>
+    </label>
+  </div>
+
+  <div class="actions document-actions">
+    <button class="secondary" onclick="WAPP_UI_PRES.cargarPreviewDocumentos()">
+      Actualizar vista previa
+    </button>
+    <button id="btnGenerateDocuments" class="primary"
+            onclick="WAPP_UI_PRES.generarDocumentos()" disabled>
+      Confirme la vista previa para generar
+    </button>
+  </div>
+
+  <div id="docResult"></div>
+</section>

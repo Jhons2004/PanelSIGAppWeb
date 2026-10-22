@@ -1,0 +1,1174 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  #coec-root{
+    --bg:#07111f;
+    --bg2:#0b1728;
+    --card:rgba(10,22,38,.78);
+    --card2:rgba(15,30,50,.92);
+    --line:rgba(255,255,255,.08);
+    --line-strong:rgba(255,255,255,.14);
+    --ink:#e5eef8;
+    --ink-soft:#bdd1e7;
+    --muted:#88a0b8;
+    --primary:#2563eb;
+    --primary-2:#0ea5a4;
+    --good:#16a34a;
+    --warn:#f59e0b;
+    --bad:#ef4444;
+    --chip:#12243a;
+    --shadow:0 24px 70px rgba(0,0,0,.35);
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    color:var(--ink);
+    min-height:100vh;
+    width:100%;
+    position:relative;
+    padding:28px 18px 48px;
+    background:
+      radial-gradient(circle at 15% 15%, rgba(14,165,164,.16) 0%, transparent 32%),
+      radial-gradient(circle at 85% 12%, rgba(37,99,235,.18) 0%, transparent 35%),
+      radial-gradient(circle at 50% 100%, rgba(2,132,199,.12) 0%, transparent 42%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    overflow-x:hidden;
+  }
+
+  #coec-root::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:radial-gradient(rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size:26px 26px;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  #coec-root *{ box-sizing:border-box; }
+
+  #coec-root .coec-wrap{
+    position:relative;
+    z-index:1;
+    max-width:1380px;
+    margin:0 auto;
+  }
+
+  #coec-root .coec-header{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+
+  #coec-root .coec-badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid rgba(14,165,164,.35);
+    background:rgba(14,165,164,.12);
+    color:#9be7df;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:.76rem;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+
+  #coec-root .coec-badge-dot{
+    width:7px;height:7px;border-radius:999px;background:#2dd4bf;
+    box-shadow:0 0 10px rgba(45,212,191,.85);
+    animation:coecPulse 1.9s infinite;
+  }
+
+  @keyframes coecPulse{
+    0%,100%{transform:scale(1);opacity:1}
+    50%{transform:scale(.75);opacity:.5}
+  }
+
+  #coec-root .coec-title{
+    margin:0;
+    font-size:clamp(1.8rem, 3vw, 2.7rem);
+    line-height:1.04;
+    letter-spacing:-.05em;
+    font-weight:800;
+    color:#f7fbff;
+  }
+
+  #coec-root .coec-sub{
+    margin:10px 0 0;
+    color:var(--ink-soft);
+    font-size:.96rem;
+    line-height:1.7;
+    max-width:760px;
+  }
+
+  #coec-root .coec-header-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+
+  #coec-root .coec-btn{
+    appearance:none;
+    border:none;
+    cursor:pointer;
+    border-radius:14px;
+    padding:12px 18px;
+    font:inherit;
+    font-weight:700;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:9px;
+    transition:transform .18s ease, opacity .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease;
+    white-space:nowrap;
+  }
+  #coec-root .coec-btn:hover{ transform:translateY(-1px); }
+  #coec-root .coec-btn:active{ transform:translateY(0); }
+  #coec-root .coec-btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+
+  #coec-root .coec-btn-primary{
+    background:linear-gradient(135deg, var(--primary), #1d4ed8 60%, var(--primary-2));
+    color:#fff;
+    box-shadow:0 14px 30px rgba(37,99,235,.28);
+  }
+  #coec-root .coec-btn-primary:hover{ box-shadow:0 20px 36px rgba(37,99,235,.35); }
+
+  #coec-root .coec-btn-ghost{
+    background:rgba(255,255,255,.05);
+    color:var(--ink);
+    border:1px solid var(--line);
+  }
+
+  #coec-root .coec-btn-soft{
+    background:rgba(14,165,164,.12);
+    color:#a7f3d0;
+    border:1px solid rgba(14,165,164,.26);
+  }
+
+  #coec-root .coec-main-grid{
+    display:grid;
+    grid-template-columns: 370px 1fr;
+    gap:18px;
+  }
+
+  #coec-root .coec-card{
+    background:linear-gradient(180deg, rgba(14,25,43,.92), rgba(9,18,31,.94));
+    border:1px solid var(--line);
+    border-radius:24px;
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    backdrop-filter:blur(12px);
+  }
+
+  #coec-root .coec-card-head{
+    padding:18px 22px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    background:rgba(255,255,255,.02);
+  }
+
+  #coec-root .coec-card-title{
+    margin:0;
+    font-size:.84rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    font-weight:800;
+    color:var(--muted);
+  }
+
+  #coec-root .coec-card-body{
+    padding:22px;
+  }
+
+  #coec-root .coec-search-shell{
+    display:grid;
+    gap:16px;
+  }
+
+  #coec-root .coec-field{ display:grid; gap:8px; }
+  #coec-root .coec-field label{
+    font-size:.76rem;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    font-weight:800;
+    color:var(--muted);
+  }
+
+  #coec-root .coec-input-wrap{ position:relative; }
+  #coec-root .coec-input-icon{
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    color:rgba(255,255,255,.38);
+    pointer-events:none;
+    font-size:1rem;
+  }
+
+  #coec-root input,
+  #coec-root textarea,
+  #coec-root select{
+    width:100%;
+    border-radius:16px;
+    border:1px solid rgba(255,255,255,.09);
+    background:rgba(255,255,255,.05);
+    color:var(--ink);
+    padding:14px 16px;
+    font:inherit;
+    outline:none;
+    transition:border-color .18s ease, background .18s ease, box-shadow .18s ease;
+  }
+
+  #coec-root input:focus,
+  #coec-root textarea:focus,
+  #coec-root select:focus{
+    border-color:rgba(37,99,235,.55);
+    box-shadow:0 0 0 4px rgba(37,99,235,.15);
+    background:rgba(255,255,255,.07);
+  }
+
+  #coec-root .coec-search-input{
+    padding-left:42px;
+    text-transform:uppercase;
+    font-family:'JetBrains Mono',monospace;
+    font-weight:600;
+    letter-spacing:.03em;
+  }
+
+  #coec-root .coec-help{
+    color:var(--muted);
+    font-size:.84rem;
+    line-height:1.6;
+  }
+
+  #coec-root .coec-status{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:13px 14px;
+    border-radius:16px;
+    border:1px solid transparent;
+    font-size:.86rem;
+    line-height:1.55;
+  }
+  #coec-root .coec-status.loading{ background:rgba(255,255,255,.05); color:var(--ink-soft); border-color:var(--line); }
+  #coec-root .coec-status.ok{ background:rgba(22,163,74,.12); color:#b8f7ca; border-color:rgba(22,163,74,.25); }
+  #coec-root .coec-status.warn{ background:rgba(245,158,11,.11); color:#fde68a; border-color:rgba(245,158,11,.22); }
+  #coec-root .coec-status.err{ background:rgba(239,68,68,.10); color:#fecaca; border-color:rgba(239,68,68,.22); }
+
+  #coec-root .coec-mini-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:10px;
+  }
+
+  #coec-root .coec-mini{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px;
+  }
+  #coec-root .coec-mini-label{
+    color:var(--muted);
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.09em;
+    font-weight:800;
+    margin-bottom:6px;
+  }
+  #coec-root .coec-mini-value{
+    color:#f8fbff;
+    font-size:1.05rem;
+    font-weight:800;
+    line-height:1.3;
+    word-break:break-word;
+  }
+  #coec-root .coec-mini-sub{
+    color:var(--ink-soft);
+    font-size:.82rem;
+    line-height:1.45;
+    margin-top:3px;
+  }
+
+  #coec-root .coec-summary-strip{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:18px;
+  }
+  #coec-root .coec-summary-item{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:15px 16px;
+  }
+  #coec-root .coec-summary-k{
+    color:var(--muted);
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    font-weight:800;
+    margin-bottom:6px;
+  }
+  #coec-root .coec-summary-v{
+    font-size:.98rem;
+    font-weight:800;
+    color:#f6fbff;
+    line-height:1.35;
+    word-break:break-word;
+  }
+
+  #coec-root .coec-tabs{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+  }
+
+  #coec-root .coec-tab{
+    border-radius:999px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.04);
+    color:var(--ink-soft);
+    padding:10px 16px;
+    font:inherit;
+    font-weight:700;
+    cursor:pointer;
+    transition:.18s ease;
+  }
+  #coec-root .coec-tab:hover{ background:rgba(255,255,255,.08); color:#fff; }
+  #coec-root .coec-tab.active{
+    background:linear-gradient(135deg, rgba(37,99,235,.95), rgba(14,165,164,.85));
+    color:#fff;
+    border-color:transparent;
+    box-shadow:0 10px 24px rgba(37,99,235,.22);
+  }
+
+  #coec-root .coec-panel{ display:none; }
+  #coec-root .coec-panel.active{ display:block; }
+
+  #coec-root .coec-detail-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+  }
+
+  #coec-root .coec-detail{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:16px 17px;
+  }
+
+  #coec-root .coec-detail-label{
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:.09em;
+    font-size:.72rem;
+    font-weight:800;
+    margin-bottom:7px;
+  }
+
+  #coec-root .coec-detail-value{
+    font-size:.95rem;
+    font-weight:700;
+    color:#f7fbff;
+    line-height:1.55;
+    word-break:break-word;
+  }
+
+  #coec-root .coec-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border-radius:999px;
+    padding:7px 12px;
+    font-size:.77rem;
+    font-weight:700;
+    color:#dbeafe;
+    background:rgba(37,99,235,.13);
+    border:1px solid rgba(37,99,235,.25);
+    margin-bottom:12px;
+  }
+
+  #coec-root .coec-contact-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:16px;
+  }
+
+  #coec-root .coec-contact-card{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:18px;
+  }
+
+  #coec-root .coec-contact-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  #coec-root .coec-contact-title{
+    font-size:1rem;
+    font-weight:800;
+    color:#f8fbff;
+    margin:0;
+  }
+  #coec-root .coec-contact-badge{
+    border-radius:999px;
+    padding:5px 10px;
+    font-size:.72rem;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:#c7d2fe;
+    background:rgba(99,102,241,.13);
+    border:1px solid rgba(99,102,241,.24);
+  }
+
+  #coec-root .coec-kv{
+    display:grid;
+    gap:10px;
+  }
+  #coec-root .coec-kv-item{
+    background:rgba(255,255,255,.03);
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:14px;
+    padding:12px 13px;
+  }
+  #coec-root .coec-kv-k{
+    color:var(--muted);
+    font-size:.72rem;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.09em;
+    margin-bottom:4px;
+  }
+  #coec-root .coec-kv-v{
+    color:#f7fbff;
+    font-size:.92rem;
+    font-weight:700;
+    line-height:1.45;
+    word-break:break-word;
+  }
+
+  #coec-root .coec-inst-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px;
+  }
+
+  #coec-root .coec-inst-card{
+    background:rgba(255,255,255,.04);
+    border:1px solid var(--line);
+    border-radius:20px;
+    padding:18px;
+  }
+  #coec-root .coec-inst-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  #coec-root .coec-inst-name{
+    margin:0;
+    color:#f7fbff;
+    font-size:1rem;
+    font-weight:800;
+    line-height:1.35;
+  }
+  #coec-root .coec-inst-reg{
+    font-family:'JetBrains Mono',monospace;
+    font-size:.75rem;
+    color:#93c5fd;
+    border-radius:999px;
+    padding:5px 10px;
+    background:rgba(37,99,235,.12);
+    border:1px solid rgba(37,99,235,.24);
+    white-space:nowrap;
+  }
+  #coec-root .coec-inst-meta{
+    display:grid;
+    gap:10px;
+  }
+
+  #coec-root .coec-empty{
+    border:1px dashed rgba(255,255,255,.12);
+    border-radius:20px;
+    padding:24px;
+    color:var(--ink-soft);
+    line-height:1.7;
+    background:rgba(255,255,255,.03);
+  }
+
+  #coec-root .coec-table-wrap{
+    overflow:auto;
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.03);
+    margin-top:16px;
+  }
+  #coec-root table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:760px;
+  }
+  #coec-root th,
+  #coec-root td{
+    padding:13px 14px;
+    text-align:left;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    font-size:.88rem;
+    vertical-align:top;
+  }
+  #coec-root th{
+    color:#d6e5f7;
+    font-weight:800;
+    font-size:.77rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    background:rgba(255,255,255,.04);
+  }
+  #coec-root td{
+    color:var(--ink-soft);
+    font-weight:600;
+    line-height:1.5;
+  }
+
+  #coec-root details{
+    border-radius:18px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.03);
+    overflow:hidden;
+  }
+  #coec-root summary{
+    list-style:none;
+    cursor:pointer;
+    padding:16px 18px;
+    font-weight:800;
+    color:#f7fbff;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  #coec-root summary::-webkit-details-marker{ display:none; }
+  #coec-root .coec-debug-body{
+    padding:0 18px 18px;
+    color:var(--ink-soft);
+    font-size:.86rem;
+    line-height:1.65;
+  }
+  #coec-root pre{
+    margin:12px 0 0;
+    background:rgba(0,0,0,.22);
+    border:1px solid rgba(255,255,255,.05);
+    border-radius:14px;
+    padding:14px;
+    overflow:auto;
+    white-space:pre-wrap;
+    word-break:break-word;
+    color:#c5d9ef;
+    font-family:'JetBrains Mono',monospace;
+    font-size:.78rem;
+    line-height:1.55;
+  }
+
+  #coec-root .coec-actions-bottom{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:18px;
+  }
+
+  @media (max-width: 1120px){
+    #coec-root .coec-main-grid{ grid-template-columns:1fr; }
+    #coec-root .coec-summary-strip{ grid-template-columns:repeat(2,1fr); }
+  }
+
+  @media (max-width: 780px){
+    #coec-root .coec-detail-grid,
+    #coec-root .coec-contact-grid,
+    #coec-root .coec-inst-grid{ grid-template-columns:1fr; }
+  }
+
+  @media (max-width: 620px){
+    #coec-root{ padding:20px 12px 36px; }
+    #coec-root .coec-card-body,
+    #coec-root .coec-card-head{ padding:16px; }
+    #coec-root .coec-summary-strip{ grid-template-columns:1fr; }
+    #coec-root .coec-mini-grid{ grid-template-columns:1fr; }
+    #coec-root .coec-header-actions{ width:100%; }
+    #coec-root .coec-header-actions .coec-btn{ flex:1; }
+  }
+</style>
+
+<div id="coec-root">
+  <div class="coec-wrap">
+    <div class="coec-header">
+      <div>
+        <div class="coec-badge"><span class="coec-badge-dot"></span>Consulta OEC · SPA</div>
+        <h1 class="coec-title">Ficha <br>del organismo acreditado</h1>
+        <p class="coec-sub">
+          Consultas a datos del OEC
+        </p>
+      </div>
+
+      <div class="coec-header-actions">
+        <button type="button" class="coec-btn coec-btn-ghost" id="coec-btn-limpiar-top">
+          ✨ Limpiar
+        </button>
+        <button type="button" class="coec-btn coec-btn-soft" id="coec-btn-menu-top">
+          ⬅ Menú principal
+        </button>
+      </div>
+    </div>
+
+    <div class="coec-main-grid">
+      <!-- Columna izquierda -->
+      <section class="coec-card">
+        <div class="coec-card-head">
+          <h2 class="coec-card-title">Búsqueda y resumen</h2>
+          <span class="coec-chip">📁 Base OEC</span>
+        </div>
+        <div class="coec-card-body">
+          <div class="coec-search-shell">
+            <div class="coec-field">
+              <label for="coec-in-registro">Registro de acreditación</label>
+              <div class="coec-input-wrap">
+                <span class="coec-input-icon">🔎</span>
+                <input id="coec-in-registro" class="coec-search-input" list="coec-dl-registros" placeholder="Ej. OGA-LE-100-21" autocomplete="off">
+                <datalist id="coec-dl-registros"></datalist>
+              </div>
+              <div class="coec-help">
+                Puedes escribir el registro completo o elegir uno de los registros disponibles cargados desde la hoja.
+              </div>
+            </div>
+
+            <div id="coec-status" class="coec-status loading">
+              <div>📡</div>
+              <div>Cargando registros disponibles…</div>
+            </div>
+
+            <div class="coec-actions-bottom">
+              <button type="button" class="coec-btn coec-btn-primary" id="coec-btn-consultar">
+                <span id="coec-btn-spin" style="display:none">⏳</span>
+                <span id="coec-btn-text">Consultar OEC</span>
+              </button>
+              <button type="button" class="coec-btn coec-btn-ghost" id="coec-btn-limpiar">
+                Limpiar búsqueda
+              </button>
+            </div>
+
+            <div class="coec-mini-grid">
+              <div class="coec-mini">
+                <div class="coec-mini-label">Registros cargados</div>
+                <div class="coec-mini-value" id="coec-stat-total">—</div>
+                <div class="coec-mini-sub">Disponibles para búsqueda rápida</div>
+              </div>
+              <div class="coec-mini">
+                <div class="coec-mini-label">Instalaciones</div>
+                <div class="coec-mini-value" id="coec-stat-inst">—</div>
+                <div class="coec-mini-sub">Del registro consultado</div>
+              </div>
+              <div class="coec-mini">
+                <div class="coec-mini-label">Sitio principal</div>
+                <div class="coec-mini-value" id="coec-stat-sitio">—</div>
+                <div class="coec-mini-sub">Toma la primera instalación encontrada</div>
+              </div>
+              <div class="coec-mini">
+                <div class="coec-mini-label">Última actualización</div>
+                <div class="coec-mini-value" id="coec-stat-upd">—</div>
+                <div class="coec-mini-sub">Marca temporal de la ficha seleccionada</div>
+              </div>
+            </div>
+
+            <details id="coec-debug-box">
+              <summary>
+                <span>Diagnóstico técnico de instalaciones</span>
+                <span>🧪</span>
+              </summary>
+              <div class="coec-debug-body">
+                <div>
+                  Este bloque te ayuda a revisar por qué una instalación no apareció. Útil cuando el registro sí existe
+                  pero la hoja de instalaciones viene con encabezados raros o columnas cambiadas.
+                </div>
+                <pre id="coec-debug-pre">Sin diagnóstico todavía.</pre>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna derecha -->
+      <section class="coec-card">
+        <div class="coec-card-head">
+          <h2 class="coec-card-title">Vista integral del OEC</h2>
+          <span class="coec-chip" id="coec-chip-estado">🔍 Esperando consulta</span>
+        </div>
+        <div class="coec-card-body">
+          <div id="coec-empty" class="coec-empty">
+            Busca un registro para ver la ficha del OEC. Aquí aparecerán los datos generales, los contactos,
+            el representante legal y el detalle del sitio o las instalaciones acreditadas.
+          </div>
+
+          <div id="coec-results" style="display:none">
+            <div class="coec-summary-strip">
+              <div class="coec-summary-item">
+                <div class="coec-summary-k">Registro</div>
+                <div class="coec-summary-v" id="coec-sum-registro">—</div>
+              </div>
+              <div class="coec-summary-item">
+                <div class="coec-summary-k">Razón social</div>
+                <div class="coec-summary-v" id="coec-sum-razon">—</div>
+              </div>
+              <div class="coec-summary-item">
+                <div class="coec-summary-k">Norma</div>
+                <div class="coec-summary-v" id="coec-sum-norma">—</div>
+              </div>
+              <div class="coec-summary-item">
+                <div class="coec-summary-k">País / Sitio</div>
+                <div class="coec-summary-v" id="coec-sum-sitio">—</div>
+              </div>
+            </div>
+
+            <div class="coec-tabs" id="coec-tabs">
+              <button type="button" class="coec-tab active" data-tab="general">Datos generales</button>
+              <button type="button" class="coec-tab" data-tab="contactos">Contactos</button>
+              <button type="button" class="coec-tab" data-tab="instalaciones">Sitios e instalaciones</button>
+              <button type="button" class="coec-tab" data-tab="diagnostico">Diagnóstico</button>
+            </div>
+
+            <div class="coec-panel active" data-panel="general">
+              <div class="coec-detail-grid">
+                <div class="coec-detail">
+                  <div class="coec-detail-label">Registro de acreditación</div>
+                  <div class="coec-detail-value" id="coec-val-registro">—</div>
+                </div>
+                <div class="coec-detail">
+                  <div class="coec-detail-label">NIT</div>
+                  <div class="coec-detail-value" id="coec-val-nit">—</div>
+                </div>
+                <div class="coec-detail">
+                  <div class="coec-detail-label">Razón social</div>
+                  <div class="coec-detail-value" id="coec-val-razon">—</div>
+                </div>
+                <div class="coec-detail">
+                  <div class="coec-detail-label">Nombre comercial</div>
+                  <div class="coec-detail-value" id="coec-val-comercial">—</div>
+                </div>
+                <div class="coec-detail">
+                  <div class="coec-detail-label">Norma acreditada</div>
+                  <div class="coec-detail-value" id="coec-val-norma">—</div>
+                </div>
+                <div class="coec-detail">
+                  <div class="coec-detail-label">País</div>
+                  <div class="coec-detail-value" id="coec-val-pais">—</div>
+                </div>
+                <div class="coec-detail">
+                  <div class="coec-detail-label">Representante legal</div>
+                  <div class="coec-detail-value" id="coec-val-representante">—</div>
+                </div>
+                <div class="coec-detail">
+                  <div class="coec-detail-label">Última actualización</div>
+                  <div class="coec-detail-value" id="coec-val-upd">—</div>
+                </div>
+              </div>
+
+              <div class="coec-actions-bottom">
+                <button type="button" class="coec-btn coec-btn-ghost" id="coec-btn-reset-results">Nueva búsqueda</button>
+                <button type="button" class="coec-btn coec-btn-soft" id="coec-btn-menu-bottom">Ir al menú</button>
+              </div>
+            </div>
+
+            <div class="coec-panel" data-panel="contactos">
+              <div class="coec-contact-grid">
+                <div class="coec-contact-card">
+                  <div class="coec-contact-head">
+                    <h3 class="coec-contact-title">Contacto 1</h3>
+                    <span class="coec-contact-badge">Primario</span>
+                  </div>
+                  <div class="coec-kv">
+                    <div class="coec-kv-item"><div class="coec-kv-k">Nombre</div><div class="coec-kv-v" id="coec-c1-nombre">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Título profesional</div><div class="coec-kv-v" id="coec-c1-titulo">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Correo</div><div class="coec-kv-v" id="coec-c1-email">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Teléfono</div><div class="coec-kv-v" id="coec-c1-telefono">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Cargo</div><div class="coec-kv-v" id="coec-c1-cargo">—</div></div>
+                  </div>
+                </div>
+
+                <div class="coec-contact-card">
+                  <div class="coec-contact-head">
+                    <h3 class="coec-contact-title">Contacto 2</h3>
+                    <span class="coec-contact-badge">Secundario</span>
+                  </div>
+                  <div class="coec-kv">
+                    <div class="coec-kv-item"><div class="coec-kv-k">Nombre</div><div class="coec-kv-v" id="coec-c2-nombre">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Título profesional</div><div class="coec-kv-v" id="coec-c2-titulo">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Correo</div><div class="coec-kv-v" id="coec-c2-email">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Teléfono</div><div class="coec-kv-v" id="coec-c2-telefono">—</div></div>
+                    <div class="coec-kv-item"><div class="coec-kv-k">Cargo</div><div class="coec-kv-v" id="coec-c2-cargo">—</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="coec-panel" data-panel="instalaciones">
+              <div id="coec-inst-empty" class="coec-empty" style="display:none">
+                No se encontraron instalaciones ligadas a este registro. En el panel de diagnóstico puedes revisar
+                qué encabezados encontró el sistema y por qué no hizo coincidencia.
+              </div>
+
+              <div id="coec-inst-grid" class="coec-inst-grid"></div>
+
+              <div class="coec-table-wrap" id="coec-inst-table-wrap" style="display:none">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Registro</th>
+                      <th>Nombre de la instalación</th>
+                      <th>Dirección</th>
+                      <th>Acreditado desde</th>
+                    </tr>
+                  </thead>
+                  <tbody id="coec-inst-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="coec-panel" data-panel="diagnostico">
+              <details open>
+                <summary>
+                  <span>Resumen del diagnóstico</span>
+                  <span>🧠</span>
+                </summary>
+                <div class="coec-debug-body">
+                  <div id="coec-debug-text">
+                    Aquí verás el resumen técnico de la búsqueda, incluyendo la selección de fila en datos generales
+                    y lo que se pudo leer de la hoja de instalaciones.
+                  </div>
+                  <pre id="coec-debug-result">Sin datos.</pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const root = document.getElementById('coec-root');
+  if (!root) return;
+
+  const $ = (id) => document.getElementById(id);
+  const state = {
+    registros: [],
+    current: null
+  };
+
+  function hasGs(){
+    return !!(window.google && google.script && google.script.run);
+  }
+
+  function runGsPreferred(preferred, fallback, ...args){
+    return new Promise((resolve, reject) => {
+      if (!hasGs()) return reject(new Error('Este módulo debe ejecutarse dentro de Apps Script.'));
+      try{
+        const runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(function(err){
+          if (!fallback || preferred === fallback) return reject(err);
+          try{
+            google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fallback](...args);
+          }catch(e2){ reject(e2); }
+        });
+        runner[preferred](...args);
+      }catch(e){
+        if (!fallback || preferred === fallback) return reject(e);
+        try{
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject)[fallback](...args);
+        }catch(e2){ reject(e2); }
+      }
+    });
+  }
+
+  function normRegistro(s){
+    return String(s || '')
+      .replace(/\u2010|\u2011|\u2012|\u2013|\u2014/g, '-')
+      .replace(/\s+/g, '')
+      .toUpperCase()
+      .trim();
+  }
+
+  function esc(s){
+    return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function uiStatus(text, type){
+    const box = $('coec-status');
+    box.className = 'coec-status ' + (type || 'loading');
+    box.innerHTML = '<div>' + ({
+      loading:'📡', ok:'✅', warn:'⚠️', err:'⛔'
+    }[type || 'loading']) + '</div><div>' + esc(text) + '</div>';
+  }
+
+  function setBusy(on){
+    const btn = $('coec-btn-consultar');
+    $('coec-btn-spin').style.display = on ? 'inline' : 'none';
+    $('coec-btn-text').textContent = on ? 'Consultando…' : 'Consultar OEC';
+    btn.disabled = !!on;
+    $('coec-in-registro').toggleAttribute('disabled', !!on);
+  }
+
+  function goMenu(){
+    try{
+      if (window.OGA && typeof window.OGA.irAlMenu === 'function') {
+        window.OGA.irAlMenu();
+        return;
+      }
+    }catch(_){}
+  }
+
+  function fillDatalist(list){
+    const dl = $('coec-dl-registros');
+    dl.innerHTML = '';
+    list.forEach(v => {
+      const opt = document.createElement('option');
+      opt.value = v;
+      dl.appendChild(opt);
+    });
+  }
+
+  function setSummary(current){
+    $('coec-stat-total').textContent = state.registros.length || '0';
+    $('coec-stat-inst').textContent = (current.instalaciones || []).length || '0';
+    $('coec-stat-sitio').textContent = current.sitioPrincipal || '—';
+    $('coec-stat-upd').textContent = current.editable.marcaTemporal || '—';
+
+    $('coec-sum-registro').textContent = current.editable.registro || '—';
+    $('coec-sum-razon').textContent = current.editable.razon || '—';
+    $('coec-sum-norma').textContent = current.editable.norma || '—';
+    $('coec-sum-sitio').textContent = current.sitioPrincipal || current.editable.pais || '—';
+
+    $('coec-val-registro').textContent = current.editable.registro || '—';
+    $('coec-val-nit').textContent = current.editable.nit || '—';
+    $('coec-val-razon').textContent = current.editable.razon || '—';
+    $('coec-val-comercial').textContent = current.editable.nombreComercial || '—';
+    $('coec-val-norma').textContent = current.editable.norma || '—';
+    $('coec-val-pais').textContent = current.editable.pais || '—';
+    $('coec-val-representante').textContent = current.editable.repLegal || '—';
+    $('coec-val-upd').textContent = current.editable.marcaTemporal || '—';
+
+    $('coec-c1-nombre').textContent = current.editable.c1Nombre || '—';
+    $('coec-c1-titulo').textContent = current.editable.c1Titulo || '—';
+    $('coec-c1-email').textContent = current.editable.c1Email || '—';
+    $('coec-c1-telefono').textContent = current.editable.c1Telefono || '—';
+    $('coec-c1-cargo').textContent = current.editable.c1Cargo || '—';
+
+    $('coec-c2-nombre').textContent = current.editable.c2Nombre || '—';
+    $('coec-c2-titulo').textContent = current.editable.c2Titulo || '—';
+    $('coec-c2-email').textContent = current.editable.c2Email || '—';
+    $('coec-c2-telefono').textContent = current.editable.c2Telefono || '—';
+    $('coec-c2-cargo').textContent = current.editable.c2Cargo || '—';
+
+    $('coec-chip-estado').textContent = '✅ Registro encontrado';
+  }
+
+  function renderInstalaciones(insts){
+    const grid = $('coec-inst-grid');
+    const tbody = $('coec-inst-tbody');
+    const tableWrap = $('coec-inst-table-wrap');
+    const empty = $('coec-inst-empty');
+
+    grid.innerHTML = '';
+    tbody.innerHTML = '';
+
+    if (!insts || !insts.length){
+      empty.style.display = '';
+      tableWrap.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    tableWrap.style.display = '';
+
+    insts.forEach((it) => {
+      const card = document.createElement('article');
+      card.className = 'coec-inst-card';
+      card.innerHTML = `
+        <div class="coec-inst-head">
+          <h3 class="coec-inst-name">${esc(it.nombre || 'Instalación')}</h3>
+          <span class="coec-inst-reg">${esc(it.registro || '—')}</span>
+        </div>
+        <div class="coec-inst-meta">
+          <div class="coec-kv-item">
+            <div class="coec-kv-k">Dirección</div>
+            <div class="coec-kv-v">${esc(it.direccion || '—')}</div>
+          </div>
+          <div class="coec-kv-item">
+            <div class="coec-kv-k">Acreditado desde</div>
+            <div class="coec-kv-v">${esc(it.desde || '—')}</div>
+          </div>
+        </div>
+      `;
+      grid.appendChild(card);
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${esc(it.registro || '')}</td>
+        <td>${esc(it.nombre || '')}</td>
+        <td>${esc(it.direccion || '')}</td>
+        <td>${esc(it.desde || '')}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function setDebug(data){
+    const pretty = JSON.stringify(data || {}, null, 2);
+    $('coec-debug-pre').textContent = pretty || 'Sin diagnóstico.';
+    $('coec-debug-result').textContent = pretty || 'Sin datos.';
+  }
+
+  function showResults(show){
+    $('coec-empty').style.display = show ? 'none' : '';
+    $('coec-results').style.display = show ? '' : 'none';
+  }
+
+  function activateTab(tab){
+    root.querySelectorAll('.coec-tab').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+    root.querySelectorAll('.coec-panel').forEach(panel => panel.classList.toggle('active', panel.dataset.panel === tab));
+  }
+
+  function resetResults(keepInput){
+    showResults(false);
+    $('coec-chip-estado').textContent = '🔍 Esperando consulta';
+    $('coec-stat-inst').textContent = '—';
+    $('coec-stat-sitio').textContent = '—';
+    $('coec-stat-upd').textContent = '—';
+    $('coec-debug-pre').textContent = 'Sin diagnóstico todavía.';
+    $('coec-debug-result').textContent = 'Sin datos.';
+    $('coec-inst-grid').innerHTML = '';
+    $('coec-inst-tbody').innerHTML = '';
+    $('coec-inst-table-wrap').style.display = 'none';
+    $('coec-inst-empty').style.display = 'none';
+    state.current = null;
+    if (!keepInput) $('coec-in-registro').value = '';
+    activateTab('general');
+  }
+
+  async function initRegistros(){
+    try{
+      uiStatus('Cargando registros disponibles…', 'loading');
+      const res = await runGsPreferred('consultaOEC_listarRegistros', 'listarRegistrosOEC');
+      const list = Array.isArray(res) ? res : (res && Array.isArray(res.registros) ? res.registros : []);
+      state.registros = list;
+      fillDatalist(list);
+      $('coec-stat-total').textContent = list.length || '0';
+      uiStatus('Registros listos para búsqueda: ' + list.length, 'ok');
+    }catch(err){
+      $('coec-stat-total').textContent = '0';
+      uiStatus((err && err.message) ? err.message : 'No se pudieron cargar los registros.', 'err');
+    }
+  }
+
+  async function consultar(){
+    const raw = $('coec-in-registro').value || '';
+    const reg = normRegistro(raw);
+    $('coec-in-registro').value = reg;
+    if (!reg){
+      uiStatus('Ingresa un registro de acreditación válido.', 'warn');
+      $('coec-in-registro').focus();
+      return;
+    }
+
+    setBusy(true);
+    uiStatus('Buscando ficha del OEC y revisando sitios / instalaciones…', 'loading');
+
+    try{
+      const res = await runGsPreferred('consultaOEC_buscarPorRegistro', 'buscarOECPorRegistro', reg);
+
+      if (!res || !res.ok){
+        resetResults(true);
+        uiStatus((res && res.reason) ? res.reason : 'No se encontró el registro solicitado.', 'warn');
+        return;
+      }
+
+      state.current = res;
+      setSummary(res);
+      renderInstalaciones(res.instalaciones || []);
+      setDebug(res.debug || {});
+      showResults(true);
+      activateTab('general');
+
+      const totalInst = (res.instalaciones || []).length;
+      uiStatus(
+        totalInst
+          ? 'Ficha cargada correctamente. Se encontraron ' + totalInst + ' instalaciones ligadas a este registro.'
+          : 'Ficha cargada correctamente. No se encontraron instalaciones para este registro; revisa el diagnóstico si esperabas verlas.',
+        totalInst ? 'ok' : 'warn'
+      );
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }catch(err){
+      resetResults(true);
+      uiStatus((err && err.message) ? err.message : String(err), 'err');
+    }finally{
+      setBusy(false);
+    }
+  }
+
+  $('coec-btn-consultar').addEventListener('click', consultar);
+  $('coec-in-registro').addEventListener('keydown', function(e){
+    if (e.key === 'Enter'){
+      e.preventDefault();
+      consultar();
+    }
+  });
+  $('coec-in-registro').addEventListener('input', function(){
+    this.value = normRegistro(this.value);
+  });
+
+  $('coec-btn-limpiar').addEventListener('click', function(){
+    resetResults(false);
+    $('coec-in-registro').focus();
+    uiStatus('Limpio. Escribe un registro para consultar.', 'loading');
+  });
+  $('coec-btn-limpiar-top').addEventListener('click', function(){
+    resetResults(false);
+    $('coec-in-registro').focus();
+    uiStatus('Limpio. Escribe un registro para consultar.', 'loading');
+  });
+
+  $('coec-btn-reset-results').addEventListener('click', function(){
+    resetResults(true);
+    $('coec-in-registro').focus();
+    uiStatus('Puedes consultar otro registro.', 'loading');
+  });
+
+  $('coec-btn-menu-top').addEventListener('click', goMenu);
+  $('coec-btn-menu-bottom').addEventListener('click', goMenu);
+
+  root.querySelectorAll('.coec-tab').forEach(btn => {
+    btn.addEventListener('click', function(){
+      activateTab(btn.dataset.tab);
+    });
+  });
+
+  resetResults(true);
+  initRegistros();
+})();
+</script>

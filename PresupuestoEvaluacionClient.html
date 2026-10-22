@@ -1,0 +1,2142 @@
+<script>
+window.WAPP_UI_PRES = (() => {
+  const STAGES = ['OEC','EVALUACION','EQUIPO','DOCUMENTOS','ASISTENCIA','CIERRE'];
+
+  const ROOT_ID = 'presupuestoEvalRoot';
+
+  function root_() {
+    return document.getElementById(ROOT_ID);
+  }
+
+  function escCssId_(id) {
+    const s = String(id || '');
+    if (window.CSS && typeof CSS.escape === 'function') return CSS.escape(s);
+    return s.replace(/([^a-zA-Z0-9_-])/g, '\\$1');
+  }
+
+  function byId_(id) {
+    const r = root_();
+    return r ? r.querySelector('#' + escCssId_(id)) : null;
+  }
+
+  function qs_(selector) {
+    const r = root_();
+    return r ? r.querySelector(selector) : null;
+  }
+
+  function qsa_(selector) {
+    const r = root_();
+    return r ? Array.from(r.querySelectorAll(selector)) : [];
+  }
+
+
+  let state = {
+    csrf: '',
+    user: null,
+    flow: { registro:'', completed:[] },
+    oec: null,
+    estimate: null,
+    estimateTimer: null,
+    teamCatalog: null,
+    evaluation: null,
+    previewToken: '',
+    sites: [],
+    duplicatePendingPayload: null,
+    generationInFlight: false
+  };
+
+  function callServer(fn, arg) {
+    return new Promise((resolve, reject) => {
+      try {
+        const runner = google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject);
+
+        const action = runner[fn];
+
+        if (typeof action !== 'function') {
+          reject(new Error(
+            'La función de servidor "' + fn + '" no está disponible en esta versión ' +
+            'de la WebApp. Verifique que 04_Api.gs esté actualizado y guardado.'
+          ));
+          return;
+        }
+
+        if (typeof arg === 'undefined') action.call(runner);
+        else action.call(runner, arg);
+
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+
+  function busy(on, text) {
+    const el = byId_('peBusy');
+    const label = byId_('peBusyText');
+    if (label) label.textContent = text || 'Procesando…';
+    if (el) el.classList.toggle('hidden', !on);
+  }
+
+  function toast(msg) {
+    const el = byId_('peToast');
+    if (!el) return;
+    el.textContent = msg;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 3200);
+  }
+
+
+  function successCenter(title, detail) {
+    return new Promise(resolve => {
+      const old = byId_('peCenterSuccessOverlay');
+      if (old) old.remove();
+
+      const el = document.createElement('div');
+      el.id = 'peCenterSuccessOverlay';
+      el.className = 'center-success';
+      el.innerHTML = `
+        <div class="center-success-card">
+          <div class="center-success-icon">✓</div>
+          <div class="center-success-title">${esc(title || 'Correcto')}</div>
+          <div class="center-success-detail">${esc(detail || '')}</div>
+        </div>`;
+
+      root_().appendChild(el);
+
+      setTimeout(() => {
+        el.remove();
+        resolve();
+      }, 1050);
+    });
+  }
+
+  function requestId() {
+    return 'req-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  }
+
+  function unwrap(resp) {
+    if (!resp || resp.ok !== true) {
+      const msg = resp && resp.error && resp.error.message
+        ? resp.error.message
+        : 'Error de operación.';
+      throw new Error(msg);
+    }
+    return resp.data || {};
+  }
+
+  function applyFlow(flow) {
+    if (!flow) return;
+    state.flow = flow;
+
+    const completed = new Set(flow.completed || []);
+    [...qsa_('.tab')].forEach((btn, idx) => {
+      const stage = btn.dataset.stage;
+      btn.classList.toggle('done', completed.has(stage));
+
+      if (idx === 0) btn.disabled = false;
+      else btn.disabled = !completed.has(STAGES[idx - 1]);
+    });
+  }
+
+  function openTab(stage) {
+    const btn = qs_(`.tab[data-stage="${stage}"]`);
+    if (!btn || btn.disabled) return;
+
+    qsa_('.tab').forEach(b => b.classList.remove('active'));
+    qsa_('.panel').forEach(p => p.classList.remove('active'));
+
+    btn.classList.add('active');
+    byId_('panel-' + stage).classList.add('active');
+  }
+
+  function resetSessionState_() {
+    state = {
+      csrf: '',
+      user: null,
+      flow: { registro:'', completed:[] },
+      oec: null,
+      estimate: null,
+      estimateTimer: null,
+      teamCatalog: null,
+      evaluation: null,
+      previewToken: '',
+      sites: [],
+      duplicatePendingPayload: null,
+      generationInFlight: false
+    };
+  }
+
+  function showLogin_(message) {
+    byId_('peLoginView')?.classList.remove('hidden');
+    byId_('peAppView')?.classList.add('hidden');
+
+    const env = (root_() && root_().dataset.env) || '';
+    const version = (root_() && root_().dataset.version) || '';
+    const meta = byId_('peLoginMeta');
+    if (meta) {
+      meta.textContent = message || `Ambiente ${env} · ${version}`;
+    }
+  }
+
+  function enterApp_(data, welcome) {
+    state.csrf = data.csrf || '';
+    state.user = data.user || null;
+    state.oec = null;
+    state.estimate = null;
+    state.teamCatalog = null;
+
+    if (byId_('peUserName')) byId_('peUserName').textContent =
+      `${data.user.nombre} · ${data.user.rol || data.user.email}`;
+
+    byId_('peLoginView')?.classList.add('hidden');
+    byId_('peAppView')?.classList.remove('hidden');
+
+    resetVisualForm_();
+    applyFlow(data.flow);
+    openTab('OEC');
+
+    if (welcome) toast(`Bienvenido, ${data.user.nombre}.`);
+  }
+
+  async function initLogin() {
+    showLogin_('Validando cuenta institucional…');
+    busy(true, 'Validando cuenta Google activa…');
+
+    try {
+      const data = unwrap(await callServer('WAPP_API_bootstrap'));
+      enterApp_(data, false);
+    } catch (e) {
+      resetSessionState_();
+      const env = (root_() && root_().dataset.env) || '';
+      const version = (root_() && root_().dataset.version) || '';
+      showLogin_(`${e.message} · Ambiente ${env} · ${version}`);
+    } finally {
+      busy(false);
+    }
+  }
+
+  async function login() {
+    const nuevaOperacion =
+      byId_('loginNuevaOperacion')?.checked === true;
+
+    busy(true, nuevaOperacion ? 'Iniciando operación nueva…' : 'Validando acceso…');
+    try {
+      const data = unwrap(await callServer('WAPP_API_login', {
+        nuevaOperacion: nuevaOperacion
+      }));
+
+      enterApp_(data, true);
+    } catch (e) {
+      showLogin_(e.message);
+      toast(e.message);
+    } finally {
+      busy(false);
+    }
+  }
+
+  async function logout() {
+    const token = state.csrf;
+    busy(true, 'Cerrando sesión de la aplicación…');
+
+    try {
+      if (token) {
+        const resp = await callServer('WAPP_API_logout', { csrf: token });
+        unwrap(resp);
+      }
+    } catch (e) {
+      // El cierre visual debe completarse aunque el token ya haya expirado.
+      console.warn('[WAPP_LOGOUT]', e && e.message ? e.message : e);
+    } finally {
+      resetSessionState_();
+      resetVisualForm_();
+      showLogin_('Sesión de la aplicación cerrada. La cuenta Google continúa activa.');
+      busy(false);
+      toast('Sesión de la aplicación cerrada.');
+    }
+  }
+
+  function resetVisualForm_() {
+    byId_('oecSummary')?.classList.add('hidden');
+
+    const oec = byId_('oecRegistro');
+    if (oec) oec.value = '';
+
+    qsa_('.tab').forEach((b, i) => {
+      b.classList.remove('done', 'active');
+      b.disabled = i !== 0;
+    });
+
+    qs_('.tab[data-stage="OEC"]')?.classList.add('active');
+
+    qsa_('.panel').forEach(p => p.classList.remove('active'));
+    byId_('panel-OEC')?.classList.add('active');
+
+    resetEvaluationUI_();
+    resetTeamUI_();
+  }
+
+  function resetEvaluationUI_() {
+    const type = byId_('evTipo');
+    if (type) type.innerHTML = '<option value="">Primero busque un OEC…</option>';
+
+    ['evPersonal','evSitios','evAreas','evInicio','evFinal'].forEach(id => {
+      const el = byId_(id);
+      if (el) el.value = '';
+    });
+
+    ['evNc','evTestificaciones'].forEach(id => {
+      const el = byId_(id);
+      if (el) el.value = '0';
+    });
+
+    if (byId_('evDireccion')) {
+      byId_('evDireccion').value = '';
+    }
+
+    if (byId_('evProgramMessage')) {
+      byId_('evProgramMessage').textContent = '';
+    }
+
+    const override = byId_('evMostrarOtrosTipos');
+    if (override) override.checked = false;
+
+    if (byId_('evOverrideMessage')) {
+      byId_('evOverrideMessage').classList.remove('active-warning');
+    }
+
+    state.sites = [];
+    state.duplicatePendingPayload = null;
+
+    const sitesList = byId_('sitesList');
+    if (sitesList) {
+      sitesList.innerHTML =
+        '<div class="summary">Busque primero un OEC para consultar sus instalaciones.</div>';
+    }
+    updateSitesCount_();
+
+    const dup = byId_('duplicateControl');
+    if (dup) dup.classList.add('hidden');
+
+    renderEstimate_(null);
+  }
+
+  function resetTeamUI_() {
+    ['eqLiderQty','eqTecnicoQty','eqExpertoQty','eqAcompOgaQty','eqAcompExtQty','eqFormacionQty']
+      .forEach(id => {
+        const el = byId_(id);
+        if (el) el.value = '0';
+      });
+
+    const host = byId_('teamRows');
+    if (host) host.innerHTML =
+      '<div class="summary">Indique las cantidades para preparar el equipo.</div>';
+
+    state.teamCatalog = null;
+    state.evaluation = null;
+    state.previewToken = '';
+  }
+
+  async function buscarOEC() {
+    const input = byId_('oecRegistro');
+    const registro = String(input.value || '').trim().toUpperCase();
+    input.value = registro;
+
+    if (!registro) return toast('Ingrese un registro.');
+
+    busy(true, 'Buscando OEC…');
+    try {
+      const data = unwrap(await callServer('WAPP_API_buscarOEC', registro));
+      state.oec = data.contexto;
+      state.estimate = null;
+      state.teamCatalog = null;
+      applyFlow(data.flow);
+
+      const c = data.contexto;
+      byId_('oecSummary').innerHTML = `
+        <div class="summary-grid">
+          <div><div class="k">Registro</div><div class="v">${esc(c.registro)}</div></div>
+          <div><div class="k">Razón social</div><div class="v">${esc(c.razonSocial)}</div></div>
+          <div><div class="k">Estado</div><div class="v">${esc(c.estado || '-')}</div></div>
+          <div><div class="k">Norma</div><div class="v">${esc(c.norma)}</div></div>
+          <div><div class="k">Oficial</div><div class="v">${esc(c.ciclo?.oficialAsignado || '-')}</div></div>
+          <div><div class="k">Ciclo</div><div class="v">${esc(c.ciclo?.cicloId || '-')}</div></div>
+        </div>`;
+      byId_('oecSummary').classList.remove('hidden');
+
+      prepararEvaluacion_(c);
+      await cargarSitiosOEC();
+
+      await successCenter(
+        'Registro encontrado',
+        `${c.registro} · ${c.razonSocial}`
+      );
+      openTab('EVALUACION');
+      setTimeout(() => byId_('evTipo')?.focus(), 80);
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      busy(false);
+    }
+  }
+
+  function prepararEvaluacion_(ctx) {
+    const override = byId_('evMostrarOtrosTipos');
+    if (override) override.checked = false;
+
+    renderEvaluationTypeOptions_(false);
+
+    byId_('evProgramMessage').textContent =
+      ctx.mensajeTipoEvaluacion || '';
+
+    byId_('evDireccion').value =
+      ctx.direccion || 'Fuente pendiente de definir';
+
+    applyDatePolicy_();
+    scheduleEstimate();
+  }
+
+
+async function cargarSitiosOEC() {
+  const loading = byId_('sitesLoading');
+  const host = byId_('sitesList');
+
+  if (!host) return;
+
+  loading?.classList.remove('hidden');
+
+  try {
+    const data = unwrap(await callServer('WAPP_API_obtenerSitiosOEC'));
+    state.sites = data.sitios || [];
+    renderSites_();
+  } catch (e) {
+    state.sites = [];
+    host.innerHTML =
+      `<div class="summary"><div class="v">${esc(e.message)}</div></div>`;
+    updateSitesCount_();
+  } finally {
+    loading?.classList.add('hidden');
+  }
+}
+
+
+async function retrySites() {
+  await cargarSitiosOEC();
+}
+
+function renderSites_() {
+  const host = byId_('sitesList');
+  if (!host) return;
+
+  const previous = {};
+  qsa_('.site-card').forEach(card => {
+    const key = card.dataset.siteKey || '';
+    previous[key] = {
+      selected: card.querySelector('.site-check')?.checked === true,
+      alcance: card.querySelector('.site-scope')?.value || ''
+    };
+  });
+
+  if (!state.sites.length) {
+    host.innerHTML =
+      '<div class="summary">No hay sitios vigentes registrados para este OEC.</div>';
+    updateSitesCount_();
+    return;
+  }
+
+  host.innerHTML = state.sites.map((s, i) => {
+    const key = String(s.sitioId || `${s.nombre}|${s.direccion}`);
+    const prev = previous[key] || {};
+
+    return `
+      <div class="site-card ${prev.selected ? 'selected':''}"
+           data-site-key="${attr(key)}"
+           data-site-id="${attr(s.sitioId || '')}"
+           data-site-name="${attr(s.nombre || '')}"
+           data-site-address="${attr(s.direccion || '')}">
+        <div class="site-head">
+          <input class="site-check" type="checkbox"
+                 ${prev.selected ? 'checked':''}
+                 onchange="WAPP_UI_PRES.toggleSite(this)">
+          <div class="site-main">
+            <div class="site-name-row">
+              <span class="site-name">${esc(s.nombre || s.sitioId || 'Sitio')}</span>
+              <span class="site-status">${esc(s.estado || 'Sin estado')}</span>
+            </div>
+            <div class="site-address">${esc(s.direccion || 'Sin dirección registrada')}</div>
+          </div>
+        </div>
+        <div class="site-scope-wrap">
+          <label>Alcance programado *</label>
+          <textarea class="site-scope"
+                    ${prev.selected ? '' : 'disabled'}
+                    placeholder="Ingrese manualmente el alcance que se evaluará en esta instalación.">${esc(prev.alcance || '')}</textarea>
+        </div>
+      </div>`;
+  }).join('');
+
+  updateSitesCount_();
+}
+
+function toggleSite(check) {
+  const card = check?.closest('.site-card');
+  if (!card) return;
+
+  const scope = card.querySelector('.site-scope');
+  card.classList.toggle('selected', check.checked);
+
+  if (scope) {
+    scope.disabled = !check.checked;
+    if (check.checked) setTimeout(() => scope.focus(), 30);
+  }
+
+  updateSitesCount_();
+}
+
+function updateSitesCount_() {
+  const count = qsa_('.site-check:checked').length;
+  const el = byId_('sitesCount');
+  if (el) {
+    el.textContent = `${count} seleccionado${count === 1 ? '' : 's'}`;
+  }
+}
+
+function collectSites_() {
+  return [...qsa_('.site-card')]
+    .filter(card => card.querySelector('.site-check')?.checked)
+    .map(card => ({
+      sitioId: card.dataset.siteId || '',
+      nombre: card.dataset.siteName || '',
+      direccion: card.dataset.siteAddress || '',
+      alcanceProgramado:
+        card.querySelector('.site-scope')?.value.trim() || ''
+    }));
+}
+
+function validateSites_() {
+  const selected = collectSites_();
+
+  for (const s of selected) {
+    if (!s.alcanceProgramado) {
+      toast(
+        `Ingrese el alcance programado para ${s.nombre || s.sitioId || 'la instalación seleccionada'}.`
+      );
+      return false;
+    }
+  }
+
+  return true;
+}
+
+  function renderEvaluationTypeOptions_(showAll, preserveValue='') {
+    const sel = byId_('evTipo');
+    if (!sel || !state.oec) return;
+
+    const programados = state.oec.tiposEvaluacionPermitidos || [];
+    const catalogo = state.oec.tiposEvaluacionCatalogo || programados;
+    const tipos = showAll ? catalogo : programados;
+
+    const current = preserveValue || sel.value || '';
+
+    sel.innerHTML =
+      '<option value="">Seleccione…</option>' +
+      tipos.map(t =>
+        `<option value="${attr(t)}">${esc(t)}</option>`
+      ).join('');
+
+    if (current && tipos.includes(current)) {
+      sel.value = current;
+    } else if (
+      !showAll &&
+      state.oec.tipoEvaluacionSugerido &&
+      tipos.includes(state.oec.tipoEvaluacionSugerido)
+    ) {
+      sel.value = state.oec.tipoEvaluacionSugerido;
+    } else {
+      sel.value = '';
+    }
+  }
+
+  function toggleEvaluationTypes() {
+    const showAll =
+      byId_('evMostrarOtrosTipos')?.checked === true;
+
+    const previous = val('evTipo');
+    renderEvaluationTypeOptions_(showAll, previous);
+
+    const msg = byId_('evOverrideMessage');
+    if (msg) {
+      msg.classList.toggle('active-warning', showAll);
+      msg.textContent = showAll
+        ? 'Modo excepcional activo: puede seleccionar cualquier tipo soportado. La selección quedará identificada en la operación.'
+        : 'Úselo únicamente cuando el usuario requiera seleccionar un tipo distinto al programado para el ciclo.';
+    }
+
+    state.estimate = null;
+    renderEstimate_(null);
+    applyDatePolicy_();
+    scheduleEstimate();
+  }
+
+  function getEstimatePayload_() {
+    return {
+      tipoEvaluacion: val('evTipo'),
+      mostrarOtrosTipos:
+        byId_('evMostrarOtrosTipos')?.checked === true,
+      personal: val('evPersonal'),
+      sitios: val('evSitios'),
+      areas: val('evAreas'),
+      nc: val('evNc') || '0',
+      testificaciones: val('evTestificaciones') || '0',
+      fechaInicio: val('evInicio')
+    };
+  }
+
+  function canEstimate_() {
+    const p = getEstimatePayload_();
+    return !!p.tipoEvaluacion &&
+      /^\d+$/.test(p.personal) && Number(p.personal) >= 1 &&
+      /^\d+$/.test(p.sitios) && Number(p.sitios) >= 1 &&
+      /^\d+$/.test(p.areas) && Number(p.areas) >= 1 &&
+      /^\d+$/.test(p.nc) &&
+      /^\d+$/.test(p.testificaciones);
+  }
+
+
+function isDocumentalACSelection_() {
+  return norm_(val('evTipo')) ===
+    'revision documental de acciones correctivas';
+}
+
+function onEvaluationTypeChange() {
+  applyDatePolicy_();
+  scheduleEstimate();
+}
+
+function applyDatePolicy_() {
+  const docOnly = isDocumentalACSelection_();
+  const box = byId_('dateBox');
+  const inicio = byId_('evInicio');
+  const fin = byId_('evFinal');
+  const msg = byId_('evDatePolicyMessage');
+
+  if (box) box.classList.toggle('dates-manual', docOnly);
+
+  // V1.5.3: las fechas SIEMPRE se ingresan.
+  // En revisión documental AC son fechas reales del proceso, ingresadas manualmente.
+  if (inicio) inicio.disabled = false;
+  if (fin) fin.disabled = false;
+
+  if (msg) {
+    msg.textContent = docOnly
+      ? 'Ingrese las fechas reales del proceso. No se usan para validar duplicidad ni se autocalculan con la predicción.'
+      : 'La fecha final se ajusta automáticamente con la duración sugerida.';
+    msg.classList.toggle('active-warning', docOnly);
+  }
+}
+
+  function scheduleEstimate() {
+    clearTimeout(state.estimateTimer);
+
+    if (!canEstimate_()) {
+      state.estimate = null;
+      renderEstimate_(null);
+      return;
+    }
+
+    state.estimateTimer = setTimeout(estimarTiempo, 350);
+  }
+
+  async function estimarTiempo() {
+    if (!canEstimate_()) return;
+
+    try {
+      const data = unwrap(await callServer(
+        'WAPP_API_estimarTiempo',
+        getEstimatePayload_()
+      ));
+
+      state.estimate = data.estimacion;
+      renderEstimate_(state.estimate);
+
+      if (val('evInicio')) syncSuggestedEndDate();
+    } catch (e) {
+      state.estimate = null;
+      renderEstimate_(null, e.message);
+    }
+  }
+
+  function renderEstimate_(estimate, error='') {
+    const card = byId_('timeEstimateCard');
+    const value = byId_('timeEstimateValue');
+    const detail = byId_('timeEstimateDetail');
+    if (!card || !value || !detail) return;
+
+    if (!estimate) {
+      card.classList.add('pending');
+      value.textContent = '—';
+      detail.textContent = error ||
+        'Complete tipo de evaluación, personal, sitios y áreas.';
+      return;
+    }
+
+    card.classList.remove('pending');
+    value.textContent = `${estimate.duracionSugerida} día${estimate.duracionSugerida === 1 ? '' : 's'}`;
+
+    const notes = [
+      `Predicción base: ${estimate.prediccionBase}`,
+      `Confianza: ${estimate.confianza}`
+    ];
+    if (estimate.observacion) notes.push(estimate.observacion);
+    detail.textContent = notes.join(' · ');
+  }
+
+  function syncSuggestedEndDate() {
+    if (isDocumentalACSelection_()) {
+      const inicioDoc = val('evInicio');
+      const finDoc = byId_('evFinal');
+      if (finDoc) {
+        finDoc.min = inicioDoc || '';
+        // No se autocalcula: conserva lo ingresado manualmente.
+      }
+      return;
+    }
+
+    const inicio = val('evInicio');
+    const fin = byId_('evFinal');
+
+    if (!inicio) {
+      fin.min = '';
+      fin.value = '';
+      return;
+    }
+
+    fin.min = inicio;
+
+    if (!state.estimate || !state.estimate.duracionSugerida) {
+      scheduleEstimate();
+      return;
+    }
+
+    fin.value = addInclusiveDays_(inicio, state.estimate.duracionSugerida);
+  }
+
+  function validateEndDate() {
+    const inicio = val('evInicio');
+    const fin = val('evFinal');
+    if (!inicio || !fin) return true;
+
+    if (fin < inicio) {
+      toast('La fecha final no puede ser menor que la fecha inicial.');
+      syncSuggestedEndDate();
+      return false;
+    }
+    return true;
+  }
+
+  function addInclusiveDays_(dateStr, days) {
+    const parts = String(dateStr).split('-').map(Number);
+    const d = new Date(parts[0], parts[1]-1, parts[2]);
+    d.setDate(d.getDate() + Math.max(0, Number(days || 1) - 1));
+
+    return [
+      d.getFullYear(),
+      String(d.getMonth()+1).padStart(2,'0'),
+      String(d.getDate()).padStart(2,'0')
+    ].join('-');
+  }
+
+function buildEvaluationPayload_() {
+  return {
+    csrf: state.csrf,
+    requestId: requestId(),
+    tipoEvaluacion: val('evTipo'),
+    mostrarOtrosTipos:
+      byId_('evMostrarOtrosTipos')?.checked === true,
+    fechaInicio: val('evInicio'),
+    fechaFinal: val('evFinal'),
+    direccionOEC: state.oec?.direccion || '',
+    personal: val('evPersonal'),
+    sitios: val('evSitios'),
+    areas: val('evAreas'),
+    nc: val('evNc') || '0',
+    testificaciones: val('evTestificaciones') || '0',
+    muestreo: val('evMuestreo'),
+    instalacionesProgramadas: collectSites_()
+  };
+}
+
+async function guardarEvaluacion() {
+  if (!canEstimate_()) {
+    toast('Complete los parámetros requeridos para calcular el tiempo.');
+    return;
+  }
+
+  if (!state.estimate) {
+    await estimarTiempo();
+    if (!state.estimate) return;
+  }
+
+  if (!val('evInicio')) {
+    toast('Seleccione la fecha inicial.');
+    return;
+  }
+
+  if (!isDocumentalACSelection_()) {
+    syncSuggestedEndDate();
+  }
+
+  if (!val('evFinal')) {
+    toast(
+      isDocumentalACSelection_()
+        ? 'Ingrese la fecha final real del proceso documental.'
+        : 'Seleccione la fecha final.'
+    );
+    return;
+  }
+
+  if (!validateEndDate()) return;
+  if (!validateSites_()) return;
+
+  const payload = buildEvaluationPayload_();
+
+  busy(true, 'Verificando programación…');
+  try {
+    const checkData = unwrap(await callServer(
+      'WAPP_API_verificarDuplicadosEvaluacion',
+      payload
+    ));
+
+    const dup = checkData.duplicado;
+
+    if (dup.hasDuplicates && !dup.authorized) {
+      state.duplicatePendingPayload = payload;
+      renderDuplicateControl_(dup);
+      return;
+    }
+
+    await guardarEvaluacionServidor_(payload);
+
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    state.generationInFlight = false;
+    busy(false);
+    toggleGenerateReady();
+  }
+}
+
+async function guardarEvaluacionServidor_(payload) {
+  busy(true, 'Guardando evaluación…');
+
+  const data = unwrap(await callServer('WAPP_API_guardarEvaluacion', payload));
+
+  state.duplicatePendingPayload = null;
+  const dupBox = byId_('duplicateControl');
+  if (dupBox) dupBox.classList.add('hidden');
+
+  applyFlow(data.flow);
+  toast('Datos de evaluación guardados.');
+  openTab('EQUIPO');
+  await cargarCatalogoEquipo();
+}
+
+function renderDuplicateControl_(dup) {
+  const box = byId_('duplicateControl');
+  const rows = byId_('duplicateRows');
+  const admin = byId_('duplicateAdminBox');
+  const blocked = byId_('duplicateBlockedBox');
+
+  if (!box || !rows) return;
+
+  rows.innerHTML = (dup.duplicates || []).map(d => `
+    <div class="duplicate-row">
+      <strong>Fila ${esc(d.rowNumber)}</strong> ·
+      ${esc(d.tipoEvaluacion)} ·
+      ${esc(d.fechaInicio || '-')} al ${esc(d.fechaFinal || '-')} ·
+      ${d.clasificacion === 'COINCIDENCIA_EXACTA'
+        ? 'Coincidencia exacta'
+        : d.clasificacion === 'MISMO_TIPO_FECHAS_DIFERENTES'
+          ? 'Mismo tipo con fechas diferentes: corresponde revisar Reprogramación'
+          : d.clasificacion === 'MISMO_TIPO_SIN_VALIDAR_FECHAS'
+            ? 'Mismo tipo; las fechas no forman parte de esta validación'
+            : 'Mismo OEC y mismo tipo de evaluación'}
+      ${d.boleta ? ` · Boleta ${esc(d.boleta)}` : ''}
+    </div>
+  `).join('');
+
+  // La autorización ya no depende de un botón directo.
+  // Cualquier usuario interno puede solicitar el OTP; la cuenta de jefatura
+  // decide si comparte el código.
+  admin?.classList.remove('hidden');
+  blocked?.classList.add('hidden');
+
+  const otpBox = byId_('dupOtpBox');
+  const otpStatus = byId_('dupOtpStatus');
+  const otpInput = byId_('dupToken');
+  if (otpBox) otpBox.classList.add('hidden');
+  if (otpStatus) otpStatus.textContent = '';
+  if (otpInput) otpInput.value = '';
+
+  const btnGuardar = byId_('btnGuardarEvaluacion');
+  if (btnGuardar) {
+    btnGuardar.disabled = true;
+    btnGuardar.title =
+      'Debe validar el token de jefatura o revisar los datos antes de continuar.';
+  }
+
+  box.classList.remove('hidden');
+  box.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function cancelDuplicateNotice() {
+  state.duplicatePendingPayload = null;
+
+  const box = byId_('duplicateControl');
+  if (box) box.classList.add('hidden');
+
+  const btnGuardar = byId_('btnGuardarEvaluacion');
+  if (btnGuardar) {
+    btnGuardar.disabled = false;
+    btnGuardar.title = '';
+  }
+}
+
+async function solicitarTokenDuplicado() {
+  const payload = state.duplicatePendingPayload;
+  if (!payload) {
+    toast('No existe una evaluación pendiente de autorización.');
+    return;
+  }
+
+  const motivo = val('dupMotivo');
+  if (motivo.length < 5) {
+    toast('Ingrese una justificación de al menos 5 caracteres.');
+    return;
+  }
+
+  busy(true, 'Enviando token a jefatura…');
+
+  const btnGuardar = byId_('btnGuardarEvaluacion');
+  if (btnGuardar) {
+    btnGuardar.disabled = true;
+    btnGuardar.title = 'Esperando validación del token de jefatura.';
+  }
+
+  try {
+    const data = unwrap(await callServer(
+      'WAPP_API_solicitarTokenDuplicado',
+      {
+        ...payload,
+        csrf: state.csrf,
+        requestId: requestId(),
+        motivo: motivo
+      }
+    ));
+
+    const otp = data.otp;
+    const box = byId_('dupOtpBox');
+    const status = byId_('dupOtpStatus');
+
+    if (box) box.classList.remove('hidden');
+    if (status) {
+      status.textContent =
+        `Token enviado a ${otp.destinatario}. Vigencia: ${otp.expiresInMinutes} minutos.`;
+    }
+
+    byId_('dupToken')?.focus();
+    toast('Token enviado a la cuenta administradora.');
+
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    busy(false);
+  }
+}
+
+async function validarTokenDuplicado() {
+  const payload = state.duplicatePendingPayload;
+  if (!payload) {
+    toast('No existe una evaluación pendiente de autorización.');
+    return;
+  }
+
+  const motivo = val('dupMotivo');
+  const token = val('dupToken').replace(/\D/g, '');
+
+  if (!/^\d{6}$/.test(token)) {
+    toast('Ingrese el token de 6 dígitos enviado a jefatura.');
+    return;
+  }
+
+  busy(true, 'Validando autorización de jefatura…');
+
+  try {
+    const data = unwrap(await callServer(
+      'WAPP_API_validarTokenDuplicado',
+      {
+        ...payload,
+        csrf: state.csrf,
+        requestId: requestId(),
+        motivo: motivo,
+        token: token
+      }
+    ));
+
+    toast(
+      `Autorización validada: ${data.autorizacion.idAutorizacion}`
+    );
+
+    const savePayload = {
+      ...payload,
+      requestId: requestId()
+    };
+
+    await guardarEvaluacionServidor_(savePayload);
+
+  } catch (e) {
+    toast(e.message);
+  } finally {
+    busy(false);
+  }
+}
+
+// Alias legado deliberadamente bloqueado desde UI.
+async function autorizarDuplicado() {
+  toast('La autorización directa fue reemplazada por validación mediante token.');
+}
+
+  async function cargarCatalogoEquipo() {
+    const loading = byId_('teamCatalogLoading');
+    loading?.classList.remove('hidden');
+
+    try {
+      const data = unwrap(await callServer('WAPP_API_obtenerCatalogoEquipo'));
+      state.teamCatalog = data.catalogo;
+      state.evaluation = data.evaluacion || null;
+
+      if (state.evaluation?.estimacionTiempo) {
+        state.estimate = state.evaluation.estimacionTiempo;
+      }
+
+      renderTeamDaysPolicy_();
+
+      // Oficial siempre 1 y preseleccionado desde el programa.
+      renderTeamAssignments();
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      loading?.classList.add('hidden');
+    }
+  }
+
+
+  function predictedDays_() {
+    return Number(
+      state.evaluation?.estimacionTiempo?.duracionSugerida ||
+      state.estimate?.duracionSugerida ||
+      0
+    );
+  }
+
+  function isDocumentOnly_() {
+    return norm_(state.evaluation?.tipoEvaluacion) ===
+      'revision documental de acciones correctivas';
+  }
+
+  function renderTeamDaysPolicy_() {
+    const box = byId_('teamDaysPolicy');
+    if (!box) return;
+
+    const d = predictedDays_();
+    if (!d) {
+      box.textContent = 'No fue posible recuperar la duración sugerida.';
+      return;
+    }
+
+    if (isDocumentOnly_()) {
+      box.innerHTML =
+        `<strong>Duración predicha: ${d} día${d === 1 ? '' : 's'}.</strong> ` +
+        `Se precarga ese valor en Evaluación documental y puede ajustarse manualmente. ` +
+        `Debe mantenerse mayor que 0. Evaluación en sitio no aplica y permanece en 0.`;
+    } else {
+      box.innerHTML =
+        `<strong>Duración predicha: ${d} día${d === 1 ? '' : 's'}.</strong> ` +
+        `La columna Evaluación en sitio se precarga con ese valor para Líder, Técnicos, ` +
+        `Expertos y Acompañamiento, pero puede ajustarse manualmente. El valor debe ser ` +
+        `mayor que 0. El Oficial conserva su regla propia.`;
+    }
+  }
+
+  function onExpertCountChange() {
+    const enabled = num('eqExpertoQty') > 0;
+    const oga = byId_('eqAcompOgaQty');
+    const ext = byId_('eqAcompExtQty');
+
+    oga.disabled = !enabled;
+    ext.disabled = !enabled;
+
+    if (!enabled) {
+      oga.value = '0';
+      ext.value = '0';
+    }
+
+    renderTeamAssignments();
+  }
+
+  function getComposition_() {
+    return {
+      lider: intVal('eqLiderQty'),
+      tecnico: intVal('eqTecnicoQty'),
+      experto: intVal('eqExpertoQty'),
+      acompOGA: intVal('eqAcompOgaQty'),
+      acompExterno: intVal('eqAcompExtQty'),
+      formacion: intVal('eqFormacionQty'),
+      tipoLider: val('eqLiderTipo') || 'OGA'
+    };
+  }
+
+  function renderTeamAssignments() {
+    const host = byId_('teamRows');
+    if (!host) return;
+
+    if (!state.teamCatalog) {
+      host.innerHTML =
+        '<div class="summary">Cargando padrón de evaluadores…</div>';
+      return;
+    }
+
+    // Preserve current selections when counts change.
+    const previous = {};
+    qsa_('.assignment-row').forEach(row => {
+      const key = row.dataset.slot;
+      if (!key) return;
+      previous[key] = {
+        correo: row.querySelector('.a-name')?.value || '',
+        documental: row.querySelector('.a-doc')?.value || '0',
+        sitio: row.querySelector('.a-site')?.value || '0',
+        areaEvaluacion: row.querySelector('.a-area-eval')?.value || ''
+      };
+    });
+
+    const c = getComposition_();
+    const specs = [];
+
+    specs.push({
+      rolKey:'oficial',
+      label:'Oficial de Acreditación',
+      tipo:'OGA',
+      candidates: state.teamCatalog.oficiales || [],
+      count:1,
+      lockedOfficial:true
+    });
+
+    specs.push({
+      rolKey:'lider',
+      label:'Evaluador Líder',
+      tipo:c.tipoLider,
+      candidates: filterByType_(state.teamCatalog.roles?.lider || [], c.tipoLider),
+      count:c.lider
+    });
+
+    specs.push({
+      rolKey:'tecnico',
+      label:'Evaluador Técnico',
+      tipo:'Externo',
+      candidates: filterByType_(state.teamCatalog.roles?.tecnico || [], 'Externo'),
+      count:c.tecnico
+    });
+
+    specs.push({
+      rolKey:'experto',
+      label:'Experto Técnico',
+      tipo:'Externo',
+      candidates: filterByType_(state.teamCatalog.roles?.experto || [], 'Externo'),
+      count:c.experto
+    });
+
+    specs.push({
+      rolKey:'acomp_oga',
+      label:'Evaluador de Acompañamiento · OGA',
+      tipo:'OGA',
+      candidates: filterByType_(state.teamCatalog.roles?.acompana || [], 'OGA'),
+      count:c.acompOGA
+    });
+
+    specs.push({
+      rolKey:'acomp_externo',
+      label:'Evaluador de Acompañamiento · Externo',
+      tipo:'Externo',
+      candidates: filterByType_(state.teamCatalog.roles?.acompana || [], 'Externo'),
+      count:c.acompExterno
+    });
+
+    specs.push({
+      rolKey:'formacion',
+      label:'Personal en Formación',
+      tipo:'N/A',
+      candidates: state.teamCatalog.roles?.formacion || [],
+      count:c.formacion,
+      noCharge:true
+    });
+
+    const html = [];
+    specs.forEach(spec => {
+      for (let i=0; i<spec.count; i++) {
+        html.push(assignmentHtml_(spec, i, previous));
+      }
+    });
+
+    host.innerHTML = html.length
+      ? html.join('')
+      : '<div class="summary">No hay integrantes configurados.</div>';
+
+    // Select assigned official from institutional program.
+    const official = qs_(
+      '.assignment-row[data-slot="oficial-0"] .a-name'
+    );
+
+    if (official) {
+      const assigned = state.teamCatalog.oficialAsignado || '';
+      const option = [...official.options].find(o =>
+        norm_(o.textContent).includes(norm_(assigned)) ||
+        norm_(assigned).includes(norm_(o.textContent))
+      );
+
+      if (option) official.value = option.value;
+      official.disabled = true;
+      hydrateAssignment_(official);
+    }
+
+    // Restore/hydrate all remaining selections.
+    qsa_('.assignment-row .a-name').forEach(sel => {
+      if (!sel.disabled) {
+        const slot = sel.closest('.assignment-row').dataset.slot;
+        if (previous[slot]?.correo) sel.value = previous[slot].correo;
+        hydrateAssignment_(sel);
+      }
+    });
+  }
+
+function assignmentHtml_(spec, index, previous) {
+  const slot = `${spec.rolKey}-${index}`;
+  const prev = previous[slot] || {};
+  const predicted = predictedDays_();
+  const docOnly = isDocumentOnly_();
+
+  const options = [
+    '<option value="">Seleccione integrante…</option>',
+    ...(spec.candidates || []).map(c =>
+      `<option value="${attr(c.correo || c.nombre)}"
+         data-nombre="${attr(c.nombre)}"
+         data-correo="${attr(c.correo)}"
+         data-lugar="${attr(c.lugarTrabajo || '')}"
+         data-area="${attr(c.areaAplicacion || '')}"
+         data-tipo="${attr(c.tipo || spec.tipo)}">${esc(c.nombre)}</option>`
+    )
+  ].join('');
+
+  let documental = Number(prev.documental || 0);
+  let sitio = Number(prev.sitio || 0);
+  let docLocked = false;
+  let siteLocked = false;
+  let docMin = 0;
+  let siteMin = 0;
+
+  if (spec.noCharge) {
+    documental = 0;
+    sitio = 0;
+    docLocked = true;
+    siteLocked = true;
+  } else if (spec.rolKey === 'oficial') {
+    // Regla temporal: mientras se define el cobro, Oficial = 0 días en sitio.
+    sitio = 0;
+    siteLocked = true;
+  } else {
+    if (docOnly) {
+      documental = documental > 0 ? documental : predicted;
+      sitio = 0;
+      docMin = 0.5;
+      siteLocked = true;
+    } else {
+      sitio = sitio > 0 ? sitio : predicted;
+      siteMin = 0.5;
+    }
+  }
+
+  let areaEvaluacion = String(prev.areaEvaluacion || '').trim();
+  let areaLocked = false;
+
+  if (spec.rolKey === 'oficial') {
+    areaEvaluacion = 'N/A';
+    areaLocked = true;
+  } else if (spec.rolKey === 'lider') {
+    areaEvaluacion = 'Sistema de gestión';
+    areaLocked = true;
+  }
+
+  return `
+    <div class="assignment-row"
+         data-slot="${attr(slot)}"
+         data-role-key="${attr(spec.rolKey)}"
+         data-role-label="${attr(spec.label)}"
+         data-fixed-type="${attr(spec.tipo)}"
+         data-no-charge="${spec.noCharge ? '1':'0'}">
+      <div class="assignment-role">${esc(spec.label)}</div>
+
+      <div class="assignment-member-cell">
+        <label class="responsive-field-label">Integrante</label>
+        <select class="a-name" onchange="WAPP_UI_PRES.hydrateAssignment(this)">
+          ${options}
+        </select>
+
+        <div class="assignment-area-grid">
+          <div class="assignment-area-field">
+            <label>Área registrada en padrón</label>
+            <textarea class="a-area-catalog" readonly
+                      placeholder="Sin área registrada"></textarea>
+          </div>
+
+          <div class="assignment-area-field">
+            <label>Área a evaluar</label>
+            <input class="a-area-eval"
+                   value="${attr(areaEvaluacion)}"
+                   ${areaLocked ? 'readonly':''}
+                   placeholder="Ingrese el área asignada">
+          </div>
+        </div>
+      </div>
+
+      <div class="assignment-control">
+        <label class="responsive-field-label">Correo</label>
+        <input class="a-email" readonly placeholder="Correo">
+      </div>
+
+      <div class="assignment-control">
+        <label class="responsive-field-label">Tipo</label>
+        <input class="a-type" readonly value="${attr(spec.tipo)}">
+      </div>
+
+      <div class="assignment-control">
+        <label class="responsive-field-label">Evaluación documental (días)</label>
+        <input class="a-doc ${docLocked ? 'day-locked':''}"
+               type="number" min="${attr(docMin)}" step="0.5"
+               value="${attr(documental)}"
+               ${docLocked ? 'readonly':''}
+               oninput="WAPP_UI_PRES.validateTeamDaysField(this)"
+               title="Evaluación documental (días)">
+      </div>
+
+      <div class="assignment-control">
+        <label class="responsive-field-label">Evaluación en sitio (días)</label>
+        <input class="a-site ${siteLocked ? 'day-locked':''}"
+               type="number" min="${attr(siteMin)}" step="0.5"
+               value="${attr(sitio)}"
+               ${siteLocked ? 'readonly':''}
+               oninput="WAPP_UI_PRES.validateTeamDaysField(this)"
+               title="Evaluación en sitio (días)">
+      </div>
+
+      <div class="assignment-control">
+        <label class="responsive-field-label">Lugar de trabajo</label>
+        <input class="a-place" readonly placeholder="Lugar de trabajo">
+      </div>
+    </div>`;
+}
+
+function validateTeamDaysField(input) {
+  if (!input || input.readOnly || input.disabled) return true;
+
+  const row = input.closest('.assignment-row');
+  if (!row) return true;
+
+  const roleKey = row.dataset.roleKey || '';
+  if (roleKey === 'oficial' || roleKey === 'formacion') return true;
+
+  const value = Number(input.value);
+  const isDoc = input.classList.contains('a-doc');
+  const requiredPositive =
+    (isDocumentOnly_() && isDoc) ||
+    (!isDocumentOnly_() && !isDoc);
+
+  if (requiredPositive && (!Number.isFinite(value) || value <= 0)) {
+    input.setCustomValidity('El valor debe ser mayor que 0.');
+    input.classList.add('field-error');
+    return false;
+  }
+
+  input.setCustomValidity('');
+  input.classList.remove('field-error');
+  return true;
+}
+
+function validateAllTeamDays_() {
+  let ok = true;
+
+  qsa_('.assignment-row .a-doc, .assignment-row .a-site')
+    .forEach(input => {
+      if (!validateTeamDaysField(input)) ok = false;
+    });
+
+  if (!ok) {
+    toast(
+      isDocumentOnly_()
+        ? 'Los días de evaluación documental deben ser mayores que 0.'
+        : 'Los días de evaluación en sitio deben ser mayores que 0.'
+    );
+  }
+
+  return ok;
+}
+
+  function filterByType_(items, type) {
+    return (items || []).filter(x => String(x.tipo || '') === type);
+  }
+
+  function hydrateAssignment(sel) {
+    hydrateAssignment_(sel);
+  }
+
+  function hydrateAssignment_(sel) {
+    const row = sel.closest('.assignment-row');
+    if (!row) return;
+
+    const opt = sel.options[sel.selectedIndex];
+    const fixedType = row.dataset.fixedType || '';
+
+    row.querySelector('.a-email').value = opt?.dataset.correo || '';
+    row.querySelector('.a-place').value = opt?.dataset.lugar || '';
+    row.querySelector('.a-type').value = fixedType || opt?.dataset.tipo || '';
+
+    const area = opt?.dataset.area || '';
+    const areaCatalog = row.querySelector('.a-area-catalog');
+    if (areaCatalog) areaCatalog.value = area || '';
+
+    // El área asignada a la evaluación es independiente del área del padrón.
+    // Líder y Oficial conservan valores institucionales bloqueados.
+    const areaEval = row.querySelector('.a-area-eval');
+    const roleKey = row.dataset.roleKey || '';
+    if (areaEval) {
+      if (roleKey === 'lider') {
+        areaEval.value = 'Sistema de gestión';
+      } else if (roleKey === 'oficial') {
+        areaEval.value = 'N/A';
+      }
+    }
+  }
+
+
+function validateTeamAreas_() {
+  let ok = true;
+  let first = null;
+
+  qsa_('.assignment-row').forEach(row => {
+    const roleKey = row.dataset.roleKey || '';
+    if (roleKey === 'oficial') return;
+
+    const input = row.querySelector('.a-area-eval');
+    const value = String(input?.value || '').trim();
+
+    if (!value) {
+      ok = false;
+      input?.classList.add('field-error');
+      if (!first) first = input;
+    } else {
+      input?.classList.remove('field-error');
+    }
+  });
+
+  if (!ok) {
+    toast('Complete el campo "Área a evaluar" para todos los integrantes.');
+    first?.focus();
+  }
+
+  return ok;
+}
+
+  function collectTeam() {
+    return [...qsa_('.assignment-row')].map(row => {
+      const sel = row.querySelector('.a-name');
+      const opt = sel.options[sel.selectedIndex];
+
+      return {
+        rolKey: row.dataset.roleKey,
+        rol: row.dataset.roleLabel,
+        nombre: opt?.dataset.nombre || '',
+        correo: row.querySelector('.a-email').value.trim(),
+        tipo: row.querySelector('.a-type').value.trim(),
+        documental: Number(row.querySelector('.a-doc')?.value || 0),
+        sitio: Number(row.querySelector('.a-site')?.value || 0),
+        lugarTrabajo: row.querySelector('.a-place').value.trim(),
+        areaCatalogo: row.querySelector('.a-area-catalog')?.value.trim() || '',
+        area: row.querySelector('.a-area-eval')?.value.trim() || ''
+      };
+    });
+  }
+
+  async function guardarEquipo() {
+    const comp = getComposition_();
+
+    if (comp.experto > 0 && (comp.acompOGA + comp.acompExterno) === 0) {
+      toast('Si hay Experto Técnico, agregue al menos un Evaluador de Acompañamiento.');
+      return;
+    }
+
+    const equipo = collectTeam();
+    if (equipo.some(x => !x.nombre)) {
+      toast('Seleccione el nombre de todos los integrantes.');
+      return;
+    }
+
+    if (!validateAllTeamDays_()) {
+      return;
+    }
+
+    if (!validateTeamAreas_()) {
+      return;
+    }
+
+    busy(true, 'Guardando equipo…');
+    try {
+      const data = unwrap(await callServer('WAPP_API_guardarEquipo', {
+        csrf: state.csrf,
+        requestId: requestId(),
+        composicion: comp,
+        equipo: equipo
+      }));
+
+      applyFlow(data.flow);
+      toast(`Equipo guardado: ${data.equipo.total} integrante(s).`);
+      openTab('DOCUMENTOS');
+      await cargarPreviewDocumentos();
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      busy(false);
+    }
+  }
+
+async function cargarPreviewDocumentos() {
+  const loading = byId_('docPreviewLoading');
+  const host = byId_('docPreview');
+  const confirm = byId_('docPreviewConfirm');
+
+  // Hotfix V1.4.1:
+  // detectar de forma explícita un TabDocumentos.html desactualizado.
+  if (!host) {
+    state.previewToken = '';
+
+    const panel = byId_('panel-DOCUMENTOS');
+    const mensaje =
+      'La interfaz de Documentos está desactualizada. ' +
+      'Falta el contenedor "docPreview". Reemplace TabDocumentos.html ' +
+      'por la versión V1.2 o posterior.';
+
+    if (panel) {
+      let aviso = byId_('docPreviewCompatibilityError');
+
+      if (!aviso) {
+        aviso = document.createElement('div');
+        aviso.id = 'docPreviewCompatibilityError';
+        aviso.className = 'preview-compatibility-error';
+        panel.appendChild(aviso);
+      }
+
+      aviso.innerHTML =
+        '<strong>No se puede mostrar la vista previa.</strong><br>' +
+        esc(mensaje);
+    }
+
+    toast(mensaje);
+    return;
+  }
+
+  if (confirm) confirm.checked = false;
+  toggleGenerateReady();
+
+  loading?.classList.remove('hidden');
+
+  try {
+    const data = unwrap(await callServer('WAPP_API_previsualizarDocumentos'));
+    const p = data.preview;
+    state.previewToken = p.previewToken || '';
+
+    const docCards = (p.documentos || []).map(d => {
+      const esBoleta = String(d.nombre || '')
+        .trim()
+        .toLowerCase()
+        .includes('boleta');
+
+      const status = !d.aplica
+        ? 'No aplica'
+        : esBoleta
+          ? 'Se generará'
+          : d.generableAhora === false
+            ? 'Pendiente'
+            : 'Se generará';
+
+      const detalle = esBoleta && d.aplica
+        ? 'PDF desde la hoja institucional Boletas. Se registra correlativo, tipo de cambio BANGUAT y pago OGA; si el pago OGA es 0, la Boleta se omite correctamente.'
+        : (d.detalle || '');
+
+      return `
+        <div class="preview-doc-card ${d.aplica ? '' : 'no-aplica'}">
+          <span class="preview-doc-status">${esc(status)}</span>
+          <div class="preview-doc-name">${esc(d.nombre)}</div>
+          <div class="preview-doc-detail">${esc(detalle)}</div>
+        </div>`;
+    }).join('');
+
+    const teamRows = (p.equipo || []).map(d => `
+      <tr>
+        <td>${esc(d.rol)}</td>
+        <td>${esc(d.nombre)}</td>
+        <td>${esc(d.tipo)}</td>
+        <td>${esc(d.documental)}</td>
+        <td>${esc(d.sitio)}</td>
+        <td>${esc(d.area || '-')}</td>
+        <td>${esc(d.lugarTrabajo || '-')}</td>
+      </tr>`).join('');
+
+    const siteRows = (p.instalacionesProgramadas || []).map(s => `
+      <tr>
+        <td>${esc(s.sitioNombre || s.sitioId || '-')}</td>
+        <td>${esc(s.direccion || '-')}</td>
+        <td>${esc(s.estado || '-')}</td>
+        <td>${esc(s.alcanceProgramado || '-')}</td>
+      </tr>`).join('');
+
+    const duplicatePreview = p.controlDuplicado?.hasDuplicates
+      ? `<div class="duplicate-preview-ok">
+           <strong>Evaluación repetida autorizada.</strong><br>
+           Autorización: ${esc(p.controlDuplicado.authorization?.idAutorizacion || '-')}
+           · Administrador: ${esc(p.controlDuplicado.authorization?.autorizadoPor || '-')}
+           · Motivo: ${esc(p.controlDuplicado.authorization?.motivo || '-')}
+         </div>`
+      : '';
+
+    const warnings = (p.warnings || []).length
+      ? `<div class="preview-warning-list">
+           <strong>Advertencias de la vista previa</strong>
+           <ul>${p.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul>
+         </div>`
+      : '';
+
+    host.innerHTML = `
+      <div class="preview-hero">
+        <div class="preview-stat">
+          <div class="k">Registro</div><div class="v">${esc(p.registro)}</div>
+        </div>
+        <div class="preview-stat">
+          <div class="k">Tipo de evaluación</div><div class="v">${esc(p.tipoEvaluacion)}</div>
+        </div>
+        <div class="preview-stat">
+          <div class="k">Fecha inicial</div><div class="v">${esc(p.fechaInicio)}</div>
+        </div>
+        <div class="preview-stat">
+          <div class="k">Fecha final</div><div class="v">${esc(p.fechaFinal)}</div>
+        </div>
+        <div class="preview-stat">
+          <div class="k">Duración sugerida</div>
+          <div class="v">${esc(p.duracionSugerida)} día${Number(p.duracionSugerida) === 1 ? '' : 's'}</div>
+        </div>
+      </div>
+
+      <div class="summary">
+        <div class="k">OEC</div>
+        <div class="v">${esc(p.razonSocial)} · ${esc(p.norma)} · ${esc(p.esquema)}</div>
+      </div>
+
+      <div class="preview-doc-grid">${docCards}</div>
+
+      ${duplicatePreview}
+
+      <div class="preview-sites-wrap">
+        <h3>Instalaciones programadas para la Agenda</h3>
+        <div style="overflow:auto">
+          <table class="preview-sites-table">
+            <thead>
+              <tr>
+                <th>Instalación</th>
+                <th>Dirección</th>
+                <th>Estado registrado</th>
+                <th>Alcance programado</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${siteRows || '<tr><td colspan="4">No se seleccionaron instalaciones.</td></tr>'}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="team-assignment-wrap">
+        <h3>Equipo que se trasladará a los documentos</h3>
+        <div style="overflow:auto">
+          <table class="preview-team-table">
+            <thead>
+              <tr>
+                <th>Rol</th>
+                <th>Integrante</th>
+                <th>Tipo</th>
+                <th>Eval. documental</th>
+                <th>Eval. en sitio</th>
+                <th>Área a evaluar</th>
+                <th>Lugar de trabajo</th>
+              </tr>
+            </thead>
+            <tbody>${teamRows}</tbody>
+          </table>
+        </div>
+      </div>
+      ${warnings}`;
+
+  } catch (e) {
+    state.previewToken = '';
+
+    if (host) {
+      host.innerHTML =
+        `<div class="summary"><div class="v">${esc(e.message)}</div></div>`;
+    }
+
+    toast(e.message);
+  } finally {
+    loading?.classList.add('hidden');
+    toggleGenerateReady();
+  }
+}
+
+  function toggleGenerateReady() {
+    const btn = byId_('btnGenerateDocuments');
+    const check = byId_('docPreviewConfirm');
+
+    if (!btn) return;
+
+    const ready = !!(check?.checked && state.previewToken);
+    btn.disabled = !ready;
+    btn.textContent = ready
+      ? 'Generar y registrar'
+      : 'Confirme la vista previa para generar';
+  }
+
+function renderResultadoOperacion_(r, options) {
+  options = options || {};
+
+  const host = byId_('docResult');
+  if (!host) return;
+
+  r = r || {};
+
+  const cards = [];
+
+  function addDoc(label, item) {
+    if (!item || item.aplica === false) return;
+
+    if (item.generado) {
+      cards.push(`
+        <div class="generated-doc-card">
+          <div class="generated-doc-title">${esc(label)}</div>
+          <div class="generated-doc-name">${esc(item.nombre || '')}</div>
+          ${item.primary?.url
+            ? `<div><a target="_blank" href="${attr(item.primary.url)}">Abrir archivo principal</a></div>`
+            : ''}
+          ${item.backup?.url
+            ? `<div><a target="_blank" href="${attr(item.backup.url)}">Abrir copia de respaldo</a></div>`
+            : ''}
+        </div>`);
+    }
+  }
+
+  addDoc('Presupuesto', r.presupuesto);
+  addDoc('Agenda', r.agenda);
+  addDoc('Informe', r.informe);
+  addDoc('Boleta', r.boleta);
+
+  if (r.boleta?.skipped) {
+    cards.push(`
+      <div class="generated-doc-card">
+        <div class="generated-doc-title">Boleta</div>
+        <div class="generated-doc-name">No generada</div>
+        <div>${esc(r.boleta.motivo || 'No aplica.')}</div>
+      </div>`);
+  }
+
+  const oper = r.registroOperativo || {};
+  const cal = r.calendario || {};
+  const mail = r.correo || {};
+  const pendientes = Array.isArray(r.integracionesPendientes)
+    ? r.integracionesPendientes
+    : [];
+
+  const calendarHtml = cal.sincronizado
+    ? `<a target="_blank" href="${attr(cal.htmlLink || '')}">Abrir evento institucional</a>
+       <div class="hint">${esc(cal.status || '')}</div>`
+    : `<span>${esc(cal.habilitado === false
+        ? 'Pendiente de habilitación controlada'
+        : 'Pendiente')}</span>`;
+
+  const mailHtml = mail.enviado
+    ? `Enviado desde ${esc(mail.from || '')} a ${esc(mail.to || '')}`
+    : (mail.habilitado === false
+        ? 'Pendiente de habilitación controlada'
+        : 'Pendiente');
+
+  const equipoTotal =
+    oper.equipo && oper.equipo.total != null
+      ? oper.equipo.total
+      : '';
+
+  const titulo = options.reanudada
+    ? 'Operación reanudada correctamente'
+    : (
+        pendientes.length
+          ? 'Documentos y registros completados'
+          : 'Operación completada'
+      );
+
+  const notaFinal = pendientes.length
+    ? `<div class="generation-pending-note">
+         <strong>Pendiente de habilitación controlada:</strong>
+         ${esc(pendientes.join(' · '))}.
+         Los documentos y registros ya creados se conservarán y
+         el siguiente intento continuará únicamente con lo pendiente.
+       </div>`
+    : `<div class="generation-pending-note">
+         <strong>${options.reanudada
+           ? 'Recuperación completada.'
+           : 'Operación completa.'}</strong>
+         Presupuesto, Agenda, Informe, Boleta, registros,
+         calendario y correo quedaron procesados según corresponda.
+       </div>`;
+
+  host.innerHTML = `
+    <div class="generation-success">
+      <div class="generation-success-title">
+        ${esc(titulo)}
+      </div>
+
+      <div class="hint">
+        Operación: ${esc(r.operacionId || '-')}
+      </div>
+
+      <div class="generated-doc-grid">
+        ${cards.join('')}
+      </div>
+
+      <div class="summary" style="margin-top:14px">
+        <div class="k">Registro operacional</div>
+        <div class="v">
+          Fila Presupuesto: ${esc(oper.filaPresupuesto || '-')} ·
+          ID Evaluación: ${esc(oper.idEvaluacion || '-')}
+          ${equipoTotal !== ''
+            ? ` · Equipo: ${esc(equipoTotal)} integrante(s)`
+            : ''}
+        </div>
+      </div>
+
+      <div class="summary" style="margin-top:10px">
+        <div class="k">Calendario institucional</div>
+        <div class="v">${calendarHtml}</div>
+      </div>
+
+      <div class="summary" style="margin-top:10px">
+        <div class="k">Correo de actividad programada</div>
+        <div class="v">${mailHtml}</div>
+      </div>
+
+      ${notaFinal}
+    </div>`;
+}
+
+
+async function generarDocumentos() {
+  const check = byId_('docPreviewConfirm');
+  const btn = byId_('btnGenerateDocuments');
+
+  if (state.generationInFlight) {
+    toast('La generación ya está en proceso. Espere a que finalice.');
+    return;
+  }
+
+  if (!check?.checked || !state.previewToken) {
+    toast('Revise y confirme la vista previa antes de generar.');
+    return;
+  }
+
+  state.generationInFlight = true;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Generando…';
+  }
+
+  busy(true, 'Generando documentos, Boleta y registros operativos…');
+
+  try {
+    const data = unwrap(await callServer(
+      'WAPP_API_generarDocumentos',
+      {
+        csrf: state.csrf,
+        requestId: requestId(),
+        previewToken: state.previewToken
+      }
+    ));
+
+    applyFlow(data.flow);
+
+    const r = data.documentos?.result || {};
+
+    renderResultadoOperacion_(
+      r,
+      { reanudada: false }
+    );
+
+    state.previewToken = '';
+    if (check) {
+      check.checked = false;
+      check.disabled = true;
+    }
+
+    toggleGenerateReady();
+    toast('Documentos y registros procesados correctamente.');
+
+  } catch (e) {
+    toast(e.message);
+    state.previewToken = '';
+    if (check) check.checked = false;
+    toggleGenerateReady();
+
+    const host = byId_('docResult');
+    const msg = String(e?.message || '');
+
+    if (
+      host &&
+      (
+        msg.includes('operación quedó parcial') ||
+        msg.includes('operacion quedo parcial')
+      )
+    ) {
+      // V1.8.1.5: la operación de servidor ya terminó con error controlado.
+      // Liberamos también el estado local antes de ofrecer recuperación.
+      state.generationInFlight = false;
+
+      host.innerHTML = `
+        <div class="generation-pending-note">
+          <strong>Operación parcial detectada.</strong><br>
+          Los documentos ya creados se conservaron.
+          No prepare otra evaluación ni solicite otro token.
+          <div style="margin-top:12px">
+            <button class="primary"
+                    onclick="WAPP_UI_PRES.reanudarOperacionParcial()">
+              Reanudar operación pendiente
+            </button>
+          </div>
+        </div>`;
+    }
+
+  } finally {
+    state.generationInFlight = false;
+    busy(false);
+    toggleGenerateReady();
+  }
+}
+
+
+async function reanudarOperacionParcial() {
+  if (state.generationInFlight) {
+    toast('Ya existe una generación o recuperación en proceso.');
+    return;
+  }
+
+  state.generationInFlight = true;
+  busy(true, 'Reanudando operación desde el último punto confirmado…');
+
+  try {
+    const data = unwrap(await callServer(
+      'WAPP_API_reanudarOperacionParcial',
+      {
+        csrf: state.csrf,
+        requestId: requestId()
+      }
+    ));
+
+    applyFlow(data.flow);
+
+    const r = data.documentos?.result || {};
+
+    renderResultadoOperacion_(
+      r,
+      { reanudada: true }
+    );
+
+    toast('Operación pendiente completada.');
+
+  } catch (e) {
+    toast(e.message);
+
+    const host = byId_('docResult');
+    if (host) {
+      host.innerHTML = `
+        <div class="generation-pending-note">
+          <strong>La operación continúa pendiente.</strong><br>
+          ${esc(e.message)}
+        </div>`;
+    }
+
+  } finally {
+    state.generationInFlight = false;
+    busy(false);
+  }
+}
+  async function cargarAsistencia() {
+    busy(true, 'Consultando asistencia…');
+    try {
+      const data = unwrap(await callServer('WAPP_API_obtenerAsistenciaActual'));
+      applyFlow(data.flow);
+
+      const host = byId_('attendanceEvents');
+      const events = data.asistencia.eventos || [];
+
+      host.innerHTML = events.length ? events.map(ev => `
+        <div class="event-card">
+          <strong>${esc(ev.tipoActividad || 'Evento')}</strong>
+          <div>${esc(ev.tipoEvaluacion || '')}</div>
+          <div>Estado: ${esc(ev.estado || '-')} · Fecha: ${esc(ev.fechaReunion || '-')}</div>
+          ${ev.url ? `<div><a target="_blank" href="${attr(ev.url)}">Abrir lista pública</a></div>` : ''}
+          ${ev.urlPdf ? `<div><a target="_blank" href="${attr(ev.urlPdf)}">Ver PDF</a></div>` : ''}
+        </div>`).join('') :
+        '<div class="summary">No se encontraron eventos para el registro activo.</div>';
+
+      openTab('CIERRE');
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      busy(false);
+    }
+  }
+
+  async function registrarCertificado() {
+    busy(true, 'Registrando certificado pendiente…');
+    try {
+      const data = unwrap(await callServer('WAPP_API_registrarCertificadoPendiente', {
+        csrf: state.csrf,
+        requestId: requestId(),
+        filaPresupuesto: val('closeFilaPresupuesto'),
+        idEvaluacion: val('closeIdEvaluacion'),
+        observaciones: val('closeObs')
+      }));
+
+      applyFlow(data.flow);
+      byId_('closeResult').innerHTML =
+        `<div class="summary"><div class="k">Certificado pendiente</div>
+        <div class="v">${esc(data.certificado.idPendiente)} · ${esc(data.certificado.estado)}</div></div>`;
+
+      toast('Certificado pendiente creado.');
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      busy(false);
+    }
+  }
+
+  async function runDiag() {
+    busy(true, 'Ejecutando diagnóstico…');
+    try {
+      const data = unwrap(await callServer('WAPP_API_diagnostico'));
+      const txt = data.tests.map(t =>
+        `${t.ok ? 'OK' : 'ERROR'} · ${t.name} · ${t.detail}`
+      ).join('\n');
+
+      const w = window.open('', '_blank');
+      w.document.write(
+        `<pre style="white-space:pre-wrap;font-family:monospace;padding:20px">${esc(txt)}</pre>`
+      );
+    } catch (e) {
+      toast(e.message);
+    } finally {
+      busy(false);
+    }
+  }
+
+  function val(id) {
+    return (byId_(id)?.value || '').trim();
+  }
+
+  function num(id) {
+    return Number(byId_(id)?.value || 0);
+  }
+
+  function intVal(id) {
+    return Math.max(0, parseInt(byId_(id)?.value || '0', 10) || 0);
+  }
+
+  function norm_(v) {
+    return String(v || '')
+      .trim()
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g,'')
+      .replace(/\s+/g,' ');
+  }
+
+  function esc(v) {
+    return String(v ?? '').replace(/[&<>"']/g, m => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+    }[m]));
+  }
+
+  function attr(v) {
+    return esc(v);
+  }
+
+  return {
+    initLogin,login,logout,openTab,buscarOEC,
+    toggleEvaluationTypes,onEvaluationTypeChange,scheduleEstimate,estimarTiempo,syncSuggestedEndDate,validateEndDate,
+    toggleSite,retrySites,guardarEvaluacion,
+    solicitarTokenDuplicado,validarTokenDuplicado,autorizarDuplicado,cancelDuplicateNotice,
+    cargarCatalogoEquipo,onExpertCountChange,
+    renderTeamAssignments,hydrateAssignment,validateTeamDaysField,guardarEquipo,
+    cargarPreviewDocumentos,toggleGenerateReady,generarDocumentos,reanudarOperacionParcial,
+    cargarAsistencia,registrarCertificado,runDiag
+  };
+})();
+
+window.PRESUPUESTO_EVAL_VOLVER = function() {
+  try {
+    if (window.OGA && typeof OGA.irAlMenu === 'function') {
+      OGA.irAlMenu();
+      return;
+    }
+  } catch (_) {}
+  try { history.back(); } catch (_) {}
+};
+
+(function instalarPresupuestoEvalAppWeb_(){
+  if (window.__OGA_PRES_OBSERVER && typeof window.__OGA_PRES_OBSERVER.disconnect === 'function') {
+    window.__OGA_PRES_OBSERVER.disconnect();
+  }
+  let ultimoRoot = null;
+
+  function intentarInit() {
+    const root = document.getElementById('presupuestoEvalRoot');
+    if (!root || root === ultimoRoot || root.dataset.peInicializado === '1') return;
+
+    ultimoRoot = root;
+    root.dataset.peInicializado = '1';
+
+    Promise.resolve()
+      .then(() => window.WAPP_UI_PRES.initLogin())
+      .catch(err => console.error('[Presupuestos APPWEB init]', err));
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', intentarInit, { once:true });
+  } else {
+    setTimeout(intentarInit, 0);
+  }
+
+  const observer = new MutationObserver(intentarInit);
+  observer.observe(document.documentElement, { childList:true, subtree:true });
+  window.__OGA_PRES_OBSERVER = observer;
+})();
+</script>

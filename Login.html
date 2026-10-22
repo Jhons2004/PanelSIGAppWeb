@@ -1,0 +1,552 @@
+<style>
+  .login-wrap,
+  .login-wrap * { box-sizing: border-box; }
+
+  .login-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 100vh;
+    margin: 0;
+    padding: 32px 20px;
+    color: #172033 !important;
+    background:
+      radial-gradient(circle at 18% 12%, rgba(59,130,246,.10), transparent 30%),
+      radial-gradient(circle at 82% 88%, rgba(20,184,166,.09), transparent 28%),
+      linear-gradient(135deg, #f8fafc 0%, #f1f5f9 48%, #eef2f7 100%);
+    overflow: hidden;
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  .login-wrap::before,
+  .login-wrap::after {
+    content:"";
+    position:absolute;
+    border-radius:50%;
+    pointer-events:none;
+  }
+
+  .login-wrap::before {
+    width:430px; height:430px; left:-210px; top:-210px;
+    background:rgba(59,130,246,.045);
+  }
+
+  .login-wrap::after {
+    width:380px; height:380px; right:-180px; bottom:-180px;
+    background:rgba(20,184,166,.05);
+  }
+
+  .login-card {
+    position:relative;
+    z-index:2;
+    width:100%;
+    max-width:440px;
+    padding:40px 40px 34px;
+    text-align:center;
+    color:#172033 !important;
+    background:rgba(255,255,255,.98);
+    border:1px solid rgba(15,23,42,.06);
+    border-radius:22px;
+    box-shadow:0 28px 70px rgba(15,23,42,.11),0 6px 18px rgba(15,23,42,.05);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+  }
+
+  .siga-brand {
+    display:flex; flex-direction:column; align-items:center;
+    gap:9px; margin-bottom:18px;
+  }
+
+  .siga-badge {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:92px; height:40px; padding:0 18px;
+    border-radius:999px;
+    color:#fff;
+    background:linear-gradient(135deg,#14b8a6 0%,#3b82f6 100%);
+    box-shadow:0 10px 24px rgba(59,130,246,.18);
+    font-size:19px; font-weight:900;
+    letter-spacing:.16em; text-indent:.16em;
+  }
+
+  .siga-subtitle {
+    max-width:330px;
+    color:#64748b !important;
+    font-size:11px; font-weight:800;
+    letter-spacing:.08em; line-height:1.45;
+    text-transform:uppercase;
+  }
+
+  .login-title {
+    display:flex; align-items:center; justify-content:center;
+    gap:9px; margin:0 0 8px;
+    color:#172033 !important;
+    font-size:24px; font-weight:850;
+    letter-spacing:-.02em;
+  }
+
+  .login-lock {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:34px; height:34px; border-radius:10px;
+    background:#eff6ff; font-size:19px;
+  }
+
+  .login-card > p {
+    margin:0 0 22px;
+    color:#64748b !important;
+    font-size:14px; line-height:1.5;
+  }
+
+  .google-login-box {
+    width:100%;
+    padding:16px;
+    border:1px solid #e2e8f0;
+    border-radius:14px;
+    background:#f8fafc;
+  }
+
+  .google-login-label {
+    margin-bottom:11px;
+    color:#334155;
+    font-size:12px;
+    font-weight:800;
+  }
+
+  .google-login-btn {
+    width:100%;
+    min-height:48px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    border:1px solid #d7dce2;
+    border-radius:10px;
+    background:#fff;
+    color:#1f2937;
+    cursor:pointer;
+    font:inherit;
+    font-size:14px;
+    font-weight:800;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
+    transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;
+  }
+
+  .google-login-btn:hover:not(:disabled) {
+    transform:translateY(-1px);
+    border-color:#aeb8c5;
+    box-shadow:0 8px 20px rgba(15,23,42,.09);
+  }
+
+  .google-login-btn:disabled {
+    cursor:not-allowed;
+    opacity:.65;
+    transform:none;
+  }
+
+  .google-g {
+    width:26px; height:26px;
+    display:grid; place-items:center;
+    border-radius:50%;
+    background:#fff;
+    border:1px solid #eef0f3;
+    font-size:18px;
+    font-weight:900;
+    color:#4285f4;
+  }
+
+  .domain-note {
+    display:flex; align-items:center; justify-content:center;
+    gap:7px; margin-top:11px;
+    color:#64748b;
+    font-size:11px; line-height:1.4;
+  }
+
+  .domain-note strong { color:#0f766e; }
+
+  .login-loading {
+    display:none;
+    align-items:center; justify-content:center;
+    gap:9px; margin-top:12px;
+    color:#475569;
+    font-size:12px; font-weight:700;
+  }
+
+  .login-loading.show { display:flex; }
+
+  .login-spinner {
+    width:17px; height:17px;
+    border:2px solid #cbd5e1;
+    border-top-color:#3b82f6;
+    border-radius:50%;
+    animation:loginSpin .7s linear infinite;
+  }
+
+  @keyframes loginSpin { to { transform:rotate(360deg); } }
+
+  #login-error {
+    min-height:22px;
+    margin-top:14px;
+    color:#dc2626 !important;
+    font-size:13px; font-weight:700;
+    line-height:1.45; text-align:left;
+  }
+
+  .login-separator {
+    display:flex; align-items:center;
+    gap:10px; margin:18px 0 12px;
+    color:#94a3b8;
+    font-size:11px; text-transform:uppercase;
+    letter-spacing:.08em;
+  }
+
+  .login-separator::before,
+  .login-separator::after {
+    content:"";
+    flex:1; height:1px;
+    background:#e5e7eb;
+  }
+
+  .legacy-toggle {
+    width:100%;
+    border:0;
+    background:transparent;
+    color:#64748b;
+    cursor:pointer;
+    font:inherit;
+    font-size:12px;
+    font-weight:800;
+    padding:6px;
+  }
+
+  .legacy-toggle:hover { color:#2563eb; }
+
+  #legacy-login { display:none; margin-top:12px; }
+  #legacy-login.show { display:block; }
+
+  .login-field {
+    position:relative;
+    margin-bottom:12px;
+    text-align:left;
+  }
+
+  .login-field label {
+    display:block;
+    margin:0 0 7px 2px;
+    color:#334155 !important;
+    font-size:12px; font-weight:800;
+  }
+
+  .login-card input {
+    display:block;
+    width:100%; height:48px;
+    margin:0; padding:0 15px;
+    color:#172033 !important;
+    background:#fff !important;
+    border:1px solid #d9e0e8;
+    border-radius:10px;
+    outline:none;
+    box-shadow:none;
+    font:inherit; font-size:14px;
+  }
+
+  .login-card input:focus {
+    border-color:#3b82f6;
+    box-shadow:0 0 0 4px rgba(59,130,246,.11);
+  }
+
+  .login-card input:disabled {
+    color:#94a3b8 !important;
+    background:#f8fafc !important;
+    cursor:not-allowed;
+  }
+
+  #login-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:100%; height:48px;
+    margin-top:2px; padding:0 18px;
+    color:#fff !important;
+    background:linear-gradient(135deg,#4285f4 0%,#3375df 100%);
+    border:0; border-radius:10px;
+    box-shadow:0 9px 22px rgba(66,133,244,.20);
+    cursor:pointer;
+    font:inherit; font-size:14px; font-weight:800;
+  }
+
+  #login-btn:disabled {
+    background:#94a3b8;
+    box-shadow:none;
+    cursor:not-allowed;
+  }
+
+  .login-footer {
+    margin-top:22px;
+    padding-top:17px;
+    border-top:1px solid #edf1f5;
+    color:#94a3b8 !important;
+    font-size:11px; line-height:1.5;
+  }
+
+  @media(max-width:520px) {
+    .login-wrap { padding:18px 14px; }
+    .login-card { max-width:100%; padding:32px 22px 27px; border-radius:18px; }
+    .login-title { font-size:22px; }
+    .siga-subtitle { font-size:10px; }
+  }
+</style>
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <div class="siga-brand" aria-label="SIGA">
+      <div class="siga-badge">SIGA</div>
+      <div class="siga-subtitle">Sistema Inteligente de Gestión de la Acreditación</div>
+    </div>
+
+    <h2 class="login-title">
+      <span class="login-lock">🔐</span>
+      <span>Sistema OGA</span>
+    </h2>
+
+    <p>Acceso institucional mediante Google Workspace.</p>
+
+    <div class="google-login-box">
+      <div class="google-login-label">Cuenta institucional OGA</div>
+
+      <button
+        id="google-login-btn"
+        class="google-login-btn"
+        type="button"
+        onclick="iniciarGoogleOGA()">
+        <span class="google-g">G</span>
+        <span>Continuar con Google</span>
+      </button>
+
+      <div class="domain-note">
+        <span>🛡️</span>
+        <span>Solo <strong>@oga.org.gt</strong> y usuarios registrados en SIGA.</span>
+      </div>
+    </div>
+
+    <div class="login-loading" id="login-google-loading">
+      <span class="login-spinner"></span>
+      <span>Preparando acceso seguro con Google...</span>
+    </div>
+
+    <div id="login-error" role="alert" aria-live="polite"></div>
+
+    <div class="login-separator">Acceso alternativo</div>
+
+    <button class="legacy-toggle" id="legacy-toggle" type="button">
+      Usar correo y clave de SIGA
+    </button>
+
+    <div id="legacy-login">
+      <div class="login-field">
+        <label for="login-usuario">Correo institucional</label>
+        <input
+          id="login-usuario"
+          type="email"
+          placeholder="usuario@oga.org.gt"
+          autocomplete="username"
+          spellcheck="false"/>
+      </div>
+
+      <div class="login-field">
+        <label for="login-clave">Clave</label>
+        <input
+          id="login-clave"
+          type="password"
+          placeholder="Ingresa tu contraseña"
+          autocomplete="current-password"/>
+      </div>
+
+      <button id="login-btn" type="button" onclick="hacerLogin()">
+        Ingresar con clave
+      </button>
+    </div>
+
+    <div class="login-footer">
+      Oficina Guatemalteca de Acreditación · OGA
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const DOMINIO = 'oga.org.gt';
+  const errEl = document.getElementById('login-error');
+  const loading = document.getElementById('login-google-loading');
+  const googleBtn = document.getElementById('google-login-btn');
+  const legacy = document.getElementById('legacy-login');
+  const legacyToggle = document.getElementById('legacy-toggle');
+  const usuarioEl = document.getElementById('login-usuario');
+  const claveEl = document.getElementById('login-clave');
+  const btnClave = document.getElementById('login-btn');
+
+  let googleEnProceso = false;
+  let claveEnProceso = false;
+
+  function cerrarOverlay(){
+    try{
+      if(window.OGA && typeof OGA.hideOverlay === 'function') OGA.hideOverlay();
+      else if(window.OGA && typeof OGA.overlay === 'function') OGA.overlay(null);
+    }catch(_){}
+  }
+
+  function mostrarOverlay(titulo, sub){
+    try{
+      if(window.OGA && typeof OGA.overlay === 'function') OGA.overlay(titulo, sub);
+    }catch(_){}
+  }
+
+  function mostrarError(msg){
+    cerrarOverlay();
+    loading?.classList.remove('show');
+    if(googleBtn) googleBtn.disabled = false;
+    googleEnProceso = false;
+    if(errEl) errEl.textContent = msg || '❌ No fue posible iniciar sesión.';
+  }
+
+  function limpiarError(){
+    if(errEl) errEl.textContent = '';
+  }
+
+  window.iniciarGoogleOGA = function(){
+    if(googleEnProceso) return;
+
+    limpiarError();
+    googleEnProceso = true;
+    googleBtn.disabled = true;
+    loading?.classList.add('show');
+
+    google.script.run
+      .withSuccessHandler(function(res){
+        if(!res || res.ok !== true || !res.url){
+          mostrarError((res && res.msg) || '❌ No fue posible preparar el acceso con Google.');
+          return;
+        }
+
+        /*
+         * IMPORTANTE:
+         * La app vive dentro del iframe de HtmlService.
+         * Navegamos el documento superior al endpoint oficial de Google.
+         */
+        window.open(res.url, '_top');
+      })
+      .withFailureHandler(function(err){
+        console.error('[SIGA Google redirect]', err);
+        mostrarError('❌ No fue posible iniciar la autenticación con Google.');
+      })
+      .obtenerUrlAutenticacionGoogle();
+  };
+
+  legacyToggle?.addEventListener('click', function(){
+    legacy.classList.toggle('show');
+    legacyToggle.textContent = legacy.classList.contains('show')
+      ? 'Ocultar acceso con clave'
+      : 'Usar correo y clave de SIGA';
+  });
+
+  function completarLogin(detalle){
+    cerrarOverlay();
+
+    if(window.OGA && typeof OGA.onLoginSuccess === 'function'){
+      OGA.onLoginSuccess(detalle);
+      return;
+    }
+
+    if(window.OGA){
+      OGA.usuarioActivo = detalle.usuario || detalle.email || '';
+      OGA.nombreVisible = detalle.nombre || detalle.usuario || detalle.email || 'Usuario';
+      if(typeof OGA._renderUser === 'function') OGA._renderUser();
+      if(typeof OGA.irAlMenu === 'function') OGA.irAlMenu();
+    }
+  }
+
+  function setClaveLoading(on){
+    claveEnProceso = on;
+    if(btnClave){
+      btnClave.disabled = on;
+      btnClave.textContent = on ? 'Verificando...' : 'Ingresar con clave';
+    }
+    if(usuarioEl) usuarioEl.disabled = on;
+    if(claveEl) claveEl.disabled = on;
+  }
+
+  window.hacerLogin = function(){
+    if(claveEnProceso) return;
+
+    const usuario = usuarioEl ? usuarioEl.value.trim().toLowerCase() : '';
+    const clave = claveEl ? claveEl.value : '';
+
+    limpiarError();
+
+    if(!usuario || !clave){
+      mostrarError('⚠️ Ingresa tu correo institucional y contraseña.');
+      return;
+    }
+
+    if(!usuario.endsWith('@' + DOMINIO)){
+      mostrarError('⛔ Solo se permiten cuentas @' + DOMINIO + '.');
+      return;
+    }
+
+    setClaveLoading(true);
+    mostrarOverlay('Iniciando sesión...', 'Verificando credenciales SIGA...');
+
+    google.script.run
+      .withSuccessHandler(function(res){
+        setClaveLoading(false);
+
+        if(!res || res.ok !== true){
+          mostrarError(
+            res && res.msg === 'definir'
+              ? '🔑 Debes definir tu clave primero. Contacta al administrador.'
+              : ((res && res.msg) || '❌ Credenciales incorrectas.')
+          );
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function(detalle){
+            completarLogin(detalle || {usuario, email:usuario, nombre:usuario});
+          })
+          .withFailureHandler(function(){
+            completarLogin({usuario, email:usuario, nombre:usuario});
+          })
+          .getUsuarioActivoDetalle();
+      })
+      .withFailureHandler(function(err){
+        setClaveLoading(false);
+        console.error('[SIGA password auth]', err);
+        mostrarError('❌ Error al validar las credenciales.');
+      })
+      .iniciarSesionConClave(usuario, clave);
+  };
+
+  claveEl?.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      window.hacerLogin();
+    }
+  });
+
+  /*
+   * Si Google devolvió al /exec con un error OAuth, AuthGoogle.gs
+   * lo deja temporalmente disponible para mostrarlo aquí.
+   */
+  setTimeout(function(){
+    try{
+      google.script.run
+        .withSuccessHandler(function(res){
+          if(res && res.msg) mostrarError(res.msg);
+        })
+        .withFailureHandler(function(){})
+        .obtenerUltimoErrorGoogle();
+    }catch(_){}
+  }, 50);
+})();
+</script>

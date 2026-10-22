@@ -1,0 +1,684 @@
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+  #recRoot {
+    font-family: 'DM Sans', system-ui, sans-serif;
+    background: #0d1117;
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+    display: block;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  #recRoot::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 15%, rgba(37,99,235,.16) 0%, transparent 50%),
+      radial-gradient(circle at 80% 85%, rgba(21,128,61,.1) 0%, transparent 50%),
+      radial-gradient(rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .rec-wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  /* ── Breadcrumb ── */
+  .rec-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 28px;
+    font-size: .8rem;
+    font-weight: 500;
+    color: rgba(255,255,255,.35);
+    letter-spacing: .02em;
+  }
+  .rec-breadcrumb button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: rgba(255,255,255,.5);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .8rem;
+    font-weight: 600;
+    padding: 0;
+    transition: color .2s;
+  }
+  .rec-breadcrumb button:hover { color: #60a5fa; }
+
+  /* ── Header ── */
+  .rec-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(37,99,235,.18);
+    border: 1px solid rgba(37,99,235,.35);
+    color: #93c5fd;
+    border-radius: 999px;
+    padding: 4px 12px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .rec-badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #60a5fa;
+    box-shadow: 0 0 6px #60a5fa;
+    animation: rec-pulse 2s infinite;
+  }
+  @keyframes rec-pulse {
+    0%,100% { opacity: 1; } 50% { opacity: .4; }
+  }
+
+  .rec-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .rec-title {
+    font-size: 2.1rem;
+    font-weight: 900;
+    color: #f1f5f9;
+    margin: 0 0 8px;
+    letter-spacing: -.04em;
+    line-height: 1.05;
+  }
+  .rec-subtitle {
+    color: rgba(255,255,255,.4);
+    font-size: .88rem;
+    margin: 0;
+    max-width: 500px;
+    line-height: 1.6;
+  }
+
+  /* ── Botón volver al selector ── */
+  .rec-btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .83rem;
+    font-weight: 700;
+    color: rgba(255,255,255,.65);
+    cursor: pointer;
+    transition: background .2s, color .2s, border-color .2s;
+    flex-shrink: 0;
+    margin-top: 4px;
+    white-space: nowrap;
+  }
+  .rec-btn-back:hover {
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    border-color: rgba(255,255,255,.2);
+  }
+
+  /* ── Card ── */
+  .rec-card {
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    transition: border-color .3s;
+  }
+  .rec-card:focus-within { border-color: rgba(37,99,235,.4); }
+
+  .rec-card-hdr {
+    padding: 14px 22px;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .rec-card-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #2563eb;
+    box-shadow: 0 0 7px rgba(37,99,235,.7);
+  }
+  .rec-card-hdr-label {
+    font-size: .74rem;
+    font-weight: 800;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.4);
+  }
+
+  .rec-card-body { padding: 22px; }
+
+  /* ── Campos ── */
+  .rec-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+  .rec-grid-2:last-child { margin-bottom: 0; }
+
+  .rec-field { display: flex; flex-direction: column; }
+  .rec-field label {
+    font-size: .71rem;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.35);
+    margin-bottom: 7px;
+  }
+  .rec-field input,
+  .rec-field textarea {
+    font-family: 'DM Sans', sans-serif;
+    padding: 11px 14px;
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 10px;
+    font-size: .9rem;
+    width: 100%;
+    background: rgba(255,255,255,.05);
+    color: #f1f5f9;
+    outline: none;
+    transition: border-color .2s, background .2s;
+    box-sizing: border-box;
+  }
+  .rec-field input::placeholder { color: rgba(255,255,255,.2); }
+  .rec-field input:not([readonly]):focus,
+  .rec-field textarea:not([readonly]):focus {
+    border-color: rgba(37,99,235,.6);
+    background: rgba(37,99,235,.07);
+  }
+  .rec-field input[readonly] { color: rgba(255,255,255,.65); }
+  .rec-field textarea { resize: vertical; min-height: 72px; color: rgba(255,255,255,.65); }
+
+  /* ── Barra de acciones ── */
+  .rec-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 18px 22px;
+    border-top: 1px solid rgba(255,255,255,.05);
+    background: rgba(0,0,0,.15);
+  }
+
+  .rec-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: opacity .18s, transform .15s, box-shadow .18s;
+    white-space: nowrap;
+  }
+  .rec-btn:hover   { opacity: .9; transform: translateY(-1px); }
+  .rec-btn:active  { transform: translateY(0); }
+  .rec-btn:disabled {
+    opacity: .3;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+  .rec-btn-blue {
+    background: #2563eb;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(37,99,235,.3);
+  }
+  .rec-btn-blue:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(37,99,235,.5); }
+  .rec-btn-green {
+    background: #15803d;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(21,128,61,.25);
+  }
+  .rec-btn-green:hover:not(:disabled) { box-shadow: 0 6px 20px rgba(21,128,61,.4); }
+
+  /* ── Estado ── */
+  .rec-msg {
+    padding: 13px 18px;
+    border-radius: 10px;
+    font-size: .87rem;
+    font-weight: 600;
+    display: none;
+    white-space: pre-line;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .rec-msg.ok   { background: rgba(21,128,61,.14);  color: #86efac; border: 1px solid rgba(21,128,61,.28); }
+  .rec-msg.warn { background: rgba(234,179,8,.09);  color: #fde68a; border: 1px solid rgba(234,179,8,.22); }
+  .rec-msg.err  { background: rgba(220,38,38,.11);  color: #fca5a5; border: 1px solid rgba(220,38,38,.28); }
+
+  /* ── Chips validación ── */
+  .rec-chips {
+    display: grid;
+    grid-template-columns: repeat(3,1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .rec-chip {
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 10px;
+    padding: 11px 14px;
+    transition: border-color .2s;
+  }
+  .rec-chip.chip-ok   { background: rgba(21,128,61,.1);  border-color: rgba(21,128,61,.28); }
+  .rec-chip.chip-warn { background: rgba(220,38,38,.09); border-color: rgba(220,38,38,.28); }
+  .rec-chip-lbl {
+    font-size: .68rem;
+    font-weight: 800;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.3);
+    margin-bottom: 4px;
+  }
+  .rec-chip-val {
+    font-family: 'DM Mono', monospace;
+    font-size: .88rem;
+    font-weight: 600;
+    color: rgba(255,255,255,.6);
+  }
+  .rec-chip.chip-ok   .rec-chip-val { color: #86efac; }
+  .rec-chip.chip-warn .rec-chip-val { color: #fca5a5; }
+
+  /* ── Links de resultado ── */
+  .rec-links {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .rec-link-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 11px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: #f1f5f9;
+    font-size: .87rem;
+    font-weight: 600;
+    transition: background .18s, border-color .18s, color .18s;
+  }
+  .rec-link-item:hover {
+    background: rgba(37,99,235,.14);
+    border-color: rgba(37,99,235,.4);
+    color: #93c5fd;
+  }
+  .rec-link-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .rec-link-sub { font-size: .72rem; color: rgba(255,255,255,.35); font-weight: 400; margin-top: 2px; }
+
+  /* ── Overlay ── */
+  #rec-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.65);
+    align-items: center; justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+  }
+  #rec-overlay.show { display: flex; }
+  .rec-ov-box {
+    background: #161b22;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 16px;
+    padding: 34px 40px;
+    text-align: center;
+    max-width: 360px;
+    width: 90%;
+    box-shadow: 0 30px 60px rgba(0,0,0,.5);
+  }
+  .rec-spinner {
+    width: 38px; height: 38px;
+    border: 3px solid rgba(255,255,255,.08);
+    border-top-color: #2563eb;
+    border-radius: 50%;
+    animation: rec-spin .8s linear infinite;
+    margin: 0 auto 16px;
+  }
+  @keyframes rec-spin { to { transform: rotate(360deg); } }
+  .rec-ov-title { font-size: 1rem; font-weight: 800; color: #f1f5f9; margin-bottom: 6px; }
+  .rec-ov-msg   { font-size: .82rem; color: rgba(255,255,255,.4); white-space: pre-line; line-height: 1.5; }
+
+  @media (max-width: 640px) {
+    .rec-grid-2  { grid-template-columns: 1fr; }
+    .rec-chips   { grid-template-columns: 1fr 1fr; }
+    .rec-links   { grid-template-columns: 1fr; }
+    .rec-title   { font-size: 1.6rem; }
+    .rec-header  { flex-direction: column; }
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div id="recRoot">
+  <div class="rec-wrap">
+
+    <!-- Breadcrumb -->
+    <nav class="rec-breadcrumb">
+      <button onclick="window.OGA.irAlMenu()">Menú</button>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1.5l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <button onclick="window.OGA.navegar('abrirIngresoResoluciones')">Resoluciones</button>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M3 1.5l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Reconocimiento</span>
+    </nav>
+
+    <!-- Badge + Header -->
+    <div class="rec-badge"><div class="rec-badge-dot"></div>Módulo activo</div>
+
+    <div class="rec-header">
+      <div>
+        <h1 class="rec-title">Resolución de<br>Reconocimiento</h1>
+        <p class="rec-subtitle">Busca el registro para validar los datos, luego genera la resolución oficial y la boleta de pago en un solo paso.</p>
+      </div>
+      <button class="rec-btn-back" onclick="window.OGA.navegar('abrirIngresoResoluciones')">
+        <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M8 2L3 6.5 8 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Volver al selector
+      </button>
+    </div>
+
+    <!-- Mensaje de estado -->
+    <div class="rec-msg" id="rec-msg"></div>
+
+    <!-- Card: Búsqueda -->
+    <div class="rec-card">
+      <div class="rec-card-hdr">
+        <div class="rec-card-dot"></div>
+        <span class="rec-card-hdr-label">Identificación del registro</span>
+      </div>
+      <div class="rec-card-body">
+        <div class="rec-grid-2" style="margin-bottom:0">
+          <div class="rec-field">
+            <label>Registro de acreditación</label>
+            <input type="text" id="rec-registro" placeholder="Ej. OGA-LE-001-24"/>
+          </div>
+          <div class="rec-field">
+            <label>Año de solicitud</label>
+            <input type="number" id="rec-anio" placeholder="Ej. 2026" min="2000" max="2100"/>
+          </div>
+        </div>
+      </div>
+      <div class="rec-actions">
+        <button class="rec-btn rec-btn-blue" id="rec-btnBuscar" onclick="rec_buscar()">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="currentColor" stroke-width="1.7"/><path d="M9 9l2.5 2.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Buscar información
+        </button>
+        <button class="rec-btn rec-btn-green" id="rec-btnGenerar" onclick="rec_generar()" disabled>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1v11M1 6.5h11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          Generar documento
+        </button>
+      </div>
+    </div>
+
+    <!-- Card: Datos del registro (oculto) -->
+    <div class="rec-card" id="rec-panelInfo" style="display:none;">
+      <div class="rec-card-hdr">
+        <div class="rec-card-dot" style="background:#15803d;box-shadow:0 0 7px rgba(21,128,61,.7)"></div>
+        <span class="rec-card-hdr-label">Información encontrada</span>
+      </div>
+      <div class="rec-card-body">
+
+        <!-- Chips validación -->
+        <div class="rec-chips">
+          <div class="rec-chip" id="chip-oficial">
+            <div class="rec-chip-lbl">Base oficial</div>
+            <div class="rec-chip-val" id="chip-oficial-val">—</div>
+          </div>
+          <div class="rec-chip" id="chip-decision">
+            <div class="rec-chip-lbl">Decisión</div>
+            <div class="rec-chip-val" id="chip-decision-val">—</div>
+          </div>
+          <div class="rec-chip" id="chip-estado">
+            <div class="rec-chip-lbl">Estado resolución</div>
+            <div class="rec-chip-val" id="chip-estado-val">—</div>
+          </div>
+        </div>
+
+        <div class="rec-grid-2">
+          <div class="rec-field"><label>Esquema de acreditación</label><input type="text" id="rec-esquema" readonly/></div>
+          <div class="rec-field"><label>Norma</label><input type="text" id="rec-norma" readonly/></div>
+        </div>
+        <div class="rec-grid-2">
+          <div class="rec-field"><label>Razón social</label><textarea id="rec-razon" readonly></textarea></div>
+          <div class="rec-field"><label>Representante legal</label><input type="text" id="rec-representante" readonly/></div>
+        </div>
+        <div class="rec-grid-2">
+          <div class="rec-field"><label>Contacto principal</label><input type="text" id="rec-contacto" readonly/></div>
+          <div class="rec-field"><label>Correo electrónico</label><input type="text" id="rec-correo" readonly/></div>
+        </div>
+        <div class="rec-grid-2" style="margin-bottom:0">
+          <div class="rec-field"><label>Reunión</label><input type="text" id="rec-reunion" readonly/></div>
+          <div class="rec-field"><label>Resolución de decisión</label><input type="text" id="rec-resolucion" readonly/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card: Archivos generados (oculto) -->
+    <div class="rec-card" id="rec-resultado" style="display:none;">
+      <div class="rec-card-hdr">
+        <div class="rec-card-dot" style="background:#f59e0b;box-shadow:0 0 7px rgba(245,158,11,.7)"></div>
+        <span class="rec-card-hdr-label">Archivos generados</span>
+      </div>
+      <div class="rec-card-body">
+        <div class="rec-links" id="rec-links-grid"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Overlay -->
+<div id="rec-overlay">
+  <div class="rec-ov-box">
+    <div class="rec-spinner"></div>
+    <div class="rec-ov-title" id="rec-ovTitulo">Procesando</div>
+    <div class="rec-ov-msg"   id="rec-ovMsg">Espere un momento...</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  let rec_datos = null;
+
+  /* Overlay */
+  function ov(titulo, msg) {
+    document.getElementById('rec-ovTitulo').textContent = titulo || 'Procesando';
+    document.getElementById('rec-ovMsg').textContent    = msg    || 'Espere...';
+    document.getElementById('rec-overlay').classList.add('show');
+  }
+  function cvOv() { document.getElementById('rec-overlay').classList.remove('show'); }
+
+  /* Mensaje */
+  function msg(texto, tipo) {
+    const el = document.getElementById('rec-msg');
+    el.textContent   = texto;
+    el.className     = 'rec-msg ' + (tipo || 'ok');
+    el.style.display = 'block';
+  }
+  function clearMsg() {
+    const el = document.getElementById('rec-msg');
+    el.style.display = 'none';
+    el.textContent = '';
+  }
+
+  /* Botones */
+  function btns(map) {
+    Object.entries(map).forEach(([id, v]) => {
+      const el = document.getElementById(id);
+      if (el) el.disabled = v;
+    });
+  }
+
+  /* Chip */
+  function setChip(chipId, valId, texto, tipo) {
+    const chip = document.getElementById(chipId);
+    const val  = document.getElementById(valId);
+    if (!chip || !val) return;
+    val.textContent = texto;
+    chip.className = 'rec-chip' + (tipo === 'ok' ? ' chip-ok' : tipo === 'warn' ? ' chip-warn' : '');
+  }
+
+  /* Limpiar estado */
+  function limpiar() {
+    ['rec-esquema','rec-norma','rec-razon','rec-representante',
+     'rec-contacto','rec-correo','rec-reunion','rec-resolucion'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    ['chip-oficial','chip-decision','chip-estado'].forEach(id => setChip(id, id+'-val','—',''));
+    document.getElementById('rec-panelInfo').style.display  = 'none';
+    document.getElementById('rec-resultado').style.display  = 'none';
+    document.getElementById('rec-links-grid').innerHTML     = '';
+    clearMsg();
+  }
+
+  /* Llenar panel */
+  function llenar(d) {
+    document.getElementById('rec-esquema').value        = d.esquema            || '';
+    document.getElementById('rec-norma').value          = d.norma              || '';
+    document.getElementById('rec-razon').value          = d.razonSocial        || '';
+    document.getElementById('rec-representante').value  = d.representanteLegal || '';
+    document.getElementById('rec-contacto').value       = d.contactoNombre     || '';
+    document.getElementById('rec-correo').value         = d.contactoCorreo     || '';
+    document.getElementById('rec-reunion').value        = d.reunion            || '';
+    document.getElementById('rec-resolucion').value     = d.resolucion         || '';
+
+    setChip('chip-oficial',  'chip-oficial-val',  d.existeBaseOficial ? 'Confirmada'  : 'No encontrada', d.existeBaseOficial ? 'ok' : 'warn');
+    setChip('chip-decision', 'chip-decision-val', d.tieneDecision      ? 'Registrada' : 'No encontrada', d.tieneDecision      ? 'ok' : 'warn');
+    setChip('chip-estado',   'chip-estado-val',   d.yaEmitida          ? 'Emitida'    : 'Pendiente',     d.yaEmitida          ? 'warn' : 'ok');
+
+    document.getElementById('rec-panelInfo').style.display = 'block';
+  }
+
+  /* ── BUSCAR ── */
+  window.rec_buscar = function () {
+    limpiar();
+    rec_datos = null;
+
+    const registro = document.getElementById('rec-registro').value.trim();
+    const anio     = document.getElementById('rec-anio').value.trim();
+
+    if (!registro) return msg('Ingresa el Registro de acreditación.', 'warn');
+    if (!anio)     return msg('Ingresa el Año de solicitud.', 'warn');
+
+    btns({ 'rec-btnBuscar': true, 'rec-btnGenerar': true });
+    ov('Buscando información', 'Validando registro y año de solicitud...');
+
+    google.script.run
+      .withSuccessHandler(function (resp) {
+        cvOv();
+        btns({ 'rec-btnBuscar': false });
+        rec_datos = resp;
+        llenar(resp);
+
+        if (resp.yaEmitida) {
+          msg('La resolución ya fue emitida para este registro.', 'warn');
+          btns({ 'rec-btnGenerar': true });
+          return;
+        }
+        if (!resp.existeBaseOficial && !resp.tieneDecision) {
+          msg('El registro no aparece en la base oficial y no tiene decisión registrada.\nNo es posible generar el documento.', 'err');
+          return;
+        }
+        if (!resp.existeBaseOficial) {
+          msg('El registro no aparece en la base oficial. No se recomienda generar.', 'warn');
+          return;
+        }
+        if (!resp.tieneDecision) {
+          msg('El registro no tiene decisión registrada. No es posible generar.', 'warn');
+          return;
+        }
+
+        msg('Información validada ✓  Ya puedes generar el documento.', 'ok');
+        btns({ 'rec-btnGenerar': false });
+      })
+      .withFailureHandler(function (err) {
+        cvOv();
+        btns({ 'rec-btnBuscar': false });
+        msg(err?.message || String(err), 'err');
+      })
+      .buscarDatosReconocimiento({ registro, anio });
+  };
+
+  /* ── GENERAR ── */
+  window.rec_generar = function () {
+    if (!rec_datos) return msg('Primero busca y valida la información.', 'warn');
+
+    btns({ 'rec-btnBuscar': true, 'rec-btnGenerar': true });
+    ov('Generando documento y boleta…', 'Este proceso puede tardar unos segundos.\nPor favor no cierres la ventana.');
+
+    google.script.run
+      .withSuccessHandler(function (resp) {
+        cvOv();
+        Swal.fire({
+          icon: 'success',
+          title: '¡Listo!',
+          html: '<p style="font-size:14px;color:#9ca3af;margin:0">La resolución y la boleta de pago fueron generadas correctamente.</p>',
+          confirmButtonText: 'Ver archivos',
+          confirmButtonColor: '#2563eb',
+          background: '#161b22',
+          color: '#f1f5f9',
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        }).then(function () {
+          msg('Documento y boleta generados correctamente.', 'ok');
+          btns({ 'rec-btnBuscar': false });
+
+          const links = [];
+          if (resp.urlDocumento)     links.push({ icon:'📄', label:'Documento Word',    sub:'Archivo editable',       url: resp.urlDocumento });
+          if (resp.urlPdfResolucion) links.push({ icon:'📑', label:'PDF Resolución',    sub:'Para firma y archivo',   url: resp.urlPdfResolucion });
+          if (resp.boletaUrlPdf)     links.push({ icon:'🧾', label:'Boleta de pago',    sub:'Boleta generada',        url: resp.boletaUrlPdf });
+          if (resp.urlCarpeta)       links.push({ icon:'📁', label:'Carpeta destino',   sub:'Ver todos los archivos', url: resp.urlCarpeta });
+
+          document.getElementById('rec-links-grid').innerHTML = links.map(l =>
+            '<a class="rec-link-item" href="' + l.url + '" target="_blank">' +
+              '<span class="rec-link-icon">' + l.icon + '</span>' +
+              '<div><div>' + l.label + '</div><div class="rec-link-sub">' + l.sub + '</div></div>' +
+            '</a>'
+          ).join('');
+
+          document.getElementById('rec-resultado').style.display = 'block';
+        });
+      })
+      .withFailureHandler(function (err) {
+        cvOv();
+        btns({ 'rec-btnBuscar': false, 'rec-btnGenerar': false });
+        Swal.fire({
+          icon: 'error',
+          title: 'Ocurrió un error',
+          text: err?.message || String(err),
+          confirmButtonText: 'Entendido',
+          confirmButtonColor: '#d33',
+          background: '#161b22',
+          color: '#f1f5f9'
+        });
+        msg(err?.message || String(err), 'err');
+      })
+      .generarResolucionReconocimiento({
+        registro: document.getElementById('rec-registro').value.trim(),
+        anio:     document.getElementById('rec-anio').value.trim()
+      });
+  };
+
+})();
+</script>

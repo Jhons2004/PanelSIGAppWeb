@@ -1,0 +1,33 @@
+<section class="panel" id="panel-CIERRE">
+  <h2>6. Cierre y certificado pendiente</h2>
+  <p class="lead">
+    Registra la solicitud en Certificados_Pendientes con trazabilidad
+    del OEC, evaluación y usuario responsable.
+  </p>
+
+  <div class="grid">
+    <div class="field">
+      <label>Fila de presupuesto</label>
+      <input id="closeFilaPresupuesto" type="number" min="0">
+    </div>
+
+    <div class="field">
+      <label>ID evaluación</label>
+      <input id="closeIdEvaluacion">
+    </div>
+
+    <div class="field" style="grid-column:1/-1">
+      <label>Observaciones</label>
+      <textarea id="closeObs" rows="3"></textarea>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary"
+            onclick="WAPP_UI_PRES.registrarCertificado()">
+      Crear certificado pendiente
+    </button>
+  </div>
+
+  <div id="closeResult"></div>
+</section>

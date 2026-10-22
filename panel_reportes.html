@@ -1,0 +1,735 @@
+<style>
+  #panel-reportes-root{
+    font-family:'Segoe UI',sans-serif;
+    background:#f2f4f8;
+    padding:30px;
+    min-height:100vh;
+    box-sizing:border-box;
+  }
+
+  #panel-reportes-root .contenedor{
+    max-width:1200px;
+    margin:0 auto;
+    background:#fff;
+    padding:30px;
+    border-radius:16px;
+    box-shadow:0 8px 24px rgba(0,0,0,.08);
+  }
+
+  #panel-reportes-root h2{
+    text-align:center;
+    color:#1a237e;
+    margin-bottom:30px;
+  }
+
+  #panel-reportes-root label{
+    font-weight:700;
+    margin-top:18px;
+    display:block;
+    color:#263238;
+  }
+
+  #panel-reportes-root input,
+  #panel-reportes-root select{
+    width:100%;
+    padding:11px 12px;
+    margin-top:8px;
+    border-radius:8px;
+    border:1px solid #cfd8dc;
+    font-size:14px;
+    box-sizing:border-box;
+    background:#fff;
+  }
+
+  #panel-reportes-root button{
+    width:100%;
+    margin-top:10px;
+    padding:12px;
+    color:#fff;
+    border:none;
+    font-weight:700;
+    border-radius:8px;
+    cursor:pointer;
+    transition:transform .15s ease, opacity .15s ease, background-color .2s ease;
+  }
+
+  #panel-reportes-root button:hover{ transform:translateY(-1px); }
+  #panel-reportes-root button:disabled{ cursor:not-allowed; opacity:.7; transform:none; }
+
+  #panel-reportes-root #btnOficial{ background:#1e88e5; }
+  #panel-reportes-root #btnOficial:hover{ background:#1565c0; }
+
+  #panel-reportes-root #btnRegistro{ background:#43a047; }
+  #panel-reportes-root #btnRegistro:hover{ background:#2e7d32; }
+
+  #panel-reportes-root #btnEstatus{ background:#f57c00; }
+  #panel-reportes-root #btnEstatus:hover{ background:#e65100; }
+
+  #panel-reportes-root #btnMantenimiento{ background:#6a1b9a; }
+  #panel-reportes-root #btnMantenimiento:hover{ background:#4a148c; }
+
+  #panel-reportes-root #btnVolver{ background:#78909c; }
+  #panel-reportes-root #btnVolver:hover{ background:#546e7a; }
+
+  #panel-reportes-root .loader{
+    display:none;
+    margin:20px auto;
+    border:6px solid #eceff1;
+    border-top:6px solid #1e88e5;
+    border-radius:50%;
+    width:40px;
+    height:40px;
+    animation:panelReportesSpin 1s linear infinite;
+  }
+
+  @keyframes panelReportesSpin{
+    0%{transform:rotate(0)}
+    100%{transform:rotate(360deg)}
+  }
+
+  #panel-reportes-root #toast{
+    visibility:hidden;
+    min-width:280px;
+    max-width:420px;
+    background:#263238;
+    color:#fff;
+    text-align:center;
+    border-radius:8px;
+    padding:12px 14px;
+    position:fixed;
+    bottom:30px;
+    right:30px;
+    z-index:1000;
+    box-shadow:0 8px 20px rgba(0,0,0,.18);
+  }
+
+  #panel-reportes-root #toast.show{
+    visibility:visible;
+    animation:panelReportesFadeIn .35s, panelReportesFadeOut .35s 3.1s;
+  }
+
+  @keyframes panelReportesFadeIn{
+    from{bottom:8px;opacity:0}
+    to{bottom:30px;opacity:1}
+  }
+
+  @keyframes panelReportesFadeOut{
+    from{bottom:30px;opacity:1}
+    to{bottom:8px;opacity:0}
+  }
+
+  #panel-reportes-root #tituloInforme{
+    margin-top:30px;
+    display:none;
+    color:#263238;
+    font-size:20px;
+  }
+
+  #panel-reportes-root .resumen-principal{
+    display:none;
+    margin-top:16px;
+    margin-bottom:10px;
+    padding:14px 16px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    color:#334155;
+    font-size:15px;
+    font-weight:700;
+  }
+
+  #panel-reportes-root .resumen-totales{
+    display:none;
+    grid-template-columns:repeat(4, minmax(180px,1fr));
+    gap:14px;
+    margin-top:18px;
+    margin-bottom:12px;
+  }
+
+  #panel-reportes-root .total-card{
+    border-radius:14px;
+    padding:16px 14px;
+    color:#fff;
+    box-shadow:0 4px 12px rgba(0,0,0,.10);
+  }
+
+  #panel-reportes-root .total-card .label{
+    display:block;
+    font-size:13px;
+    opacity:.95;
+    margin-bottom:10px;
+    font-weight:700;
+  }
+
+  #panel-reportes-root .total-card .valor{
+    display:block;
+    font-size:30px;
+    line-height:1;
+    font-weight:800;
+    margin-bottom:10px;
+  }
+
+  #panel-reportes-root .total-card .subvalor{
+    display:block;
+    font-size:14px;
+    line-height:1.2;
+    font-weight:700;
+    word-break:break-word;
+    opacity:.98;
+  }
+
+  #panel-reportes-root .total-general{ background:#455a64; }
+  #panel-reportes-root .total-pagado{ background:#2e7d32; }
+  #panel-reportes-root .total-pendiente{ background:#ef6c00; }
+  #panel-reportes-root .total-anulado{ background:#c62828; }
+
+  #panel-reportes-root table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+    display:none;
+    table-layout:fixed;
+    background:#fff;
+  }
+
+  #panel-reportes-root thead tr{ background:#eef2f7; }
+
+  #panel-reportes-root th,
+  #panel-reportes-root td{
+    border:1px solid #d7dee6;
+    padding:9px 8px;
+    font-size:13px;
+    word-wrap:break-word;
+  }
+
+  #panel-reportes-root th{
+    text-align:left;
+    color:#263238;
+  }
+
+  #panel-reportes-root td{
+    text-align:center;
+    color:#37474f;
+  }
+
+  #panel-reportes-root td.monto{ text-align:right; font-variant-numeric:tabular-nums; }
+  #panel-reportes-root td.status-pagado{ background:#edf7ed; color:#1b5e20; font-weight:700; }
+  #panel-reportes-root td.status-pendiente{ background:#fff3e0; color:#e65100; font-weight:700; }
+  #panel-reportes-root td.status-anulado{ background:#ffebee; color:#b71c1c; font-weight:700; }
+  #panel-reportes-root td.status-otros{ background:#eceff1; color:#455a64; font-weight:700; }
+
+  #panel-reportes-root #mensajeVacio{
+    margin-top:20px;
+    color:#b00020;
+    font-weight:700;
+    display:none;
+  }
+
+  #panel-reportes-root #botonPDF{
+    margin-top:20px;
+    display:none;
+  }
+
+  #panel-reportes-root .acciones-grid{
+    display:grid;
+    grid-template-columns:repeat(2, minmax(260px,1fr));
+    gap:18px 22px;
+  }
+
+  @media (max-width:900px){
+    #panel-reportes-root .acciones-grid{ grid-template-columns:1fr; }
+    #panel-reportes-root .resumen-totales{ grid-template-columns:repeat(2, minmax(160px,1fr)); }
+  }
+
+  @media (max-width:640px){
+    #panel-reportes-root{ padding:16px; }
+    #panel-reportes-root .contenedor{ padding:18px; }
+    #panel-reportes-root .resumen-totales{ grid-template-columns:1fr; }
+    #panel-reportes-root th,
+    #panel-reportes-root td{ font-size:12px; padding:7px 6px; }
+  }
+</style>
+
+<div id="panel-reportes-root">
+  <div class="contenedor">
+    <h2>📊 Panel de Reportes</h2>
+
+    <div class="acciones-grid">
+      <div>
+        <label for="oficial">Informe por Oficial de Acreditación</label>
+        <select id="oficial" onchange="gestionarSeleccion('oficial')">
+          <option value="">Seleccione un oficial...</option>
+        </select>
+        <button id="btnOficial" onclick="generarPorOficial()">Generar informe</button>
+      </div>
+
+      <div>
+        <label for="registro">Informe por Registro de Acreditación</label>
+        <input type="text" id="registro" placeholder="Ej: OGA-045" oninput="gestionarSeleccion('registro')">
+        <button id="btnRegistro" onclick="generarPorRegistro()">Generar informe</button>
+      </div>
+
+      <div>
+        <label for="estatus">Informe por Estatus</label>
+        <select id="estatus" onchange="gestionarSeleccion('estatus')">
+          <option value="">Seleccione un estatus...</option>
+          <option value="Pagado">Pagado</option>
+          <option value="No pagado">No pagado</option>
+          <option value="Anulado">Anulado</option>
+        </select>
+        <button id="btnEstatus" onclick="generarPorEstatus()">Generar informe</button>
+      </div>
+
+      <div>
+        <label for="mntTipo">Informe por Mantenimiento</label>
+        <select id="mntTipo" onchange="gestionarSeleccion('mntTipo')">
+          <option value="">Seleccione un tipo...</option>
+          <option value="__ALL__">Todos los pagos de mantenimiento</option>
+        </select>
+        <button id="btnMantenimiento" onclick="generarPorMantenimiento()">Generar informe</button>
+      </div>
+    </div>
+
+    <h3 id="tituloInforme"></h3>
+
+    <div id="resumenPrincipal" class="resumen-principal">
+      <span id="resumenPrincipalTexto">Total registros: 0 | Total monto: Q0.00</span>
+    </div>
+
+    <div id="resumenTotales" class="resumen-totales">
+      <div class="total-card total-general">
+        <span class="label">Total registros</span>
+        <span class="valor" id="totalGeneral">0</span>
+        <span class="subvalor" id="montoGeneral">Q0.00</span>
+      </div>
+
+      <div class="total-card total-pagado">
+        <span class="label">Pagado</span>
+        <span class="valor" id="totalPagado">0</span>
+        <span class="subvalor" id="montoPagado">Q0.00</span>
+      </div>
+
+      <div class="total-card total-pendiente">
+        <span class="label">No pagado / Pendiente</span>
+        <span class="valor" id="totalPendiente">0</span>
+        <span class="subvalor" id="montoPendiente">Q0.00</span>
+      </div>
+
+      <div class="total-card total-anulado">
+        <span class="label">Anulado</span>
+        <span class="valor" id="totalAnulado">0</span>
+        <span class="subvalor" id="montoAnulado">Q0.00</span>
+      </div>
+    </div>
+
+    <table id="tablaPreview">
+      <thead>
+        <tr>
+          <th>Correlativo</th>
+          <th>Fecha</th>
+          <th>Registro OEC</th>
+          <th>Nombre OEC</th>
+          <th>Concepto de pago</th>
+          <th>Monto Q</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="cuerpoTabla"></tbody>
+    </table>
+
+    <div id="mensajeVacio">⚠️ No se encontraron registros para el criterio seleccionado.</div>
+
+    <div id="botonPDF">
+      <button onclick="generarPDF()" style="background:#263238;">📄 Generar PDF</button>
+    </div>
+
+    <div class="loader" id="loader"></div>
+    <button id="btnVolver" onclick="volverMenu()">🔙 Volver al Menú Principal</button>
+  </div>
+
+  <div id="toast"></div>
+</div>
+
+<script>
+  function mostrarToast(msg){
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.className = 'show';
+    setTimeout(() => {
+      toast.className = toast.className.replace('show','');
+    }, 3500);
+  }
+
+  function mostrarLoader(mensaje){
+    mostrarToast(mensaje || 'Generando informe...');
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'block';
+  }
+
+  function ocultarLoader(msg){
+    const loader = document.getElementById('loader');
+    if (loader) loader.style.display = 'none';
+    if (msg) mostrarToast(msg);
+  }
+
+  function parseMonto(valor){
+    if (valor === null || valor === undefined || valor === '') return 0;
+    if (typeof valor === 'number') return valor;
+
+    let txt = String(valor).trim();
+    if (!txt) return 0;
+
+    txt = txt.replace(/\s/g, '').replace(/^Q/i, '');
+
+    if (/^\d{1,3}(\.\d{3})*,\d+$/.test(txt)) {
+      txt = txt.replace(/\./g, '').replace(',', '.');
+      return parseFloat(txt) || 0;
+    }
+
+    if (/^\d+,\d+$/.test(txt)) {
+      txt = txt.replace(',', '.');
+      return parseFloat(txt) || 0;
+    }
+
+    txt = txt.replace(/,/g, '');
+    return parseFloat(txt) || 0;
+  }
+
+  function formatMoney(valor){
+    const n = Number(valor || 0);
+    return 'Q' + n.toLocaleString('es-GT', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function normalizarEstatus(status){
+    const txt = String(status || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .replace(/\s+/g, ' ');
+
+    if (!txt) return 'otros';
+
+    if (txt === 'anulada' || txt === 'anulado' || txt.includes('anulad')) return 'anulado';
+    if (txt === 'pagado' || txt === 'pagada' || (txt.includes('pagad') && !txt.includes('no pag'))) return 'pagado';
+    if (txt === 'no pagado' || txt === 'no pagada' || txt === 'no pago' || txt === 'pendiente' || txt.includes('pendiente') || txt.includes('no pag') || txt.includes('sin pago')) return 'pendiente';
+
+    return 'otros';
+  }
+
+  function limpiarTotales(){
+    document.getElementById('resumenTotales').style.display = 'none';
+    document.getElementById('resumenPrincipal').style.display = 'none';
+
+    document.getElementById('totalGeneral').textContent = '0';
+    document.getElementById('montoGeneral').textContent = 'Q0.00';
+
+    document.getElementById('totalPagado').textContent = '0';
+    document.getElementById('montoPagado').textContent = 'Q0.00';
+
+    document.getElementById('totalPendiente').textContent = '0';
+    document.getElementById('montoPendiente').textContent = 'Q0.00';
+
+    document.getElementById('totalAnulado').textContent = '0';
+    document.getElementById('montoAnulado').textContent = 'Q0.00';
+
+    document.getElementById('resumenPrincipalTexto').textContent = 'Total registros: 0 | Total monto: Q0.00';
+  }
+
+  function limpiarResultados(){
+    document.getElementById('tituloInforme').style.display = 'none';
+    document.getElementById('tituloInforme').textContent = '';
+    document.getElementById('tablaPreview').style.display = 'none';
+    document.getElementById('cuerpoTabla').innerHTML = '';
+    document.getElementById('mensajeVacio').style.display = 'none';
+    document.getElementById('botonPDF').style.display = 'none';
+    limpiarTotales();
+  }
+
+  function gestionarSeleccion(activo){
+    const campos = ['oficial', 'registro', 'estatus', 'mntTipo'];
+
+    campos.forEach(id => {
+      if (id === activo) return;
+      const el = document.getElementById(id);
+      const actual = (document.getElementById(activo).value || '').trim();
+      if (el) el.disabled = actual !== '';
+    });
+
+    if ((document.getElementById(activo).value || '').trim() === ''){
+      campos.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.disabled = false;
+      });
+    }
+
+    limpiarResultados();
+  }
+
+  function renderizarTotales(datos){
+    const resumen = {
+      total: 0,
+      pagado: 0,
+      pendiente: 0,
+      anulado: 0,
+      otros: 0,
+      montoTotal: 0,
+      montoPagado: 0,
+      montoPendiente: 0,
+      montoAnulado: 0,
+      montoOtros: 0
+    };
+
+    if (Array.isArray(datos) && datos.length > 1){
+      for (let i = 1; i < datos.length; i++){
+        const fila = datos[i] || [];
+        const categoria = normalizarEstatus(fila[6]);
+        const monto = parseMonto(fila[5]);
+
+        resumen.total++;
+        resumen.montoTotal += monto;
+
+        if (categoria === 'pagado') {
+          resumen.pagado++;
+          resumen.montoPagado += monto;
+        } else if (categoria === 'pendiente') {
+          resumen.pendiente++;
+          resumen.montoPendiente += monto;
+        } else if (categoria === 'anulado') {
+          resumen.anulado++;
+          resumen.montoAnulado += monto;
+        } else {
+          resumen.otros++;
+          resumen.montoOtros += monto;
+        }
+      }
+    }
+
+    document.getElementById('totalGeneral').textContent = resumen.total;
+    document.getElementById('montoGeneral').textContent = formatMoney(resumen.montoTotal);
+
+    document.getElementById('totalPagado').textContent = resumen.pagado;
+    document.getElementById('montoPagado').textContent = formatMoney(resumen.montoPagado);
+
+    document.getElementById('totalPendiente').textContent = resumen.pendiente;
+    document.getElementById('montoPendiente').textContent = formatMoney(resumen.montoPendiente);
+
+    document.getElementById('totalAnulado').textContent = resumen.anulado;
+    document.getElementById('montoAnulado').textContent = formatMoney(resumen.montoAnulado);
+
+    document.getElementById('resumenPrincipalTexto').textContent =
+      'Total registros: ' + resumen.total + ' | Total monto: ' + formatMoney(resumen.montoTotal);
+
+    document.getElementById('resumenPrincipal').style.display = resumen.total > 0 ? 'block' : 'none';
+    document.getElementById('resumenTotales').style.display = resumen.total > 0 ? 'grid' : 'none';
+  }
+
+  function claseStatus(status){
+    const categoria = normalizarEstatus(status);
+    if (categoria === 'pagado') return 'status-pagado';
+    if (categoria === 'pendiente') return 'status-pendiente';
+    if (categoria === 'anulado') return 'status-anulado';
+    return 'status-otros';
+  }
+
+  function mostrarTabla(datos, criterioTexto){
+    const titulo = document.getElementById('tituloInforme');
+    const tabla  = document.getElementById('tablaPreview');
+    const cuerpo = document.getElementById('cuerpoTabla');
+    const vacio  = document.getElementById('mensajeVacio');
+    const pdfBox = document.getElementById('botonPDF');
+
+    cuerpo.innerHTML = '';
+    titulo.style.display = 'block';
+    titulo.textContent = 'Informe de boletas - ' + criterioTexto;
+
+    if (!Array.isArray(datos) || datos.length <= 1){
+      tabla.style.display = 'none';
+      pdfBox.style.display = 'none';
+      vacio.style.display = 'block';
+      limpiarTotales();
+      return;
+    }
+
+    vacio.style.display = 'none';
+    pdfBox.style.display = 'block';
+    tabla.style.display = 'table';
+    renderizarTotales(datos);
+
+    for (let i = 1; i < datos.length; i++){
+      const fila = datos[i] || [];
+      const tr = document.createElement('tr');
+
+      for (let j = 0; j < 7; j++){
+        const td = document.createElement('td');
+
+        if (j === 5) {
+          td.textContent = formatMoney(parseMonto(fila[j]));
+          td.classList.add('monto');
+        } else {
+          td.textContent = (fila[j] ?? '');
+        }
+
+        if (j === 6) td.classList.add(claseStatus(fila[j]));
+        tr.appendChild(td);
+      }
+
+      cuerpo.appendChild(tr);
+    }
+  }
+
+  function generarPorOficial(){
+    const oficial = (document.getElementById('oficial').value || '').trim();
+    if (!oficial) return mostrarToast('⚠️ Seleccione un oficial válido.');
+    mostrarLoader('Generando informe...');
+
+    google.script.run
+      .withSuccessHandler((datos) => {
+        ocultarLoader((Array.isArray(datos) && datos.length > 1) ? '✅ Vista previa generada.' : '⚠️ No se encontraron boletas.');
+        mostrarTabla(datos, 'Oficial: ' + oficial);
+      })
+      .withFailureHandler((err) => {
+        ocultarLoader('❌ Error al generar informe.');
+        console.error(err);
+      })
+      .obtenerInformePorOficial(oficial);
+  }
+
+  function generarPorRegistro(){
+    const registro = (document.getElementById('registro').value || '').trim();
+    if (!registro) return mostrarToast('⚠️ Ingrese un registro válido.');
+    mostrarLoader('Generando informe...');
+
+    google.script.run
+      .withSuccessHandler((datos) => {
+        ocultarLoader((Array.isArray(datos) && datos.length > 1) ? '✅ Vista previa generada.' : '⚠️ No se encontraron boletas.');
+        mostrarTabla(datos, 'Registro: ' + registro);
+      })
+      .withFailureHandler((err) => {
+        ocultarLoader('❌ Error al generar informe.');
+        console.error(err);
+      })
+      .obtenerInformePorRegistro(registro);
+  }
+
+  function generarPorEstatus(){
+    const estatus = (document.getElementById('estatus').value || '').trim();
+    if (!estatus) return mostrarToast('⚠️ Seleccione un estatus válido.');
+    mostrarLoader('Generando informe...');
+
+    google.script.run
+      .withSuccessHandler((datos) => {
+        ocultarLoader((Array.isArray(datos) && datos.length > 1) ? '✅ Vista previa generada.' : '⚠️ No se encontraron boletas.');
+        mostrarTabla(datos, 'Estatus: ' + estatus);
+      })
+      .withFailureHandler((err) => {
+        ocultarLoader('❌ Error al generar informe.');
+        console.error(err);
+      })
+      .obtenerInformePorEstatus(estatus);
+  }
+
+  function generarPorMantenimiento(){
+    const tipo = (document.getElementById('mntTipo').value || '').trim();
+    if (!tipo) return mostrarToast('⚠️ Seleccione un tipo de mantenimiento válido.');
+    mostrarLoader('Generando informe de mantenimiento...');
+
+    google.script.run
+      .withSuccessHandler((datos) => {
+        ocultarLoader((Array.isArray(datos) && datos.length > 1) ? '✅ Vista previa generada.' : '⚠️ No se encontraron pagos de mantenimiento.');
+        mostrarTabla(datos, 'Mantenimiento: ' + (tipo === '__ALL__' ? 'Todos' : tipo));
+      })
+      .withFailureHandler((err) => {
+        ocultarLoader('❌ Error al generar informe.');
+        console.error(err);
+      })
+      .obtenerInformePorMantenimiento(tipo);
+  }
+
+  function generarPDF(){
+    const titulo = document.getElementById('tituloInforme').textContent || 'Reporte';
+    const filas = [];
+
+    filas.push(['Correlativo', 'Fecha', 'Registro OEC', 'Nombre OEC', 'Concepto de pago', 'Monto Q', 'Status']);
+
+    const trs = document.querySelectorAll('#tablaPreview tbody tr');
+    trs.forEach(tr => {
+      const tds = tr.querySelectorAll('td');
+      const fila = Array.from(tds).map(td => td.textContent.trim());
+      filas.push(fila);
+    });
+
+    mostrarLoader('Generando PDF...');
+
+    google.script.run
+      .withSuccessHandler((url) => {
+        ocultarLoader('✅ PDF generado.');
+        window.open(url, '_blank');
+      })
+      .withFailureHandler((err) => {
+        ocultarLoader('❌ Error al generar PDF.');
+        console.error(err);
+      })
+      .generarPDFReporte(titulo, filas);
+  }
+
+  function cargarListaOficiales(){
+    google.script.run
+      .withSuccessHandler((usuarios) => {
+        const select = document.getElementById('oficial');
+        (usuarios || []).forEach(nombre => {
+          const opt = document.createElement('option');
+          opt.value = nombre;
+          opt.textContent = nombre;
+          select.appendChild(opt);
+        });
+      })
+      .withFailureHandler((err) => console.error(err))
+      .obtenerListaUsuarios();
+  }
+
+  function cargarListaMantenimientos(){
+    google.script.run
+      .withSuccessHandler((tipos) => {
+        const select = document.getElementById('mntTipo');
+        const fijo0 = select.options[0];
+        const fijo1 = select.options[1];
+
+        select.innerHTML = '';
+        select.appendChild(fijo0);
+        select.appendChild(fijo1);
+
+        (tipos || []).forEach(t => {
+          const nombre = String(t || '').trim();
+          if (!nombre) return;
+          const opt = document.createElement('option');
+          opt.value = nombre;
+          opt.textContent = nombre;
+          select.appendChild(opt);
+        });
+      })
+      .withFailureHandler((err) => console.error(err))
+      .obtenerListaMantenimiento();
+  }
+
+  function volverMenu(){
+    if (window.OGA && typeof window.OGA.irAlMenu === 'function') {
+      window.OGA.irAlMenu();
+      return;
+    }
+    console.warn('OGA.irAlMenu no está disponible');
+  }
+
+  (function initPanelReportes(){
+    limpiarResultados();
+    cargarListaOficiales();
+    cargarListaMantenimientos();
+
+    if (window.OGA && typeof window.OGA.onUnmount === 'function') {
+      window.OGA.onUnmount(function(){});
+    }
+  })();
+</script>

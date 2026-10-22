@@ -1,0 +1,588 @@
+<style>
+  #preingreso-root{
+    --pi-container-width: 1100px;
+    --pi-bg: #f7f7fb;
+    --pi-card: #ffffff;
+    --pi-txt: #111827;
+    --pi-muted: #6b7280;
+    --pi-line: #e5e7eb;
+    --pi-brand: #2563eb;
+    --pi-chip-ok-bg: #dcfce7;
+    --pi-chip-ok-tx:#166534;
+    --pi-chip-warn-bg:#fef9c3;
+    --pi-chip-warn-tx:#92400e;
+    --pi-chip-fail-bg:#fee2e2;
+    --pi-chip-fail-tx:#991b1b;
+    --pi-badge-standby:#e5e7eb;
+    --pi-badge-standby-tx:#374151;
+    --pi-badge-ready:#d1fae5;
+    --pi-badge-ready-tx:#065f46;
+    --pi-btn-bg:#e8edff;
+    --pi-btn-tx:#1d4ed8;
+    --pi-btn-bg-ghost:#f3f4f6;
+    --pi-btn-tx-ghost:#374151;
+    background: var(--pi-bg);
+    color: var(--pi-txt);
+    font-family: ui-sans-serif, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    width: 100%;
+    padding: 18px 0 28px;
+  }
+
+  #preingreso-root * { box-sizing: border-box; }
+  #preingreso-root .wrap{ max-width:var(--pi-container-width); margin:0 auto; padding:0 14px; }
+  #preingreso-root h1{ font-size:22px; margin:0; }
+  #preingreso-root .panel{ background:var(--pi-card); border-radius:14px; box-shadow:0 1px 2px rgba(0,0,0,.06); padding:18px; }
+  #preingreso-root .panel h2{ margin:0 0 8px; font-size:20px; }
+  #preingreso-root .hint{ color:var(--pi-muted); font-size:12px; }
+  #preingreso-root .divider{ height:1px; background:var(--pi-line); margin:12px 0; }
+  #preingreso-root .toolbar{ display:flex; justify-content:space-between; align-items:center; margin:6px 0 12px; gap:12px; flex-wrap:wrap; }
+  #preingreso-root .btn{ border:0; border-radius:10px; padding:8px 14px; background:var(--pi-btn-bg); color:var(--pi-btn-tx); font-weight:700; cursor:pointer; }
+  #preingreso-root .btn.secondary{ background:var(--pi-btn-bg-ghost); color:var(--pi-btn-tx-ghost); }
+  #preingreso-root .btn.small{ padding:6px 10px; font-size:12px; }
+  #preingreso-root .btn:disabled{ opacity:.5; cursor:not-allowed; }
+  #preingreso-root input[type="file"]{ max-width:100%; }
+  #preingreso-root .list{ display:flex; flex-direction:column; gap:12px; max-height:62vh; overflow:auto; border-top:1px solid var(--pi-line); }
+  #preingreso-root .row{ border-bottom:1px solid var(--pi-line); padding:14px 0; }
+  #preingreso-root .row:last-child{ border-bottom:0; }
+  #preingreso-root .row-head{ display:grid; grid-template-columns:auto 1fr auto; gap:10px; align-items:center; }
+  #preingreso-root .badge{ padding:3px 8px; border-radius:8px; font-size:11px; font-weight:700; white-space:nowrap; }
+  #preingreso-root .badge.standby{ background:var(--pi-badge-standby); color:var(--pi-badge-standby-tx); }
+  #preingreso-root .badge.ready{ background:var(--pi-badge-ready); color:var(--pi-badge-ready-tx); }
+  #preingreso-root .comercial{ font-size:16px; font-weight:800; }
+  #preingreso-root .state{ font-weight:800; font-size:13px; }
+  #preingreso-root .state.ok{ color:var(--pi-chip-ok-tx); }
+  #preingreso-root .state.warn{ color:var(--pi-chip-warn-tx); }
+  #preingreso-root .state.fail{ color:var(--pi-chip-fail-tx); }
+  #preingreso-root .chips{ margin-top:8px; display:flex; flex-wrap:wrap; gap:6px; }
+  #preingreso-root .chip{ display:inline-flex; align-items:center; gap:6px; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }
+  #preingreso-root .chip.ok{ background:var(--pi-chip-ok-bg); color:var(--pi-chip-ok-tx); }
+  #preingreso-root .chip.warn{ background:var(--pi-chip-warn-bg); color:var(--pi-chip-warn-tx); }
+  #preingreso-root .chip.fail{ background:var(--pi-chip-fail-bg); color:var(--pi-chip-fail-tx); }
+  #preingreso-root .docs-grid{ margin-top:10px; display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+  #preingreso-root .doc{ background:#f9fafb; border:1px dashed #e5e7eb; border-radius:10px; padding:10px; }
+  #preingreso-root .doc .label{ font-size:12px; color:#374151; margin-bottom:6px; font-weight:700; }
+  #preingreso-root .doc .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  #preingreso-root .grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  #preingreso-root .field{ display:flex; flex-direction:column; gap:6px; }
+  #preingreso-root .field label{ font-size:12px; font-weight:700; color:#374151; }
+  #preingreso-root .field input,
+  #preingreso-root .field select,
+  #preingreso-root .field textarea{ border:1px solid #e5e7eb; border-radius:10px; padding:8px 10px; background:#fff; font-size:16px; }
+  #preingreso-root .field input[readonly]{ background:#f9fafb; color:#374151; }
+  #preingreso-root .inline{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  #preingreso-root .pill{ padding:3px 8px; border-radius:999px; background:#eef2ff; color:#1e3a8a; font-size:11px; font-weight:700; }
+  #preingreso-root .spinner{ width:16px; height:16px; border-radius:50%; border:2px solid #c7d2fe; border-top-color:#1d4ed8; animation:pi-spin .8s linear infinite; display:none; }
+  #preingreso-root .readonly-mode{ background:#fef9c3; color:#92400e; padding:8px 12px; border-radius:8px; font-size:12px; margin-bottom:10px; }
+  #preingreso-root .loading-auth{ text-align:center; padding:40px; }
+  #preingreso-root .btn.loading{ position:relative; pointer-events:none; opacity:.75; }
+  #preingreso-root .btn.loading::after{ content:''; width:14px; height:14px; border-radius:50%; border:2px solid currentColor; border-top-color:transparent; animation:pi-spin .8s linear infinite; display:inline-block; margin-left:8px; vertical-align:middle; }
+  #preingreso-root .assign-box{ margin-top:12px; display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; }
+  #preingreso-root .assign-field{ min-width:260px; max-width:340px; display:flex; flex-direction:column; gap:6px; }
+  #preingreso-root .assign-field label{ font-size:12px; font-weight:700; color:#374151; }
+  #preingreso-root .assign-field select{ border:1px solid #e5e7eb; border-radius:10px; padding:8px 10px; background:#fff; font-size:14px; min-width:260px; }
+
+  @keyframes pi-spin{ to{ transform:rotate(360deg); } }
+  @media (max-width:860px){
+    #preingreso-root .docs-grid{ grid-template-columns:1fr; }
+    #preingreso-root .row-head{ grid-template-columns:1fr auto; }
+  }
+  @media (max-width:540px){
+    #preingreso-root .grid{ grid-template-columns:1fr; }
+    #preingreso-root .assign-field,
+    #preingreso-root .assign-field select{ min-width:100%; }
+  }
+</style>
+
+<div id="preingreso-root">
+  <div class="wrap">
+    <div id="loading-panel" class="panel loading-auth">
+      <h2>Verificando acceso...</h2>
+      <div class="hint">Detectando usuario y permisos</div>
+    </div>
+
+    <div id="main-content" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+        <h1>Ingreso de Solicitudes V2</h1>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="hint" id="user-info"></span>
+          <button class="btn secondary small" onclick="cerrarVentana()">✕ Cerrar</button>
+        </div>
+      </div>
+
+      <div class="panel" id="panel-2">
+        <h2>Solicitudes pendientes de registro</h2>
+
+        <div id="readonly-indicator" class="readonly-mode" style="display:none;">
+          <strong>Modo Solo Consulta:</strong> Puede ver la información pero no realizar cambios.
+        </div>
+
+        <div class="hint">La asignación copia automáticamente el registro a <b>Respuestas de formulario 1</b>, actualiza <b>Clientes</b>, registra <b>OEC_ID + Oficial Asignado + Datos Asignación</b> en <b>Copy of Ciclos</b> y envía notificaciones.</div>
+
+        <div class="toolbar">
+          <div id="meta" class="hint"></div>
+          <div><button class="btn secondary" onclick="recargarTodo()">Actualizar lista</button></div>
+        </div>
+
+        <div class="list" id="list"></div>
+        <div class="hint" id="totals" style="margin-top:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const LIST_FILTER = 'standby';
+  const DOCS = ['solicitud','rtu','alcance','idoneidad'];
+  const LABEL = {
+    solicitud: 'Solicitud',
+    rtu: 'RTU',
+    alcance: 'Alcance',
+    idoneidad: 'Idoneidad'
+  };
+
+  let currentUser = null;
+  let currentUserName = '';
+  let isAdmin = false;
+  let toastTimer = null;
+  let oficiales = [];
+
+  (function initPreIngreso(){
+    detectarUsuario();
+
+    if (window.OGA && typeof window.OGA.onUnmount === 'function') {
+      window.OGA.onUnmount(() => {
+        if (toastTimer) clearTimeout(toastTimer);
+        oficiales = [];
+      });
+    }
+  })();
+
+  function esc(s) {
+    return String(s || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function toast(msg, tipo = 'info') {
+    if (window.OGA && typeof window.OGA.toast === 'function') {
+      window.OGA.toast(msg, tipo);
+      return;
+    }
+    console.log('[PreIngreso]', msg);
+  }
+
+  function onlyDigits(s) {
+    return String(s || '').replace(/\D+/g, '');
+  }
+
+  function setVal(id, v) {
+    const el = document.getElementById(id);
+    if (el) el.value = v || '';
+  }
+
+  function getVal(id) {
+    const el = document.getElementById(id);
+    return el ? el.value : '';
+  }
+
+  function normaDesdeEsquema(esquema) {
+    const e = String(esquema || '').trim().toLowerCase();
+    if (e === 'laboratorio de ensayo') return 'NTG ISO/IEC 17025';
+    if (e === 'laboratorio de calibración') return 'NTG ISO/IEC 17025';
+    if (e === 'laboratorio clínico') return 'NTG ISO 15189';
+    if (e === 'organismo de inspección') return 'NTG ISO/IEC 17020';
+    return '';
+  }
+
+  function cerrarVentana() {
+    if (window.OGA && typeof window.OGA.irAlMenu === 'function') {
+      window.OGA.irAlMenu();
+      return;
+    }
+  }
+
+  function detectarUsuario() {
+    document.getElementById('loading-panel').style.display = 'block';
+    document.getElementById('main-content').style.display = 'none';
+
+    google.script.run
+      .withSuccessHandler(userInfo => {
+        if (userInfo && userInfo.ok) {
+          currentUser = userInfo.email || '';
+          currentUserName = userInfo.nombre || '';
+          isAdmin = !!userInfo.isAdmin;
+
+          document.getElementById('loading-panel').style.display = 'none';
+          document.getElementById('main-content').style.display = 'block';
+
+          configurarUI(userInfo);
+
+          if (isAdmin) {
+            cargarOficiales(() => loadList());
+          } else {
+            loadList();
+          }
+        } else {
+          showError('No se pudo detectar el usuario: ' + ((userInfo && userInfo.error) || 'Error desconocido'));
+        }
+      })
+      .withFailureHandler(error => {
+        console.error(error);
+        showError('Error de conexión: ' + ((error && error.message) || error));
+      })
+      .getCurrentUserInfoV2();
+  }
+
+  function cargarOficiales(cb) {
+    google.script.run
+      .withSuccessHandler(res => {
+        oficiales = (res && res.ok && Array.isArray(res.oficiales)) ? res.oficiales : [];
+        if (!oficiales.length) toast('No se encontraron oficiales en la hoja Usuarios', 'warning');
+        if (typeof cb === 'function') cb();
+      })
+      .withFailureHandler(err => {
+        console.error(err);
+        oficiales = [];
+        toast('No se pudo cargar la lista de oficiales', 'error');
+        if (typeof cb === 'function') cb();
+      })
+      .listarOficialesV2();
+  }
+
+  function recargarTodo() {
+    if (isAdmin) cargarOficiales(() => loadList());
+    else loadList();
+  }
+
+  function showError(message) {
+    document.getElementById('loading-panel').innerHTML = `
+      <h2>Error de Acceso</h2>
+      <div class="hint" style="color:#991b1b;">${esc(message)}</div>
+      <button class="btn" onclick="detectarUsuario()" style="margin-top:12px;">Reintentar</button>
+    `;
+  }
+
+  function configurarUI(userInfo) {
+    const userInfoEl = document.getElementById('user-info');
+    const readonlyIndicator = document.getElementById('readonly-indicator');
+
+    const nombre = currentUserName ? `${currentUserName} · ` : '';
+    userInfoEl.textContent = currentUser
+      ? `${nombre}${currentUser} · ${isAdmin ? 'Administrador' : 'Solo consulta'}`
+      : (isAdmin ? 'Administrador' : 'Solo consulta');
+
+    if (isAdmin) {
+      readonlyIndicator.style.display = 'none';
+    } else {
+      readonlyIndicator.style.display = '';
+
+      if (userInfo && userInfo.foundInUsers === false) {
+        readonlyIndicator.innerHTML = '<strong>Modo Solo Consulta:</strong> Su correo no fue localizado en la hoja de Usuarios.';
+      } else {
+        readonlyIndicator.innerHTML = '<strong>Modo Solo Consulta:</strong> Su usuario existe, pero no está autorizado para acciones administrativas.';
+      }
+    }
+  }
+
+  function computeState(row) {
+    return {
+      solicitud: !!row.solicitudOk,
+      rtu: !!row.rtuOk,
+      alcance: !!row.alcanceOk,
+      idoneidad: !!row.idoneidadOk
+    };
+  }
+
+  function overallState(st) {
+    const vals = Object.values(st);
+    const all = vals.every(Boolean);
+    if (all) return { cls:'ok', label:'Listo para registro' };
+    const none = vals.every(v => !v);
+    return { cls: none ? 'fail' : 'warn', label: none ? 'Sin documentos' : 'Faltan documentos' };
+  }
+
+  function chip(kind, text) {
+    return `<span class="chip ${kind}">${esc(text)}</span>`;
+  }
+
+  function statusBadge(text, ready) {
+    return `<span class="badge ${ready ? 'ready' : 'standby'}">${esc(text || 'Standby')}</span>`;
+  }
+
+  function docBlock(r, key) {
+    const ok = (key === 'solicitud' && r.solicitudOk) ||
+               (key === 'rtu' && r.rtuOk) ||
+               (key === 'alcance' && r.alcanceOk) ||
+               (key === 'idoneidad' && r.idoneidadOk);
+
+    if (!isAdmin) {
+      return `
+        <div class="doc">
+          <div class="label">${esc(LABEL[key])}</div>
+          <div class="controls">
+            <span class="state ${ok ? 'ok' : 'warn'}">${ok ? '✔ Subido' : '⚠ Pendiente'}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    const inputId = `f-${key}-${r.rowIndex}`;
+    const btnId = `b-${key}-${r.rowIndex}`;
+    const icon = ok ? '✔' : '↥';
+    const accept = key === 'alcance'
+      ? '.xlsx,.xls,.csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      : 'application/pdf';
+
+    return `
+      <div class="doc">
+        <div class="label">${esc(LABEL[key])}</div>
+        <div class="controls">
+          <input type="file" id="${inputId}" accept="${accept}" />
+          <button class="btn small ${ok ? 'secondary' : ''}" id="${btnId}">${icon} ${ok ? 'Reemplazar' : 'Subir'}</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildOficialSelect(rowIndex) {
+    if (!oficiales.length) {
+      return `
+        <div class="assign-field">
+          <label>Oficial asignado</label>
+          <select id="oficial-${rowIndex}" disabled>
+            <option value="">No hay oficiales disponibles</option>
+          </select>
+        </div>
+      `;
+    }
+
+    const options = oficiales.map(o => `<option value="${esc(o.correo)}">${esc(o.nombre)}</option>`).join('');
+    return `
+      <div class="assign-field">
+        <label>Oficial asignado</label>
+        <select id="oficial-${rowIndex}">
+          <option value="">Seleccione oficial</option>
+          ${options}
+        </select>
+      </div>
+    `;
+  }
+
+  function renderList(res) {
+    const list = document.getElementById('list');
+    const meta = document.getElementById('meta');
+    const totals = document.getElementById('totals');
+
+    list.innerHTML = '';
+    totals.textContent = '';
+
+    if (res && res.meta) {
+      const name = res.meta.sheetName || '(sin nombre)';
+      const url = res.meta.spreadsheetUrl || '';
+      meta.innerHTML = url ? `Leyendo de: <a href="${url}" target="_blank">${esc(name)}</a>` : `Leyendo de: ${esc(name)}`;
+    } else {
+      meta.textContent = 'Sin metadatos';
+    }
+
+    if (res && res.ok === false && res.error) {
+      list.innerHTML = `<div class="hint">Error del servidor: ${esc(res.error)}</div>`;
+      totals.textContent = '0 registro(s) cargado(s).';
+      return;
+    }
+
+    const rows = (res && res.rows) || [];
+    if (!rows.length) list.innerHTML = '<div class="hint">No hay registros para mostrar.</div>';
+
+    rows.forEach(r => {
+      const st = computeState(r);
+      const ov = overallState(st);
+      const received = r.timestamp ? `<div class="hint">Solicitud recibida: ${esc(r.timestamp)}</div>` : '';
+      const allDocs = Object.values(st).every(Boolean);
+      const hasCode = String(r.registro || '').startsWith('OGA-');
+
+      const viewLinks = [
+        r.solicitudUrl ? `<a class="btn small secondary" href="${r.solicitudUrl}" target="_blank">Ver Solicitud</a>` : '',
+        r.rtuUrl ? `<a class="btn small secondary" href="${r.rtuUrl}" target="_blank">Ver RTU</a>` : '',
+        r.alcanceUrl ? `<a class="btn small secondary" href="${r.alcanceUrl}" target="_blank">Ver Alcance</a>` : '',
+        r.idoneidadUrl ? `<a class="btn small secondary" href="${r.idoneidadUrl}" target="_blank">Ver Idoneidad</a>` : ''
+      ].filter(Boolean).join('');
+
+      const assignControls = isAdmin && allDocs && !hasCode ? `
+        <div class="assign-box">
+          ${buildOficialSelect(r.rowIndex)}
+          <button class="btn small" onclick="asignarCodigo(${r.rowIndex}, this)">Asignar código y notificar</button>
+        </div>
+      ` : '';
+
+      const adminControls = isAdmin ? `<button class="btn small" onclick="recargarTodo()">Refrescar</button>` : '';
+
+      const rowEl = document.createElement('div');
+      rowEl.className = 'row';
+      rowEl.innerHTML = `
+        <div class="row-head">
+          <div>${statusBadge(r.registro || 'Standby', ov.cls === 'ok')}</div>
+          <div class="comercial">${esc(r.comercial || '(Sin nombre comercial)')}</div>
+          <div class="state ${ov.cls}">${esc(ov.label)}</div>
+        </div>
+        ${received}
+        <div class="chips">
+          ${chip(st.solicitud ? 'ok' : 'fail', 'Solicitud')}
+          ${chip(st.rtu ? 'ok' : 'fail', 'RTU')}
+          ${chip(st.alcance ? 'ok' : 'fail', 'Alcance')}
+          ${chip(st.idoneidad ? 'ok' : 'fail', 'Idoneidad')}
+        </div>
+        <div class="docs-grid">
+          ${DOCS.map(d => docBlock(r, d)).join('')}
+        </div>
+        <div class="inline" style="margin-top:10px;gap:8px;flex-wrap:wrap">
+          ${adminControls}
+          ${viewLinks}
+        </div>
+        ${assignControls}
+      `;
+      list.appendChild(rowEl);
+
+      if (isAdmin) {
+        DOCS.forEach(d => {
+          const input = rowEl.querySelector(`#f-${d}-${r.rowIndex}`);
+          const btn = rowEl.querySelector(`#b-${d}-${r.rowIndex}`);
+          if (!input || !btn) return;
+
+          btn.addEventListener('click', async () => {
+            if (btn.dataset.busy === '1') return;
+            if (!input.files || !input.files[0]) {
+              toast('Selecciona un archivo', 'warning');
+              return;
+            }
+
+            const file = input.files[0];
+            if (d !== 'alcance' && file.type && file.type !== 'application/pdf') {
+              toast('Solo PDF', 'warning');
+              return;
+            }
+
+            const originalText = btn.textContent;
+            btn.dataset.busy = '1';
+            btn.classList.add('loading');
+            btn.textContent = 'Subiendo…';
+            btn.disabled = true;
+            input.disabled = true;
+
+            try {
+              const payload = await fileToPayload(file);
+              google.script.run
+                .withSuccessHandler(resp => {
+                  if (resp && resp.ok) {
+                    google.script.run
+                      .withSuccessHandler(() => {
+                        btn.classList.remove('loading');
+                        btn.classList.add('secondary');
+                        btn.textContent = '✔ Subido';
+                        btn.disabled = true;
+                        input.value = '';
+                        toast(`${LABEL[d]} subida`, 'success');
+                        loadList();
+                      })
+                      .withFailureHandler(err => {
+                        console.error(err);
+                        toast('No se pudo actualizar la fila', 'error');
+                        btn.classList.remove('loading');
+                        btn.textContent = originalText;
+                        btn.disabled = false;
+                        input.disabled = false;
+                        btn.dataset.busy = '';
+                      })
+                      .actualizarEvidenciaV2(r.rowIndex, d, resp.fileId);
+                  } else {
+                    toast('Error subiendo: ' + ((resp && resp.error) || ''), 'error');
+                    btn.classList.remove('loading');
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                    input.disabled = false;
+                    btn.dataset.busy = '';
+                  }
+                })
+                .withFailureHandler(err => {
+                  console.error(err);
+                  toast('Error subiendo archivo', 'error');
+                  btn.classList.remove('loading');
+                  btn.textContent = originalText;
+                  btn.disabled = false;
+                  input.disabled = false;
+                  btn.dataset.busy = '';
+                })
+                .subirEvidenciaV2(d, payload);
+            } catch (e) {
+              console.error(e);
+              toast('No se pudo preparar el archivo', 'error');
+              btn.classList.remove('loading');
+              btn.textContent = originalText;
+              btn.disabled = false;
+              input.disabled = false;
+              btn.dataset.busy = '';
+            }
+          });
+        });
+      }
+    });
+
+    totals.textContent = `${rows.length} registro(s) cargado(s).`;
+  }
+
+  function loadList() {
+    const list = document.getElementById('list');
+    list.innerHTML = '<div class="hint">Cargando registros...</div>';
+
+    google.script.run
+      .withSuccessHandler(renderList)
+      .withFailureHandler(err => {
+        console.error(err);
+        list.innerHTML = '<div class="hint">No se pudo cargar la lista.</div>';
+        toast('Error cargando la lista', 'error');
+      })
+      .listarPreRegistrosV2(LIST_FILTER);
+  }
+
+  function asignarCodigo(rowIndex, btn) {
+    if (!isAdmin) {
+      toast('No tiene permisos para esta acción', 'warning');
+      return;
+    }
+
+    const select = document.getElementById(`oficial-${rowIndex}`);
+    const oficialCorreo = select ? select.value : '';
+    if (!oficialCorreo) {
+      toast('Seleccione un oficial', 'warning');
+      return;
+    }
+
+    const original = btn.textContent;
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.textContent = 'Asignando…';
+
+    google.script.run
+      .withSuccessHandler(resp => {
+        btn.classList.remove('loading');
+        if (resp && resp.ok) {
+          toast(resp.alreadyAssigned ? 'Ese registro ya estaba asignado.' : `Registro ${resp.registro} asignado correctamente.`, 'success');
+          loadList();
+        } else {
+          btn.disabled = false;
+          btn.textContent = original;
+          toast((resp && resp.error) || 'No se pudo asignar el registro', 'error');
+        }
+      })
+      .withFailureHandler(err => {
+        console.error(err);
+        btn.classList.remove('loading');
+        btn.disabled = false;
+        btn.textContent = original;
+        toast('Error durante la asignación', 'error');
+      })
+      .asignarRegistroV2(rowIndex, oficialCorreo);
+  }
+</script>

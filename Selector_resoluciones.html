@@ -1,0 +1,201 @@
+<style>
+  #selRoot {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    width: 100%;
+    min-height: 100vh;
+    padding: 40px 20px 60px;
+    display: block;
+  }
+
+  #selRoot * { padding: ; box-sizing: border-box; }
+
+  .sel-card {
+    max-width: 800px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    overflow: hidden;
+  }
+
+  .sel-header {
+    background: linear-gradient(135deg, #0f3460, #1e88e5);
+    color: #fff;
+    padding: 28px;
+    text-align: center;
+  }
+  .sel-header h2 { font-size: 1.6rem; font-weight: 900; margin: 0 0 6px; }
+  .sel-header p  { margin: 0; font-size: .9rem; opacity: .8; }
+
+  .sel-body { padding: 28px; }
+
+  .sel-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .sel-opcion {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all .18s ease;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .sel-opcion:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0,0,0,.08);
+    border-color: #93c5fd;
+  }
+  .sel-opcion.pendiente {
+    opacity: .55;
+    cursor: default;
+  }
+  .sel-opcion.pendiente:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: #e5e7eb;
+  }
+
+  .sel-num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-weight: 900;
+    font-size: .9rem;
+    margin-bottom: 12px;
+  }
+  .sel-opcion.pendiente .sel-num { background: #e5e7eb; color: #9ca3af; }
+
+  .sel-titulo {
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+    color: #1f2937;
+  }
+  .sel-desc {
+    font-size: .82rem;
+    color: #6b7280;
+    line-height: 1.4;
+  }
+  .sel-badge {
+    display: inline-block;
+    font-size: .72rem;
+    font-weight: 700;
+    background: #fef3c7;
+    color: #92400e;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-top: 8px;
+  }
+
+  .sel-footer {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 18px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .sel-btn {
+    padding: 11px 20px;
+    font-size: .9rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #fff;
+    transition: opacity .2s, transform .15s;
+  }
+  .sel-btn:hover  { opacity: .88; transform: translateY(-1px); }
+  .sel-btn:active { transform: translateY(0); }
+  .sel-btn-gris   { background: #6b7280; }
+
+  @media (max-width: 560px) { .sel-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div id="selRoot">
+  <div class="sel-card">
+
+    <div class="sel-header">
+      <h2>📂 Tipo de documento</h2>
+      <p>Selecciona el tipo de resolución o documento que deseas generar.</p>
+    </div>
+
+    <div class="sel-body">
+      <div class="sel-grid">
+
+        <!-- Opción 1: Resolución de Acreditación -->
+        <div class="sel-opcion" onclick="sel_irA('abrirIngresoResoluciones')">
+          <div>
+            <div class="sel-num">1</div>
+            <div class="sel-titulo">Resolución de Acreditación</div>
+            <div class="sel-desc">Genera la resolución de acreditación con el flujo actual.</div>
+          </div>
+        </div>
+
+        <!-- Opción 2: Resolución de Reconocimiento -->
+        <div class="sel-opcion" onclick="sel_irA('mostrarIngresoReconocimientos')">
+          <div>
+            <div class="sel-num">2</div>
+            <div class="sel-titulo">Resolución de Reconocimiento</div>
+            <div class="sel-desc">Genera resoluciones de reconocimiento con boleta automática.</div>
+          </div>
+        </div>
+
+        <!-- Opción 3: Addendum Ampliación (pendiente) -->
+        <div class="sel-opcion pendiente">
+          <div>
+            <div class="sel-num">3</div>
+            <div class="sel-titulo">Addendum de Ampliación</div>
+            <div class="sel-desc">Módulo reservado para desarrollo posterior.</div>
+          </div>
+          <span class="sel-badge">Próximamente</span>
+        </div>
+
+        <!-- Opción 4: Addendum Reducción (pendiente) -->
+        <div class="sel-opcion pendiente">
+          <div>
+            <div class="sel-num">4</div>
+            <div class="sel-titulo">Addendum de Reducción</div>
+            <div class="sel-desc">Módulo reservado para desarrollo posterior.</div>
+          </div>
+          <span class="sel-badge">Próximamente</span>
+        </div>
+
+        <!-- Opción 5: Actas de Consejo (pendiente) -->
+        <div class="sel-opcion pendiente">
+          <div>
+            <div class="sel-num">5</div>
+            <div class="sel-titulo">Actas de Consejo</div>
+            <div class="sel-desc">Módulo reservado para desarrollo posterior.</div>
+          </div>
+          <span class="sel-badge">Próximamente</span>
+        </div>
+
+      </div>
+
+      <div class="sel-footer">
+        <button class="sel-btn sel-btn-gris" onclick="window.OGA.irAlMenu()">🔙 Volver al Menú</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function sel_irA(ruta) {
+    if (window.OGA && window.OGA.navegar) {
+      window.OGA.navegar(ruta);
+    }
+  }
+</script>

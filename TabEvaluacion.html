@@ -1,0 +1,191 @@
+<section class="panel" id="panel-EVALUACION">
+  <h2>2. Datos de evaluación</h2>
+  <p class="lead">
+    El tipo de evaluación se limita a lo permitido por el programa del ciclo.
+    El modelo calcula la duración sugerida antes de definir las fechas.
+  </p>
+
+  <div class="evaluation-section">
+    <div class="field">
+      <label>Tipo de evaluación permitido *</label>
+      <select id="evTipo" onchange="WAPP_UI_PRES.onEvaluationTypeChange()">
+        <option value="">Primero busque un OEC…</option>
+      </select>
+      <div id="evProgramMessage" class="hint"></div>
+
+      <label class="check-row evaluation-override-check">
+        <input id="evMostrarOtrosTipos" type="checkbox"
+               onchange="WAPP_UI_PRES.toggleEvaluationTypes()">
+        <span>Mostrar otros tipos de evaluación</span>
+      </label>
+      <div id="evOverrideMessage" class="hint evaluation-override-hint">
+        Úselo únicamente cuando el usuario requiera seleccionar un tipo distinto
+        al programado para el ciclo.
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Dirección / ubicación del OEC</label>
+      <input id="evDireccion" readonly placeholder="Fuente pendiente de definir">
+      <div class="hint">
+        La fuente institucional de la dirección se incorporará cuando sea definida.
+      </div>
+    </div>
+  </div>
+
+  <div class="model-box">
+    <div class="model-title">Parámetros para estimación de tiempo</div>
+
+    <div class="compact-grid">
+      <div class="field compact-number">
+        <label>Personal *</label>
+        <input id="evPersonal" type="number" min="1" step="1"
+               oninput="WAPP_UI_PRES.scheduleEstimate()">
+      </div>
+      <div class="field compact-number">
+        <label>Sitios *</label>
+        <input id="evSitios" type="number" min="1" step="1"
+               oninput="WAPP_UI_PRES.scheduleEstimate()">
+      </div>
+      <div class="field compact-number">
+        <label>Áreas *</label>
+        <input id="evAreas" type="number" min="1" step="1"
+               oninput="WAPP_UI_PRES.scheduleEstimate()">
+      </div>
+      <div class="field compact-number">
+        <label>NC anteriores</label>
+        <input id="evNc" type="number" min="0" step="1" value="0"
+               oninput="WAPP_UI_PRES.scheduleEstimate()">
+      </div>
+      <div class="field compact-number">
+        <label>Testificaciones</label>
+        <input id="evTestificaciones" type="number" min="0" step="1" value="0"
+               oninput="WAPP_UI_PRES.scheduleEstimate()">
+      </div>
+      <div class="field compact-number">
+        <label>Muestreo</label>
+        <select id="evMuestreo"><option>No</option><option>Sí</option></select>
+      </div>
+    </div>
+
+    <div id="timeEstimateCard" class="time-card pending">
+      <div>
+        <div class="time-label">Tiempo sugerido de evaluación</div>
+        <div id="timeEstimateValue" class="time-value">—</div>
+      </div>
+      <div id="timeEstimateDetail" class="time-detail">
+        Complete tipo de evaluación, personal, sitios y áreas.
+      </div>
+    </div>
+  </div>
+
+  <div class="date-box" id="dateBox">
+    <div class="field">
+      <label>Fecha inicial *</label>
+      <input id="evInicio" type="date" onchange="WAPP_UI_PRES.syncSuggestedEndDate()">
+    </div>
+    <div class="field">
+      <label>Fecha final *</label>
+      <input id="evFinal" type="date" onchange="WAPP_UI_PRES.validateEndDate()">
+      <div id="evDatePolicyMessage" class="hint">
+        La fecha final se ajusta automáticamente con la duración sugerida.
+      </div>
+    </div>
+  </div>
+
+
+<div class="sites-box">
+  <div class="sites-box-header">
+    <div>
+      <h3>Instalaciones programadas</h3>
+      <div class="hint">
+        Se muestran los sitios vigentes registrados para el OEC, sin restringir
+        por Estado. Seleccione únicamente los que formen parte de esta evaluación.
+      </div>
+    </div>
+    <div id="sitesCount" class="sites-count">0 seleccionados</div>
+  </div>
+
+  <div id="sitesLoading" class="team-loading hidden">
+    Cargando sitios registrados…
+  </div>
+
+  <div id="sitesList" class="sites-list">
+    <div class="summary">
+      Busque primero un OEC para consultar sus instalaciones.
+    </div>
+  </div>
+</div>
+
+<div id="duplicateControl" class="duplicate-control hidden">
+  <div class="duplicate-title">Ya existe una evaluación del mismo tipo</div>
+  <div class="duplicate-text">
+    Se encontró el mismo Registro OEC + Tipo de evaluación.
+    Si necesita cambiar fechas, integrantes, días u otros datos de la evaluación existente,
+    utilice el módulo de <strong>Reprogramación</strong> en lugar de crear una nueva.
+  </div>
+  <div class="duplicate-reprogram-note">
+    La comparación de fechas no evita esta alerta. Cambiar las fechas no convierte
+    la operación en una nueva evaluación.
+  </div>
+  <div id="duplicateRows" class="duplicate-rows"></div>
+
+  <div id="duplicateAdminBox" class="duplicate-admin hidden">
+    <div class="field">
+      <label>Justificación para crear una evaluación adicional independiente *</label>
+      <textarea id="dupMotivo" rows="3"
+                placeholder="Use sólo si NO es una reprogramación. Explique por qué corresponde crear otra evaluación independiente del mismo tipo."></textarea>
+      <div class="hint">
+        La autorización administrativa no debe utilizarse para cambiar fechas,
+        integrantes, días u otros datos de una evaluación ya programada.
+      </div>
+    </div>
+
+    <div class="otp-authorization-note">
+      <strong>Validación de jefatura mediante token.</strong>
+      El sistema enviará un código de un solo uso a la cuenta administradora.
+      El código vence en 10 minutos y queda vinculado a esta operación.
+    </div>
+
+    <div class="actions compact-actions">
+      <button id="btnSolicitarOtpDuplicado" class="primary"
+              onclick="WAPP_UI_PRES.solicitarTokenDuplicado()">
+        Solicitar token a jefatura
+      </button>
+      <button class="ghost" onclick="WAPP_UI_PRES.cancelDuplicateNotice()">
+        Revisar datos
+      </button>
+    </div>
+
+    <div id="dupOtpBox" class="duplicate-otp-box hidden">
+      <div id="dupOtpStatus" class="hint otp-status"></div>
+      <div class="field otp-field">
+        <label>Token de autorización *</label>
+        <input id="dupToken"
+               type="text"
+               inputmode="numeric"
+               maxlength="6"
+               autocomplete="one-time-code"
+               placeholder="000000"
+               oninput="this.value=this.value.replace(/\D/g,'').slice(0,6)"
+               onkeydown="if(event.key==='Enter'){event.preventDefault();WAPP_UI_PRES.validarTokenDuplicado();}">
+      </div>
+      <button class="primary" onclick="WAPP_UI_PRES.validarTokenDuplicado()">
+        Validar token y continuar
+      </button>
+    </div>
+  </div>
+
+  <div id="duplicateBlockedBox" class="duplicate-blocked hidden">
+    No cree un nuevo registro para modificar una evaluación existente.
+    Utilice el módulo de Reprogramación. Si realmente corresponde una evaluación
+    adicional independiente del mismo tipo, solicite autorización de jefatura.
+  </div>
+</div>
+
+  <div class="actions">
+    <button id="btnGuardarEvaluacion" class="primary" onclick="WAPP_UI_PRES.guardarEvaluacion()">
+      Guardar y continuar
+    </button>
+  </div>
+</section>

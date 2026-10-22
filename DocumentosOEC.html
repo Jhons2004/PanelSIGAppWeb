@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explorador OEC</title>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <style>
+    /* ─── TOKENS ──────────────────────────────────────────────── */
+    #ogaExplorerModule {
+      --c-bg:          #f0f4f8;
+      --c-surface:     #ffffff;
+      --c-surface2:    #f8fafc;
+      --c-border:      #e2e8f0;
+      --c-border2:     #cbd5e1;
+      --c-ink:         #0f172a;
+      --c-ink2:        #334155;
+      --c-muted:       #64748b;
+      --c-muted2:      #94a3b8;
+
+      --c-teal:        #0d9488;
+      --c-teal-light:  #14b8a6;
+      --c-teal-bg:     #f0fdfa;
+      --c-teal-border: #99f6e4;
+
+      --c-blue:        #2563eb;
+      --c-blue-light:  #3b82f6;
+      --c-blue-bg:     #eff6ff;
+      --c-blue-border: #bfdbfe;
+
+      --c-grad:        linear-gradient(135deg, #0d9488 0%, #2563eb 100%);
+      --c-grad-soft:   linear-gradient(135deg, #f0fdfa 0%, #eff6ff 100%);
+
+      --c-ok:          #059669;
+      --c-ok-bg:       #ecfdf5;
+      --c-warn:        #d97706;
+      --c-warn-bg:     #fffbeb;
+      --c-err:         #dc2626;
+      --c-err-bg:      #fef2f2;
+
+      --shadow-sm:     0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+      --shadow-md:     0 4px 16px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
+      --shadow-lg:     0 12px 40px rgba(0,0,0,.12), 0 4px 12px rgba(0,0,0,.06);
+      --shadow-xl:     0 24px 64px rgba(0,0,0,.18), 0 8px 24px rgba(0,0,0,.08);
+      --shadow-glow:   0 0 0 3px rgba(13,148,136,.18);
+      --shadow-glow-b: 0 0 0 3px rgba(37,99,235,.18);
+
+      --r-sm:   8px;
+      --r-md:   14px;
+      --r-lg:   20px;
+      --r-xl:   28px;
+      --r-full: 9999px;
+
+      --transition: .2s cubic-bezier(.4,0,.2,1);
+      --transition-spring: .35s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    #ogaExplorerModule[data-theme="dark"] {
+      --c-bg:          #080f1a;
+      --c-surface:     #0f1e2e;
+      --c-surface2:    #152336;
+      --c-border:      #1e3a52;
+      --c-border2:     #274d6b;
+      --c-ink:         #e2f0fb;
+      --c-ink2:        #b0c8de;
+      --c-muted:       #7b9eb8;
+      --c-muted2:      #4d7291;
+
+      --c-teal:        #14b8a6;
+      --c-teal-light:  #2dd4bf;
+      --c-teal-bg:     #0c2622;
+      --c-teal-border: #115e59;
+
+      --c-blue:        #3b82f6;
+      --c-blue-light:  #60a5fa;
+      --c-blue-bg:     #0d1f3c;
+      --c-blue-border: #1e3a6e;
+
+      --c-grad:        linear-gradient(135deg, #0d9488 0%, #3b82f6 100%);
+      --c-grad-soft:   linear-gradient(135deg, #0c2622 0%, #0d1f3c 100%);
+
+      --c-ok:          #10b981;
+      --c-ok-bg:       #0c2a20;
+      --c-warn:        #f59e0b;
+      --c-warn-bg:     #2a1f0a;
+      --c-err:         #f87171;
+      --c-err-bg:      #2a0e0e;
+
+      --shadow-sm:     0 1px 3px rgba(0,0,0,.3);
+      --shadow-md:     0 4px 16px rgba(0,0,0,.4);
+      --shadow-lg:     0 12px 40px rgba(0,0,0,.5);
+      --shadow-xl:     0 24px 64px rgba(0,0,0,.6);
+    }
+
+    /* ─── RESET ─────────────────────────────────────────────── */
+    #ogaExplorerModule *, #ogaExplorerModule *::before, #ogaExplorerModule *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    #ogaExplorerModule {
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+      background: var(--c-bg);
+      color: var(--c-ink);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--transition), color var(--transition);
+    }
+
+    /* ─── BACKGROUND MESH ────────────────────────────────────── */
+    #ogaExplorerModule::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 10%, rgba(13,148,136,.08) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 90% 80%, rgba(37,99,235,.07) 0%, transparent 60%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #ogaExplorerModule[data-theme="dark"]::before {
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 10%, rgba(13,148,136,.15) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 90% 80%, rgba(59,130,246,.12) 0%, transparent 60%);
+    }
+
+    /* ─── LAYOUT ─────────────────────────────────────────────── */
+    #ogaExplorerModule .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1540px;
+      margin: 0 auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ─── HEADER ─────────────────────────────────────────────── */
+    #ogaExplorerModule .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    #ogaExplorerModule .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    #ogaExplorerModule .logo-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--r-md);
+      background: var(--c-grad);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-md);
+    }
+
+    #ogaExplorerModule .logo-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+      background: var(--c-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    #ogaExplorerModule .logo-text p {
+      font-size: 12px;
+      color: var(--c-muted);
+      font-weight: 500;
+    }
+
+    /* ─── SEARCH BAR ─────────────────────────────────────────── */
+    #ogaExplorerModule .search-bar {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      padding: 8px 8px 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-sm);
+      flex: 1;
+      min-width: 280px;
+      max-width: 560px;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    #ogaExplorerModule .search-bar:focus-within {
+      border-color: var(--c-teal);
+      box-shadow: var(--shadow-glow);
+    }
+
+    #ogaExplorerModule .search-bar input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--c-ink);
+      letter-spacing: .05em;
+      min-width: 0;
+    }
+
+    #ogaExplorerModule .search-bar input::placeholder {
+      color: var(--c-muted2);
+      font-weight: 400;
+      letter-spacing: 0;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    }
+
+    #ogaExplorerModule .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    /* ─── BUTTONS ────────────────────────────────────────────── */
+    #ogaExplorerModule .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      border-radius: var(--r-md);
+      padding: 10px 18px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition);
+      white-space: nowrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #ogaExplorerModule .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,.1);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
+
+    #ogaExplorerModule .btn:hover::after { opacity: 1; }
+    #ogaExplorerModule .btn:active { transform: scale(.97); }
+
+    #ogaExplorerModule .btn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    #ogaExplorerModule .btn-primary {
+      background: var(--c-grad);
+      color: #fff;
+      box-shadow: 0 2px 12px rgba(13,148,136,.3);
+      padding: 10px 20px;
+    }
+
+    #ogaExplorerModule .btn-primary:hover {
+      box-shadow: 0 4px 20px rgba(13,148,136,.45);
+      transform: translateY(-1px);
+    }
+
+    #ogaExplorerModule .btn-ghost {
+      background: var(--c-surface2);
+      color: var(--c-ink2);
+      border: 1px solid var(--c-border);
+    }
+
+    #ogaExplorerModule .btn-ghost:hover {
+      background: var(--c-surface);
+      border-color: var(--c-border2);
+    }
+
+    #ogaExplorerModule .btn-teal {
+      background: var(--c-teal-bg);
+      color: var(--c-teal);
+      border: 1px solid var(--c-teal-border);
+    }
+
+    #ogaExplorerModule .btn-teal:hover {
+      background: var(--c-teal);
+      color: #fff;
+      border-color: var(--c-teal);
+    }
+
+    #ogaExplorerModule .btn-icon {
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: var(--r-md);
+      font-size: 16px;
+    }
+
+    /* ─── STATUS ─────────────────────────────────────────────── */
+    #ogaExplorerModule .status {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--r-md);
+      font-size: 13px;
+      font-weight: 600;
+      animation: slideDown .25s ease;
+    }
+
+    #ogaExplorerModule .status.show { display: flex; }
+
+    @keyframes slideDown {
+      from { opacity:0; transform:translateY(-8px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    #ogaExplorerModule .status.ok   { background:var(--c-ok-bg);   color:var(--c-ok);   border:1px solid var(--c-ok); }
+    #ogaExplorerModule .status.warn { background:var(--c-warn-bg); color:var(--c-warn); border:1px solid var(--c-warn); }
+    #ogaExplorerModule .status.err  { background:var(--c-err-bg);  color:var(--c-err);  border:1px solid var(--c-err); }
+
+    #ogaExplorerModule .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    #ogaExplorerModule .status.ok   .status-dot { background: var(--c-ok); }
+    #ogaExplorerModule .status.warn .status-dot { background: var(--c-warn); }
+    #ogaExplorerModule .status.err  .status-dot { background: var(--c-err); }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.5; transform:scale(1.3); }
+    }
+
+    /* ─── META CHIPS ─────────────────────────────────────────── */
+    #ogaExplorerModule .meta-bar {
+      display: none;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    #ogaExplorerModule .meta-bar.show { display: flex; }
+
+    #ogaExplorerModule .meta-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-full);
+      padding: 6px 14px;
+      box-shadow: var(--shadow-sm);
+      font-size: 13px;
+    }
+
+    #ogaExplorerModule .meta-chip-label {
+      color: var(--c-muted);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    #ogaExplorerModule .meta-chip-value {
+      font-weight: 800;
+      color: var(--c-ink);
+    }
+
+    #ogaExplorerModule .meta-chip-sep { color: var(--c-border2); }
+
+    /* ─── MAIN LAYOUT ────────────────────────────────────────── */
+    #ogaExplorerModule .main-grid {
+      display: grid;
+      grid-template-columns: 380px 1fr;
+      gap: 16px;
+      min-height: 680px;
+    }
+
+    /* ─── PANELS ─────────────────────────────────────────────── */
+    #ogaExplorerModule .panel {
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      box-shadow: var(--shadow-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: border-color var(--transition);
+    }
+
+    #ogaExplorerModule .panel-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--c-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: var(--c-surface2);
+      flex-shrink: 0;
+    }
+
+    #ogaExplorerModule .panel-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--c-muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    #ogaExplorerModule .panel-title-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--c-grad);
+    }
+
+    #ogaExplorerModule .panel-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ─── CUSTOM SCROLLBAR ───────────────────────────────────── */
+    #ogaExplorerModule .panel-body::-webkit-scrollbar { width: 6px; }
+    #ogaExplorerModule .panel-body::-webkit-scrollbar-track { background: transparent; }
+    #ogaExplorerModule .panel-body::-webkit-scrollbar-thumb {
+      background: var(--c-border2);
+      border-radius: var(--r-full);
+    }
+
+    /* ─── BREADCRUMBS ────────────────────────────────────────── */
+    #ogaExplorerModule .breadcrumbs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      align-items: center;
+      min-height: 32px;
+    }
+
+    #ogaExplorerModule .crumb {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-full);
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      color: var(--c-muted);
+      transition: all var(--transition);
+      white-space: nowrap;
+    }
+
+    #ogaExplorerModule .crumb:hover {
+      background: var(--c-blue-bg);
+      border-color: var(--c-blue-border);
+      color: var(--c-blue);
+    }
+
+    #ogaExplorerModule .crumb.active {
+      background: var(--c-teal-bg);
+      border-color: var(--c-teal-border);
+      color: var(--c-teal);
+    }
+
+    #ogaExplorerModule .crumb-sep { color: var(--c-muted2); font-size: 10px; user-select: none; }
+
+    /* ─── SECTION LABEL ──────────────────────────────────────── */
+    #ogaExplorerModule .section-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--c-muted2);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #ogaExplorerModule .section-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--c-border);
+    }
+
+    /* ─── FOLDER CARDS ───────────────────────────────────────── */
+    #ogaExplorerModule .folder-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    #ogaExplorerModule .folder-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all var(--transition-spring);
+      animation: fadeUp .3s ease both;
+    }
+
+    #ogaExplorerModule .folder-card:hover {
+      border-color: var(--c-blue-border);
+      background: var(--c-blue-bg);
+      box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    #ogaExplorerModule .folder-icon-wrap {
+      width: 38px;
+      height: 38px;
+      border-radius: var(--r-sm);
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    #ogaExplorerModule[data-theme="dark"] .folder-icon-wrap {
+      background: linear-gradient(135deg, #1e3a6e, #1e3a52);
+    }
+
+    #ogaExplorerModule .folder-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #ogaExplorerModule .folder-arrow {
+      color: var(--c-muted2);
+      font-size: 14px;
+      flex-shrink: 0;
+      transition: transform var(--transition);
+    }
+
+    #ogaExplorerModule .folder-card:hover .folder-arrow {
+      color: var(--c-blue);
+      transform: translateX(3px);
+    }
+
+    /* ─── FILE CAROUSEL ──────────────────────────────────────── */
+    #ogaExplorerModule .carousel-wrap {
+      position: relative;
+      overflow: hidden;
+      border-radius: var(--r-md);
+    }
+
+    /* Fade masks on sides */
+    #ogaExplorerModule .carousel-wrap::before,
+    #ogaExplorerModule .carousel-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 32px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    #ogaExplorerModule .carousel-wrap::before {
+      left: 0;
+      background: linear-gradient(to right, var(--c-surface) 0%, transparent 100%);
+    }
+
+    #ogaExplorerModule .carousel-wrap::after {
+      right: 0;
+      background: linear-gradient(to left, var(--c-surface) 0%, transparent 100%);
+    }
+
+    /* ─── FILE ROWS ──────────────────────────────────────────── */
+    #ogaExplorerModule .file-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    #ogaExplorerModule .file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--c-surface2);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      cursor: pointer;
+      transition: all var(--transition-spring);
+      animation: fadeUp .3s ease both;
+    }
+
+    #ogaExplorerModule .file-row:hover {
+      border-color: var(--c-teal-border);
+      background: var(--c-teal-bg);
+      box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+
+    #ogaExplorerModule .file-row.active {
+      border-color: var(--c-teal);
+      background: var(--c-teal-bg);
+      box-shadow: 0 0 0 2px rgba(13,148,136,.25);
+    }
+
+    #ogaExplorerModule .file-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--r-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+
+    #ogaExplorerModule .file-icon-wrap.pdf   { background:linear-gradient(135deg,#fde8e8,#fca5a5); }
+    #ogaExplorerModule .file-icon-wrap.sheet { background:linear-gradient(135deg,#dcfce7,#86efac); }
+    #ogaExplorerModule .file-icon-wrap.doc   { background:linear-gradient(135deg,#dbeafe,#93c5fd); }
+    #ogaExplorerModule .file-icon-wrap.slide { background:linear-gradient(135deg,#fef9c3,#fde047); }
+    #ogaExplorerModule .file-icon-wrap.other { background:linear-gradient(135deg,#f3f4f6,#d1d5db); }
+
+    #ogaExplorerModule[data-theme="dark"] .file-icon-wrap.pdf   { background:linear-gradient(135deg,#3d1212,#7f1d1d); }
+    #ogaExplorerModule[data-theme="dark"] .file-icon-wrap.sheet { background:linear-gradient(135deg,#0c2a1a,#14532d); }
+    #ogaExplorerModule[data-theme="dark"] .file-icon-wrap.doc   { background:linear-gradient(135deg,#0d1f3c,#1e3a6e); }
+    #ogaExplorerModule[data-theme="dark"] .file-icon-wrap.slide { background:linear-gradient(135deg,#2a2200,#713f12); }
+    #ogaExplorerModule[data-theme="dark"] .file-icon-wrap.other { background:linear-gradient(135deg,#1e293b,#334155); }
+
+    #ogaExplorerModule .file-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    #ogaExplorerModule .file-name {
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+
+    #ogaExplorerModule .file-meta {
+      font-size: 11px;
+      color: var(--c-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #ogaExplorerModule .file-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: var(--r-full);
+      flex-shrink: 0;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    #ogaExplorerModule .badge-pdf   { background:var(--c-err-bg);  color:var(--c-err); }
+    #ogaExplorerModule .badge-sheet { background:var(--c-ok-bg);   color:var(--c-ok); }
+    #ogaExplorerModule .badge-doc   { background:var(--c-blue-bg); color:var(--c-blue); }
+    #ogaExplorerModule .badge-slide { background:var(--c-warn-bg); color:var(--c-warn); }
+    #ogaExplorerModule .badge-other { background:var(--c-surface2);color:var(--c-muted); }
+
+    /* ─── EMPTY STATE ────────────────────────────────────────── */
+    #ogaExplorerModule .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 32px 20px;
+      border: 1.5px dashed var(--c-border2);
+      border-radius: var(--r-lg);
+      background: var(--c-surface2);
+      text-align: center;
+    }
+
+    #ogaExplorerModule .empty-icon {
+      font-size: 32px;
+      opacity: .6;
+    }
+
+    #ogaExplorerModule .empty-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--c-ink2);
+    }
+
+    #ogaExplorerModule .empty-sub {
+      font-size: 12px;
+      color: var(--c-muted);
+      line-height: 1.6;
+    }
+
+    /* ─── SKELETON LOADER ────────────────────────────────────── */
+    #ogaExplorerModule .skeleton {
+      background: linear-gradient(90deg,
+        var(--c-border) 25%,
+        var(--c-border2) 50%,
+        var(--c-border) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: var(--r-sm);
+    }
+
+    @keyframes shimmer {
+      from { background-position: 200% 0; }
+      to   { background-position: -200% 0; }
+    }
+
+    #ogaExplorerModule .skel-row {
+      height: 52px;
+      border-radius: var(--r-md);
+      margin-bottom: 6px;
+    }
+
+    /* ─── VIEWER PANEL ───────────────────────────────────────── */
+    #ogaExplorerModule .viewer-panel {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    #ogaExplorerModule .viewer-toolbar {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--c-border);
+      background: var(--c-surface2);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    #ogaExplorerModule .viewer-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      padding: 4px;
+    }
+
+    #ogaExplorerModule .nav-btn {
+      width: 30px;
+      height: 30px;
+      border: none;
+      border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--c-muted);
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition);
+      font-weight: 700;
+    }
+
+    #ogaExplorerModule .nav-btn:hover:not(:disabled) {
+      background: var(--c-teal-bg);
+      color: var(--c-teal);
+    }
+
+    #ogaExplorerModule .nav-btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    #ogaExplorerModule .nav-counter {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--c-muted);
+      padding: 0 6px;
+      white-space: nowrap;
+    }
+
+    #ogaExplorerModule .viewer-file-name {
+      flex: 1;
+      min-width: 0;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--c-ink2);
+    }
+
+    #ogaExplorerModule .viewer-body {
+      flex: 1;
+      position: relative;
+      background: var(--c-surface2);
+    }
+
+    #ogaExplorerModule .viewer-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* Frame loading overlay */
+    #ogaExplorerModule .frame-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      background: var(--c-surface2);
+      z-index: 2;
+      transition: opacity .4s ease;
+    }
+
+    #ogaExplorerModule .frame-loading.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #ogaExplorerModule .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--c-border);
+      border-top-color: var(--c-teal);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    #ogaExplorerModule .loading-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--c-muted);
+    }
+
+    #ogaExplorerModule .loading-dots::after {
+      content: '';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%   { content:''; }
+      25%  { content:'.'; }
+      50%  { content:'..'; }
+      75%  { content:'...'; }
+      100% { content:''; }
+    }
+
+    #ogaExplorerModule .viewer-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 16px;
+      padding: 40px;
+      text-align: center;
+    }
+
+    #ogaExplorerModule .placeholder-icon {
+      font-size: 48px;
+      opacity: .3;
+    }
+
+    #ogaExplorerModule .placeholder-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--c-ink2);
+    }
+
+    #ogaExplorerModule .placeholder-sub {
+      font-size: 13px;
+      color: var(--c-muted);
+      line-height: 1.6;
+      max-width: 280px;
+    }
+
+    /* ─── FOLDER NAVIGATION IN VIEWER ───────────────────────── */
+    #ogaExplorerModule .folder-nav-bar {
+      display: none;
+      padding: 10px 14px;
+      border-top: 1px solid var(--c-border);
+      background: var(--c-surface2);
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    #ogaExplorerModule .folder-nav-bar.show { display: flex; }
+
+    #ogaExplorerModule .folder-nav-info {
+      font-size: 12px;
+      color: var(--c-muted);
+      font-weight: 600;
+    }
+
+    /* ─── DARK MODE TOGGLE ───────────────────────────────────── */
+    #ogaExplorerModule .theme-toggle {
+      width: 38px;
+      height: 38px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-md);
+      background: var(--c-surface2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all var(--transition);
+      color: var(--c-ink2);
+    }
+
+    #ogaExplorerModule .theme-toggle:hover {
+      background: var(--c-surface);
+      border-color: var(--c-border2);
+    }
+
+    /* ─── TOOLTIP ────────────────────────────────────────────── */
+    #ogaExplorerModule [data-tip] { position: relative; }
+
+    #ogaExplorerModule [data-tip]::before {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: calc(100% + 6px);
+      left: 50%;
+      transform: translateX(-50%) scale(.9);
+      background: var(--c-ink);
+      color: var(--c-surface);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: var(--r-sm);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: all var(--transition);
+    }
+
+    #ogaExplorerModule [data-tip]:hover::before {
+      opacity: 1;
+      transform: translateX(-50%) scale(1);
+    }
+
+    /* ─── RESPONSIVE ─────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      #ogaExplorerModule .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #ogaExplorerModule .viewer-panel {
+        min-height: 500px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      #ogaExplorerModule .search-bar { min-width: 100%; max-width: 100%; }
+      #ogaExplorerModule .header { flex-direction: column; align-items: stretch; }
+    }
+  </style>
+</head>
+<body>
+<div id="ogaExplorerModule" data-theme="light">
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-area">
+      <div class="logo-icon">📂</div>
+      <div class="logo-text">
+        <h1>Explorador OEC</h1>
+        <p>Solo lectura · Consulta de expedientes</p>
+      </div>
+    </div>
+
+    <div class="search-bar">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="color:var(--c-muted2);flex-shrink:0">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input id="txtRegistro" type="text" maxlength="16"
+        placeholder="OGA-LE-001-01 · Enter para buscar"
+        autocomplete="off" spellcheck="false">
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-primary" id="btnBuscar" onclick="OGA_EXPLORADOR.buscarRegistro()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        Buscar
+      </button>
+      <button class="btn btn-ghost" id="btnExpediente" onclick="OGA_EXPLORADOR.volverAlExpediente()" disabled data-tip="Raíz del expediente">
+        🏠
+      </button>
+      <button class="btn btn-ghost" id="btnMenu" onclick="OGA_EXPLORADOR.volverAlMenu()" data-tip="Volver al menú principal" style="gap:6px">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+        Menú
+      </button>
+      <button class="theme-toggle" id="themeBtn" onclick="OGA_EXPLORADOR.toggleTheme()" data-tip="Modo oscuro">🌙</button>
+      <button class="btn btn-ghost btn-icon" onclick="OGA_EXPLORADOR.cerrarVentana()" data-tip="Cerrar" style="font-size:18px">✕</button>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div id="status" class="status">
+    <div class="status-dot"></div>
+    <span id="statusMsg"></span>
+  </div>
+
+  <!-- META BAR -->
+  <div id="metaBar" class="meta-bar">
+    <div class="meta-chip">
+      <span class="meta-chip-label">Registro</span>
+      <span class="meta-chip-sep">·</span>
+      <span class="meta-chip-value" id="metaRegistro">—</span>
+    </div>
+    <div class="meta-chip">
+      <span class="meta-chip-label">Organismo</span>
+      <span class="meta-chip-sep">·</span>
+      <span class="meta-chip-value" id="metaOEC" style="max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</span>
+    </div>
+    <div class="meta-chip" style="margin-left:auto">
+      <span class="meta-chip-label">Carpeta</span>
+      <span class="meta-chip-sep">·</span>
+      <span class="meta-chip-value" id="metaCarpeta">—</span>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- LEFT: Explorer Panel -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <div class="panel-title-dot"></div>
+          Explorador
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-ghost" style="padding:6px 10px;font-size:11px" onclick="OGA_EXPLORADOR.recargarActual()" data-tip="Recargar">
+            🔄
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-body" id="explorerBody">
+
+        <!-- Breadcrumbs -->
+        <div id="breadcrumbs" class="breadcrumbs"></div>
+
+        <!-- Folders section -->
+        <div>
+          <div class="section-label" style="margin-bottom:10px">📁 Carpetas</div>
+          <div id="foldersContainer" class="folder-grid">
+            <div class="empty-state">
+              <div class="empty-icon">🔍</div>
+              <div class="empty-title">Ingrese un registro OEC</div>
+              <div class="empty-sub">Use el campo de búsqueda para localizar un expediente y navegar sus carpetas.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Files section -->
+        <div>
+          <div class="section-label" style="margin-bottom:10px">📄 Documentos</div>
+          <div id="filesContainer" class="file-list">
+            <div class="empty-state">
+              <div class="empty-icon">📭</div>
+              <div class="empty-title">Sin documentos</div>
+              <div class="empty-sub">Los archivos del expediente aparecerán aquí.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- RIGHT: Viewer Panel -->
+    <div class="panel viewer-panel">
+      <div class="panel-head">
+        <div class="panel-title">
+          <div class="panel-title-dot" style="background:var(--c-teal)"></div>
+          Visor de documentos
+        </div>
+      </div>
+
+      <!-- Viewer toolbar with file nav -->
+      <div class="viewer-toolbar" id="viewerToolbar" style="display:none">
+        <div class="viewer-nav">
+          <button class="nav-btn" id="btnPrev" onclick="OGA_EXPLORADOR.navegarArchivo(-1)" data-tip="Anterior" title="Archivo anterior">‹</button>
+          <span class="nav-counter" id="navCounter">1 / 1</span>
+          <button class="nav-btn" id="btnNext" onclick="OGA_EXPLORADOR.navegarArchivo(1)" data-tip="Siguiente" title="Archivo siguiente">›</button>
+        </div>
+        <div class="viewer-file-name" id="viewerFileName">—</div>
+        <button class="btn btn-teal" style="padding:6px 12px;font-size:12px" id="btnOpenTab" onclick="OGA_EXPLORADOR.abrirEnNuevaTab()">
+          ↗ Abrir
+        </button>
+      </div>
+
+      <!-- Viewer body -->
+      <div class="viewer-body" id="viewerBody">
+        <!-- Placeholder -->
+        <div class="viewer-placeholder" id="viewerPlaceholder">
+          <div class="placeholder-icon">👁</div>
+          <div class="placeholder-title">Visor listo</div>
+          <div class="placeholder-sub">Selecciona un documento del panel izquierdo para visualizarlo aquí, sin perder tu lugar de navegación.</div>
+        </div>
+
+        <!-- Frame loading indicator -->
+        <div class="frame-loading hidden" id="frameLoading">
+          <div class="spinner"></div>
+          <div class="loading-text">Cargando documento<span class="loading-dots"></span></div>
+        </div>
+
+        <!-- iframe -->
+        <iframe id="viewerFrame" class="viewer-frame" src="about:blank"
+          sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-downloads"
+          style="display:none"></iframe>
+      </div>
+
+      <!-- Folder nav bar at bottom -->
+      <div class="folder-nav-bar" id="folderNavBar">
+        <div class="folder-nav-info" id="folderNavInfo"></div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" id="btnFolderPrev" onclick="OGA_EXPLORADOR.navegarCarpeta(-1)" disabled>
+            ← Carpeta anterior
+          </button>
+          <button class="btn btn-ghost" style="padding:6px 12px;font-size:12px" id="btnFolderNext" onclick="OGA_EXPLORADOR.navegarCarpeta(1)" disabled>
+            Carpeta siguiente →
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+/* ─── STATE ─────────────────────────────────────────────── */
+let S = {
+  expediente: null,
+  carpetaActualId: null,
+  archivos: [],         // archivos de la carpeta actual
+  carpetas: [],         // subcarpetas de la carpeta actual
+  carpetaActual: null,  // info {id, name}
+  idxArchivo: -1,       // índice del archivo en vista
+  breadcrumb: [],       // historial breadcrumb
+
+  // Navegación entre carpetas hermanas
+  hermanasDelPadre: [],  // lista [{id,name}] de subcarpetas del padre
+  idxHermana: -1,        // posición de carpetaActual dentro de hermanasDelPadre
+
+  theme: 'light'
+};
+
+/* ─── INIT ───────────────────────────────────────────────── */
+function init() {
+  const inp = document.getElementById('txtRegistro');
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') buscarRegistro(); });
+
+  // Restore theme
+  const saved = localStorage.getItem('oec_theme');
+  if (saved === 'dark') aplicarTema('dark');
+
+  // iframe load event
+  document.getElementById('viewerFrame').addEventListener('load', () => {
+    document.getElementById('frameLoading').classList.add('hidden');
+  });
+}
+
+/* ─── THEME ─────────────────────────────────────────────── */
+function toggleTheme() {
+  aplicarTema(S.theme === 'light' ? 'dark' : 'light');
+}
+
+function aplicarTema(t) {
+  S.theme = t;
+  document.getElementById('ogaExplorerModule').setAttribute('data-theme', t);
+  document.getElementById('themeBtn').textContent = t === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('oec_theme', t);
+}
+
+/* ─── BUSCAR ─────────────────────────────────────────────── */
+function buscarRegistro() {
+  const registro = (document.getElementById('txtRegistro').value || '').trim().toUpperCase();
+  if (!registro) { mostrarEstado('Ingresa un registro OEC.', 'warn'); return; }
+
+  resetVista();
+  setLoadingBuscar(true);
+  mostrarSkeletonExplorer();
+
+  google.script.run
+    .withSuccessHandler(resp => {
+      setLoadingBuscar(false);
+      if (!resp || !resp.ok) {
+        mostrarEstado((resp && resp.message) || 'No se encontró el expediente.', 'err');
+        mostrarVacioExplorer('No encontrado', resp?.message || 'El registro no existe en el sistema.');
+        return;
+      }
+
+      S.expediente = resp.expediente;
+
+      document.getElementById('metaRegistro').textContent = resp.registro || '—';
+      document.getElementById('metaOEC').textContent = resp.nombreOEC || '—';
+      document.getElementById('metaBar').classList.add('show');
+      document.getElementById('btnExpediente').disabled = false;
+
+      renderContenido(resp.contenido);
+      mostrarEstado('✓ Expediente encontrado · ' + (resp.nombreOEC || ''), 'ok');
+    })
+    .withFailureHandler(err => {
+      setLoadingBuscar(false);
+      mostrarEstado(extraerError(err), 'err');
+      mostrarVacioExplorer('Error de conexión', extraerError(err));
+    })
+    .buscarExpedienteOEC(registro);
+}
+
+/* ─── CARGAR CARPETA ─────────────────────────────────────── */
+// hermanasCtx: lista [{id,name}] de carpetas hermanas (pasada desde el padre)
+// Si no se pasa, se conserva la lista actual de hermanas si aplica
+function cargarCarpeta(folderId, hermanasCtx) {
+  if (!folderId || !S.expediente) return;
+
+  // Actualizar hermanas si se provee contexto
+  if (Array.isArray(hermanasCtx)) {
+    S.hermanasDelPadre = hermanasCtx;
+    S.idxHermana = hermanasCtx.findIndex(h => h.id === folderId);
+  } else {
+    // Navegar dentro: las hijas de la carpeta actual serán las hermanas del próximo nivel
+    // Sólo reseteamos si la carpeta destino NO es una hermana conocida
+    const esHermanaConocida = S.hermanasDelPadre.some(h => h.id === folderId);
+    if (!esHermanaConocida) {
+      // Estamos entrando a una subcarpeta → las subcarpetas actuales son las hermanas del nuevo nivel
+      S.hermanasDelPadre = S.carpetas.slice();
+      S.idxHermana = S.carpetas.findIndex(c => c.id === folderId);
+    } else {
+      // Navegando entre hermanas → solo actualizamos el índice
+      S.idxHermana = S.hermanasDelPadre.findIndex(h => h.id === folderId);
+    }
+  }
+
+  S.carpetaActualId = folderId;
+  mostrarSkeletonExplorer();
+  resetViewer();
+
+  google.script.run
+    .withSuccessHandler(resp => {
+      renderContenido(resp);
+    })
+    .withFailureHandler(err => {
+      mostrarEstado(extraerError(err), 'err');
+      mostrarVacioExplorer('Error', extraerError(err));
+    })
+    .obtenerContenidoCarpeta(folderId, S.expediente.id);
+}
+
+/* ─── RENDER CONTENIDO ───────────────────────────────────── */
+function renderContenido(data) {
+  S.carpetaActual = data.carpetaActual;
+  S.carpetaActualId = data.carpetaActual.id;
+  S.breadcrumb = data.breadcrumb || [];
+  S.carpetas = data.subcarpetas || [];
+  S.archivos = data.archivos || [];
+  S.idxArchivo = -1;
+
+  // Si estamos en la raíz del expediente, no hay hermanas
+  if (S.carpetaActualId === S.expediente?.id) {
+    S.hermanasDelPadre = [];
+    S.idxHermana = -1;
+  }
+
+  document.getElementById('metaCarpeta').textContent = data.carpetaActual.name || '—';
+
+  renderBreadcrumb(S.breadcrumb);
+  renderFolders(S.carpetas);
+  renderFiles(S.archivos);
+  actualizarFolderNav();
+
+  if (data.limiteAplicado) {
+    mostrarEstado('⚠ Se aplicó límite de ítems visibles. Navega a subcarpetas para ver más.', 'warn');
+  }
+}
+
+/* ─── BREADCRUMB ─────────────────────────────────────────── */
+function renderBreadcrumb(items) {
+  const cont = document.getElementById('breadcrumbs');
+  cont.innerHTML = '';
+  if (!items.length || !S.expediente) return;
+
+  const idxExp = items.findIndex(x => x.id === S.expediente.id);
+  const vis = idxExp >= 0 ? items.slice(idxExp) : items;
+
+  vis.forEach((item, i) => {
+    if (i > 0) {
+      const sep = document.createElement('span');
+      sep.className = 'crumb-sep';
+      sep.textContent = '›';
+      cont.appendChild(sep);
+    }
+    const btn = document.createElement('button');
+    btn.className = 'crumb' + (i === vis.length - 1 ? ' active' : '');
+    btn.textContent = item.name;
+    btn.title = item.name;
+    btn.onclick = () => {
+      // Al usar breadcrumb subimos niveles → reseteamos hermanas (se recalculan al entrar de nuevo)
+      S.hermanasDelPadre = [];
+      S.idxHermana = -1;
+      cargarCarpeta(item.id, []);
+    };
+    cont.appendChild(btn);
+  });
+}
+
+/* ─── FOLDERS ────────────────────────────────────────────── */
+function renderFolders(folders) {
+  const cont = document.getElementById('foldersContainer');
+  cont.innerHTML = '';
+
+  if (!folders.length) {
+    cont.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📂</div>
+      <div class="empty-title">Sin subcarpetas</div>
+      <div class="empty-sub">Esta ubicación no contiene carpetas internas.</div>
+    </div>`;
+    return;
+  }
+
+  folders.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'folder-card';
+    el.style.animationDelay = `${i * 40}ms`;
+    el.innerHTML = `
+      <div class="folder-icon-wrap">📁</div>
+      <div class="folder-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
+      <div class="folder-arrow">›</div>
+    `;
+    // Pasar la lista completa de carpetas hermanas al entrar
+    el.onclick = () => cargarCarpeta(f.id, folders);
+    cont.appendChild(el);
+  });
+}
+
+/* ─── FILES ──────────────────────────────────────────────── */
+function renderFiles(files) {
+  const cont = document.getElementById('filesContainer');
+  cont.innerHTML = '';
+
+  if (!files.length) {
+    cont.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">No hay archivos aquí</div>
+      <div class="empty-sub">Esta carpeta está vacía o solo contiene subcarpetas.</div>
+    </div>`;
+    return;
+  }
+
+  files.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'file-row';
+    row.id = `frow-${i}`;
+    row.style.animationDelay = `${i * 35}ms`;
+
+    const iconClass = getFileIconClass(f.mimeType);
+    const badgeClass = getBadgeClass(f.mimeType);
+    const badgeText = f.tipoLabel || 'Archivo';
+    const meta = [f.lastUpdated, f.sizeText].filter(Boolean).join(' · ');
+
+    row.innerHTML = `
+      <div class="file-icon-wrap ${iconClass}">${f.icono || '📄'}</div>
+      <div class="file-info">
+        <div class="file-name" title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</div>
+        <div class="file-meta">${escapeHtml(meta)}</div>
+      </div>
+      <span class="file-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
+    `;
+
+    row.onclick = () => seleccionarArchivo(i);
+    cont.appendChild(row);
+  });
+}
+
+/* ─── ICON / BADGE HELPERS ───────────────────────────────── */
+function getFileIconClass(mime) {
+  if (mime === 'application/pdf') return 'pdf';
+  if (mime && mime.includes('spreadsheet')) return 'sheet';
+  if (mime && mime.includes('document')) return 'doc';
+  if (mime && mime.includes('presentation')) return 'slide';
+  return 'other';
+}
+
+function getBadgeClass(mime) {
+  if (mime === 'application/pdf') return 'badge-pdf';
+  if (mime && mime.includes('spreadsheet')) return 'badge-sheet';
+  if (mime && mime.includes('document')) return 'badge-doc';
+  if (mime && mime.includes('presentation')) return 'badge-slide';
+  return 'badge-other';
+}
+
+/* ─── SELECCIONAR ARCHIVO ────────────────────────────────── */
+function seleccionarArchivo(idx) {
+  if (idx < 0 || idx >= S.archivos.length) return;
+
+  S.idxArchivo = idx;
+  const file = S.archivos[idx];
+
+  // Mark active row
+  document.querySelectorAll('.file-row').forEach((r, i) => {
+    r.classList.toggle('active', i === idx);
+  });
+
+  // Scroll into view
+  const row = document.getElementById(`frow-${idx}`);
+  if (row) row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  // Update viewer
+  cargarEnVisor(file, idx);
+}
+
+/* ─── CARGAR EN VISOR ────────────────────────────────────── */
+function cargarEnVisor(file, idx) {
+  const toolbar = document.getElementById('viewerToolbar');
+  const ph = document.getElementById('viewerPlaceholder');
+  const frame = document.getElementById('viewerFrame');
+  const loading = document.getElementById('frameLoading');
+
+  toolbar.style.display = 'flex';
+  ph.style.display = 'none';
+  frame.style.display = 'block';
+
+  document.getElementById('viewerFileName').textContent = file.name || '—';
+  document.getElementById('navCounter').textContent = `${idx + 1} / ${S.archivos.length}`;
+  document.getElementById('btnPrev').disabled = idx <= 0;
+  document.getElementById('btnNext').disabled = idx >= S.archivos.length - 1;
+
+  if (file.previewUrl) {
+    loading.classList.remove('hidden');
+    frame.src = 'about:blank';
+    setTimeout(() => { frame.src = file.previewUrl; }, 80);
+  }
+}
+
+/* ─── NAVEGACIÓN ARCHIVOS ────────────────────────────────── */
+function navegarArchivo(delta) {
+  seleccionarArchivo(S.idxArchivo + delta);
+}
+
+/* ─── ABRIR EN NUEVA PESTAÑA ─────────────────────────────── */
+function abrirEnNuevaTab() {
+  if (S.idxArchivo < 0) return;
+  const f = S.archivos[S.idxArchivo];
+  if (f && f.previewUrl) window.open(f.previewUrl, '_blank');
+}
+
+/* ─── FOLDER NAV ─────────────────────────────────────────── */
+function actualizarFolderNav() {
+  const bar    = document.getElementById('folderNavBar');
+  const info   = document.getElementById('folderNavInfo');
+  const prev   = document.getElementById('btnFolderPrev');
+  const next   = document.getElementById('btnFolderNext');
+
+  const hermanas = S.hermanasDelPadre;
+  const idx      = S.idxHermana;
+  const total    = hermanas.length;
+
+  // Mostrar la barra solo si hay hermanas conocidas (es decir, hemos entrado a una subcarpeta)
+  if (!total || idx < 0) {
+    bar.classList.remove('show');
+    return;
+  }
+
+  bar.classList.add('show');
+
+  // Texto informativo: posición dentro de las carpetas hermanas
+  const nombreHermanaAnterior = idx > 0          ? hermanas[idx - 1].name : null;
+  const nombreHermanaSiguiente = idx < total - 1  ? hermanas[idx + 1].name : null;
+
+  info.textContent = `Carpeta ${idx + 1} de ${total}${total > 1 ? ' en este nivel' : ''}`;
+
+  // Anterior: solo habilitado si NO estamos en la primera hermana
+  prev.disabled = idx <= 0;
+  prev.title    = nombreHermanaAnterior ? `← ${nombreHermanaAnterior}` : '';
+  prev.innerHTML = nombreHermanaAnterior
+    ? `← <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle">${escapeHtml(nombreHermanaAnterior)}</span>`
+    : '← Anterior';
+
+  // Siguiente: solo habilitado si NO estamos en la última hermana
+  next.disabled = idx >= total - 1;
+  next.title    = nombreHermanaSiguiente ? `${nombreHermanaSiguiente} →` : '';
+  next.innerHTML = nombreHermanaSiguiente
+    ? `<span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:middle">${escapeHtml(nombreHermanaSiguiente)}</span> →`
+    : 'Siguiente →';
+}
+
+function navegarCarpeta(delta) {
+  const hermanas = S.hermanasDelPadre;
+  const idx      = S.idxHermana;
+  if (!hermanas.length || idx < 0) return;
+
+  const nuevoIdx = idx + delta;
+  if (nuevoIdx < 0 || nuevoIdx >= hermanas.length) return; // extremo: no hacer nada
+
+  const destino = hermanas[nuevoIdx];
+  if (!destino) return;
+
+  // Navegar a la hermana manteniendo la misma lista de hermanas
+  S.idxHermana = nuevoIdx;
+  cargarCarpeta(destino.id, hermanas);
+}
+
+/* ─── VOLVER AL EXPEDIENTE ───────────────────────────────── */
+function volverAlExpediente() {
+  if (!S.expediente) return;
+  // Al volver a la raíz limpiamos las hermanas
+  S.hermanasDelPadre = [];
+  S.idxHermana = -1;
+  cargarCarpeta(S.expediente.id, []);
+}
+
+function recargarActual() {
+  if (S.carpetaActualId) cargarCarpeta(S.carpetaActualId);
+}
+
+/* ─── RESET ──────────────────────────────────────────────── */
+function resetVista() {
+  S.expediente = null;
+  S.carpetaActualId = null;
+  S.archivos = [];
+  S.carpetas = [];
+  S.idxArchivo = -1;
+  S.breadcrumb = [];
+  S.hermanasDelPadre = [];
+  S.idxHermana = -1;
+
+  document.getElementById('metaBar').classList.remove('show');
+  document.getElementById('btnExpediente').disabled = true;
+  document.getElementById('breadcrumbs').innerHTML = '';
+  document.getElementById('folderNavBar').classList.remove('show');
+  resetViewer();
+}
+
+function resetViewer() {
+  S.idxArchivo = -1;
+  document.getElementById('viewerToolbar').style.display = 'none';
+  document.getElementById('viewerPlaceholder').style.display = 'flex';
+  document.getElementById('viewerFrame').style.display = 'none';
+  document.getElementById('viewerFrame').src = 'about:blank';
+  document.getElementById('frameLoading').classList.add('hidden');
+}
+
+/* ─── SKELETON ───────────────────────────────────────────── */
+function mostrarSkeletonExplorer() {
+  const fc = document.getElementById('foldersContainer');
+  const fl = document.getElementById('filesContainer');
+  const skels = [1,2,3].map(i =>
+    `<div class="skeleton skel-row" style="animation-delay:${i*100}ms"></div>`
+  ).join('');
+  fc.innerHTML = skels;
+  fl.innerHTML = skels;
+  document.getElementById('breadcrumbs').innerHTML = '';
+}
+
+function mostrarVacioExplorer(title, sub) {
+  const empty = (t, s) => `<div class="empty-state">
+    <div class="empty-icon">⚠️</div>
+    <div class="empty-title">${escapeHtml(t)}</div>
+    <div class="empty-sub">${escapeHtml(s)}</div>
+  </div>`;
+  document.getElementById('foldersContainer').innerHTML = empty(title, sub);
+  document.getElementById('filesContainer').innerHTML = empty(title, sub);
+}
+
+/* ─── STATUS ─────────────────────────────────────────────── */
+function mostrarEstado(msg, tipo) {
+  const el = document.getElementById('status');
+  el.className = 'status show ' + (tipo || 'warn');
+  document.getElementById('statusMsg').textContent = msg || '';
+
+  if (tipo === 'ok') {
+    setTimeout(() => { el.classList.remove('show'); }, 4000);
+  }
+}
+
+/* ─── LOADING ────────────────────────────────────────────── */
+function setLoadingBuscar(loading) {
+  const btn = document.getElementById('btnBuscar');
+  btn.disabled = loading;
+  btn.innerHTML = loading
+    ? `<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Buscando…`
+    : `<svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Buscar`;
+}
+
+/* ─── CERRAR ─────────────────────────────────────────────── */
+function cerrarVentana() { if (window.OGA) window.OGA.irAlMenu(); }
+
+function volverAlMenu() { if (window.OGA) window.OGA.irAlMenu(); }
+
+/* ─── UTILS ──────────────────────────────────────────────── */
+function extraerError(err) {
+  if (!err) return 'Error desconocido.';
+  if (typeof err === 'string') return err;
+  if (err.message) return err.message;
+  return JSON.stringify(err);
+}
+
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+}
+
+// El script se ejecuta al insertar la vista SPA, no esperar al load global.
+
+window.OGA_EXPLORADOR = {buscarRegistro,volverAlExpediente,volverAlMenu,toggleTheme,cerrarVentana,recargarActual,navegarArchivo,abrirEnNuevaTab,navegarCarpeta};
+
+init();
+})();
+</script>
+</div>
+</body>
+</html>

@@ -1,0 +1,1460 @@
+<!--
+  CORRESPONDENCIA ADMINISTRATIVA - APPWEB / SPA
+  Este archivo es un módulo parcial para el OGA Shell.
+  No contiene doGet, navegación global ni shell propio.
+-->
+<style>
+
+    #correspondenciaRoot{
+      --bg: #0f172a;
+      --bg-soft: #111827;
+      --card: #ffffff;
+      --ink: #0b1220;
+      --muted: #64748b;
+      --line: #e5e7eb;
+      --brand: #2563eb;
+      --brand-700: #1d4ed8;
+      --success: #16a34a;
+      --warning: #d97706;
+      --ctrl-h: 44px;
+    }
+
+    #correspondenciaRoot, #correspondenciaRoot *{ box-sizing: border-box; }
+    #correspondenciaRoot, #correspondenciaRoot{ min-height: 100%; }
+
+    #correspondenciaRoot{
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 600px at -10% -20%, #3b82f650 0%, transparent 60%),
+        radial-gradient(1000px 500px at 110% -10%, #22c55e40 0%, transparent 65%),
+        linear-gradient(180deg, var(--bg) 0%, var(--bg-soft) 100%);
+      color: var(--ink);
+    }
+
+    #correspondenciaRoot button, #correspondenciaRoot input, #correspondenciaRoot select{ font: inherit; }
+    #correspondenciaRoot button{ user-select: none; }
+
+    #correspondenciaRoot .shell{ max-width: 980px; margin: 22px auto; padding: 0 16px; }
+    #correspondenciaRoot .header{ color: #fff; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    #correspondenciaRoot .badge{
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #3b82f6, #22c55e);
+      font-weight: 800;
+      color: #fff;
+    }
+    #correspondenciaRoot .title{ font-size: 22px; margin: 0; }
+    #correspondenciaRoot .subtitle{ margin: 2px 0 0; font-size: 13px; color: #d1d5db; }
+
+    #correspondenciaRoot .card{
+      background: var(--card);
+      border-radius: 16px;
+      padding: 22px;
+      box-shadow: 0 20px 50px rgba(2, 6, 23, .25), 0 2px 6px rgba(2, 6, 23, .2);
+      border: 1px solid #eef2ff;
+    }
+
+    #correspondenciaRoot .stepper{ display: flex; flex-wrap: wrap; gap: 10px 18px; margin-bottom: 16px; }
+    #correspondenciaRoot .step{ display: flex; align-items: center; gap: 8px; color: #475569; font-weight: 600; }
+    #correspondenciaRoot .dot{
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      border: 2px solid #c7d2fe;
+      color: #64748b;
+      background: #f8fafc;
+      font-size: 13px;
+    }
+    #correspondenciaRoot .active .dot{ background: #3b82f6; color: #fff; border-color: #3b82f6; }
+    #correspondenciaRoot .active{ color: #0f172a; }
+
+    #correspondenciaRoot .row{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    #correspondenciaRoot label{ font-weight: 600; display: block; margin: 8px 0 6px; color: #0b1220; }
+    #correspondenciaRoot .req{ color: #ef4444; margin-left: 4px; }
+
+    #correspondenciaRoot input:not([type="checkbox"]):not([type="radio"]):not([type="file"]), #correspondenciaRoot select, #correspondenciaRoot .fake-input{
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      font-size: 14px;
+      background: #fff;
+      outline: none;
+      transition: .2s;
+      height: var(--ctrl-h);
+    }
+
+    #correspondenciaRoot input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):focus, #correspondenciaRoot select:focus{
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px #bfdbfe80;
+    }
+
+    #correspondenciaRoot .fake-input{ background: #f8fafc; }
+    #correspondenciaRoot .hint{ font-size: 12px; color: #64748b; margin-top: 6px; }
+
+    #correspondenciaRoot .toolbar{ display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 10px; }
+    #correspondenciaRoot .tool-btn{
+      border: 1px solid #dbeafe;
+      background: #f8fafc;
+      padding: 6px 10px;
+      border-radius: 10px;
+      font-size: 13px;
+      cursor: pointer;
+      color: #1e293b;
+    }
+    #correspondenciaRoot .tool-btn:hover{ background: #eef2ff; }
+    #correspondenciaRoot .tool-btn[disabled]{ opacity: .6; cursor: not-allowed; }
+
+    #correspondenciaRoot .editor{
+      min-height: 220px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #fff;
+      line-height: 1.6;
+      outline: none;
+      overflow: auto;
+    }
+    #correspondenciaRoot .editor:empty:before{ content: attr(data-placeholder); color: #94a3b8; }
+    #correspondenciaRoot .editor p{ margin: 0 0 10px; }
+    #correspondenciaRoot .editor img{ max-width: 100%; height: auto; border-radius: 8px; }
+    #correspondenciaRoot .editor table{ border-collapse: collapse; width: 100%; }
+    #correspondenciaRoot .editor th, #correspondenciaRoot .editor td{ border: 1px solid #cbd5e1; padding: 8px; vertical-align: top; }
+    #correspondenciaRoot .editor th{ background: #f1f5f9; font-weight: 700; }
+
+    #correspondenciaRoot .review{ background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 14px; padding: 14px; }
+    #correspondenciaRoot .kv{ display: grid; grid-template-columns: 220px 1fr; column-gap: 16px; row-gap: 4px; align-items: start; margin: 6px 0; }
+    #correspondenciaRoot .kv b{ color: #0b1220; display: block; }
+
+    #correspondenciaRoot .nav{ display: flex; justify-content: space-between; gap: 10px; margin-top: 18px; }
+    #correspondenciaRoot .btn{
+      border: none;
+      border-radius: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    #correspondenciaRoot .btn.primary{ background: linear-gradient(135deg, #3b82f6, #2563eb); color: #fff; }
+    #correspondenciaRoot .btn.secondary{ background: #eef2ff; color: #1e293b; }
+    #correspondenciaRoot .btn.ghost{ background: transparent; border: 1px solid #e5e7eb; color: #111827; }
+    #correspondenciaRoot .btn:hover:not([disabled]){ filter: brightness(.98); transform: translateY(-1px); }
+    #correspondenciaRoot .btn[disabled]{ opacity: .6; cursor: not-allowed; transform: none; }
+    #correspondenciaRoot .btn.secondary.compact{ height: var(--ctrl-h); padding: 0 14px; }
+
+    #correspondenciaRoot .error{ color: #ef4444; font-size: 12px; margin-top: 4px; display: none; }
+    #correspondenciaRoot .overlay{
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, .45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      backdrop-filter: blur(2px);
+    }
+    #correspondenciaRoot .spinner{
+      background: #fff;
+      border-radius: 16px;
+      padding: 18px 22px;
+      min-width: 260px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(2, 6, 23, .35);
+    }
+    #correspondenciaRoot .spinner .dotspin{
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #3b82f6;
+      margin: 0 auto 10px;
+      animation: pulse 1s infinite ease-in-out;
+    }
+    @keyframes pulse { 0%, 100% { transform: scale(.8); opacity: .6; } 50% { transform: scale(1.15); opacity: 1; } }
+
+    /* MTO */
+    #correspondenciaRoot #formMTO .row.top{ grid-template-columns: 260px 1fr; align-items: start; }
+    #correspondenciaRoot #formMTO .inline{ display: flex; gap: 8px; align-items: stretch; }
+    #correspondenciaRoot #formMTO .inline input{ flex: 1; min-width: 0; }
+    #correspondenciaRoot #formMTO .span-2{ grid-column: 1 / -1; }
+    #correspondenciaRoot #formMTO .checkline{ display: flex; align-items: center; gap: 10px; font-weight: 600; margin-top: 6px; }
+    #correspondenciaRoot #formMTO .checkline input[type="checkbox"]{ width: 18px; height: 18px; margin: 0; accent-color: var(--brand); }
+    #correspondenciaRoot #formMTO .checkline span{ line-height: 1.35; }
+
+    /* Bandeja de adjuntos */
+    #correspondenciaRoot .attachments-card{
+      margin-top: 16px;
+      border: 1px solid #dbeafe;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #f8fbff, #fff);
+      padding: 14px;
+    }
+    #correspondenciaRoot .attachments-title{ display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+    #correspondenciaRoot .attachments-title strong{ color: #0f172a; }
+    #correspondenciaRoot .attachments-title small{ color: #64748b; font-size: 12px; }
+    #correspondenciaRoot .dropzone{
+      margin-top: 10px;
+      border: 2px dashed #93c5fd;
+      border-radius: 14px;
+      min-height: 142px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-align: center;
+      padding: 18px;
+      background: #eff6ff80;
+      transition: .2s ease;
+    }
+    #correspondenciaRoot .dropzone.dragover{ border-color: #2563eb; background: #dbeafe; transform: scale(1.01); }
+    #correspondenciaRoot .dropzone[aria-disabled="true"]{ opacity: .55; pointer-events: none; }
+    #correspondenciaRoot .drop-icon{ font-size: 30px; line-height: 1; }
+    #correspondenciaRoot .dropzone p{ margin: 0; color: #334155; font-size: 13px; }
+    #correspondenciaRoot .attachment-actions{ display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; }
+    #correspondenciaRoot .attachment-actions .btn{ padding: 9px 12px; font-size: 13px; }
+    #correspondenciaRoot .drive-context{
+      display: flex;
+      gap: 7px;
+      align-items: flex-start;
+      margin-top: 9px;
+      padding: 9px 10px;
+      border-radius: 10px;
+      background: #f8fafc;
+      color: #475569;
+      font-size: 12px;
+    }
+    #correspondenciaRoot .drive-context.ok{ color: #166534; background: #f0fdf4; }
+    #correspondenciaRoot .drive-context.warn{ color: #92400e; background: #fffbeb; }
+    #correspondenciaRoot .file-list{ margin-top: 10px; display: grid; gap: 7px; }
+    #correspondenciaRoot .file-empty{ font-size: 12px; color: #94a3b8; text-align: center; padding: 4px; }
+    #correspondenciaRoot .file-item{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 10px;
+      border: 1px solid #e2e8f0;
+      border-radius: 11px;
+      background: #fff;
+    }
+    #correspondenciaRoot .file-icon{ width: 28px; text-align: center; font-size: 20px; }
+    #correspondenciaRoot .file-main{ min-width: 0; flex: 1; }
+    #correspondenciaRoot .file-name{ overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; font-size: 13px; }
+    #correspondenciaRoot .file-meta{ color: #64748b; font-size: 11px; margin-top: 2px; }
+    #correspondenciaRoot .source-pill{ display: inline-block; border-radius: 999px; padding: 2px 7px; margin-left: 5px; font-size: 10px; background: #e0e7ff; color: #3730a3; }
+    #correspondenciaRoot .source-pill.local{ background: #dcfce7; color: #166534; }
+    #correspondenciaRoot .remove-file{ border: none; background: transparent; color: #dc2626; cursor: pointer; font-size: 18px; padding: 4px 6px; }
+    #correspondenciaRoot .remove-file:hover{ background: #fef2f2; border-radius: 8px; }
+
+    @media (max-width: 700px) {
+      #correspondenciaRoot .row, #correspondenciaRoot #formMTO .row.top{ grid-template-columns: 1fr; }
+      #correspondenciaRoot .kv{ grid-template-columns: 1fr; gap: 2px; }
+      #correspondenciaRoot .nav{ flex-direction: column-reverse; }
+      #correspondenciaRoot .nav > div{ display: flex; flex-wrap: wrap; }
+      #correspondenciaRoot .nav .btn{ flex: 1; }
+      #correspondenciaRoot .file-item{ align-items: flex-start; }
+    }
+  
+/* APPWEB / SPA */
+#correspondenciaRoot{
+  width:100%;
+  min-height:0;
+  padding:0;
+  margin:0;
+  background:transparent;
+  color:var(--ink);
+}
+#correspondenciaRoot .shell{
+  width:100%;
+  max-width:none;
+  margin:0;
+  padding:0;
+}
+#correspondenciaRoot .header{
+  position:relative !important;
+  top:auto !important;
+  z-index:1 !important;
+}
+#correspondenciaRoot .overlay{
+  position:fixed !important;
+  inset:0 !important;
+  z-index:8500 !important;
+}
+
+</style>
+
+<div id="correspondenciaRoot">
+<div class="shell">
+    <div class="header">
+      <div class="badge">CA</div>
+      <div>
+        <h1 class="title">Correspondencia Administrativa</h1>
+        <p class="subtitle">Complete los datos solicitados.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="stepper">
+        <div class="step active" id="st1"><div class="dot">1</div>Tipo</div>
+        <div class="step" id="st2"><div class="dot">2</div>Datos</div>
+        <div class="step" id="st3"><div class="dot">3</div>Redacción</div>
+        <div class="step" id="st4"><div class="dot">4</div>Confirmación</div>
+      </div>
+
+      <!-- PASO 1 -->
+      <section id="step1">
+        <label for="tipo">Tipo de correspondencia</label>
+        <select id="tipo">
+          <option value="OEC">Correspondencia para OEC</option>
+          <option value="General">Correspondencia Administrativa</option>
+          <option value="MTO">Carta de mantenimiento</option>
+        </select>
+        <div class="nav">
+          <button class="btn ghost" type="button" onclick="volverMenu()">Volver al menú principal</button>
+          <button class="btn primary" type="button" onclick="next1()">Siguiente</button>
+        </div>
+      </section>
+
+      <!-- PASO 2 -->
+      <section id="step2" style="display:none">
+        <!-- OEC -->
+        <div id="formOEC">
+          <div class="row">
+            <div>
+              <label for="registro">Registro de Acreditación</label>
+              <input id="registro" placeholder="OGA-XX-000-YY" oninput="this.value=this.value.toUpperCase()" onblur="buscarOEC()">
+              <div class="hint">Se autocompletarán destinatario, puesto y OEC.</div>
+            </div>
+            <div>
+              <label for="asuntoOEC">Asunto <span class="req">*</span></label>
+              <input id="asuntoOEC" placeholder="Motivo de la correspondencia">
+              <div id="errAsuntoOEC" class="error">Campo obligatorio.</div>
+            </div>
+          </div>
+          <div class="row">
+            <div><label for="representante">Destinatario</label><input id="representante" readonly class="fake-input"></div>
+            <div><label for="puestoTrabajo">Puesto de trabajo</label><input id="puestoTrabajo" readonly class="fake-input"></div>
+          </div>
+          <div class="row">
+            <div><label for="razonSocial">Razón social</label><input id="razonSocial" readonly class="fake-input"></div>
+            <div><label for="nombreComercial">Nombre comercial</label><input id="nombreComercial" readonly class="fake-input"></div>
+          </div>
+          <input id="tituloProfesionalAuto" type="hidden">
+        </div>
+
+        <!-- GENERAL -->
+        <div id="formGEN" style="display:none">
+          <div class="row">
+            <div>
+              <label for="tituloProf">Título profesional <span class="req">*</span></label>
+              <input id="tituloProf" placeholder="Lic./Ing./M.Sc./Sr./Sra.">
+              <div id="errTitulo" class="error">Campo obligatorio.</div>
+            </div>
+            <div>
+              <label for="destinatario">Destinatario <span class="req">*</span></label>
+              <input id="destinatario" placeholder="Nombre completo">
+              <div id="errDest" class="error">Campo obligatorio.</div>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="lugarTrabajo">Lugar de trabajo <span class="req">*</span></label>
+              <input id="lugarTrabajo" placeholder="Institución / Empresa">
+              <div id="errLugar" class="error">Campo obligatorio.</div>
+            </div>
+            <div>
+              <label for="pais">País <span class="req">*</span></label>
+              <input id="pais" value="Guatemala">
+              <div id="errPais" class="error">Campo obligatorio.</div>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label for="puestoTrabajoGEN">Puesto <span class="req">*</span></label>
+              <input id="puestoTrabajoGEN" placeholder="Jefe, Analista, Director, etc.">
+              <div id="errPuesto" class="error">Campo obligatorio.</div>
+            </div>
+            <div></div>
+          </div>
+          <label for="asuntoGEN">Asunto <span class="req">*</span></label>
+          <input id="asuntoGEN" placeholder="Motivo de la correspondencia">
+          <div id="errAsuntoGEN" class="error">Campo obligatorio.</div>
+        </div>
+
+        <!-- MANTENIMIENTO / FAC-078 -->
+        <div id="formMTO" style="display:none">
+          <div class="row top">
+            <div>
+              <label for="anioMTO">Año de evaluación <span class="req">*</span></label>
+              <input id="anioMTO" placeholder="Ej. 2025">
+            </div>
+            <div>
+              <label for="registroMTO">Registro de Acreditación <span class="req">*</span></label>
+              <div class="inline">
+                <input id="registroMTO" placeholder="Ej. OGA-LC-123-45" oninput="this.value=this.value.toUpperCase()">
+                <button class="btn secondary compact" type="button" onclick="buscarRegistroMTO()">🔍 Buscar</button>
+              </div>
+              <div class="hint">La búsqueda también resuelve la carpeta del expediente FAC-078.</div>
+            </div>
+          </div>
+
+          <div class="row" style="margin-top:6px">
+            <div><label for="nombreOECMTO">Nombre del OEC</label><input id="nombreOECMTO" readonly class="fake-input"></div>
+            <div><label for="codigoMTO">Código de Correspondencia</label><input id="codigoMTO" readonly class="fake-input" placeholder="(Se generará)"></div>
+          </div>
+
+          <div class="row">
+            <div class="span-2">
+              <label class="checkline">
+                <input type="checkbox" id="sinNCMTO" onchange="onSinNCToggleMTO()">
+                <span>No se detectaron No Conformidades (no es necesario adjuntar OGA-FAC-078)</span>
+              </label>
+            </div>
+          </div>
+
+          <div id="bloqueArchivosMTO" class="attachments-card">
+            <div class="attachments-title">
+              <div>
+                <strong>Documentos adjuntos de FAC-078</strong>
+                <div><small>Puede agregar archivos desde el ordenador o seleccionarlos desde Drive.</small></div>
+              </div>
+              <div class="hint" id="attachmentCount">0 archivos</div>
+            </div>
+
+            <div id="dropZoneMTO" class="dropzone" role="button" tabindex="0" aria-label="Zona para adjuntar documentos">
+              <div class="drop-icon">📎</div>
+              <strong>Arrastre aquí los archivos PDF</strong>
+              <p>También puede utilizar uno de los botones.</p>
+              <div class="attachment-actions">
+                <button class="btn secondary" type="button" onclick="abrirSelectorLocal()">📁 Desde el ordenador</button>
+                <button class="btn primary" type="button" id="btnDriveEstructuraMTO" onclick="abrirPickerDrive('ESTRUCTURA')">☁️ Desde Estructura FAC-078</button>
+                <button class="btn secondary" type="button" id="btnDriveGeneralMTO" onclick="abrirPickerDrive('MI_DRIVE')">🗂️ Desde Mi Drive</button>
+              </div>
+              <input id="archivosMTO" type="file" accept="application/pdf,.pdf" multiple hidden onchange="validarArchivoMTO()">
+            </div>
+
+            <div id="driveContextMTO" class="drive-context warn">
+              <span>ⓘ</span>
+              <span>Primero busque el registro para cargar la estructura FAC-078.</span>
+            </div>
+
+            <div id="fileListMTO" class="file-list">
+              <div class="file-empty">Aún no se han agregado documentos.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav">
+          <div style="display:flex;gap:10px">
+            <button class="btn ghost" type="button" onclick="volverMenu()">Volver al menú principal</button>
+            <button class="btn secondary" type="button" onclick="backTo(1)">Atrás</button>
+          </div>
+          <button class="btn primary" type="button" onclick="next2()">Siguiente</button>
+        </div>
+      </section>
+
+      <!-- PASO 3 -->
+      <section id="step3" style="display:none">
+        <div class="row">
+          <div><label for="pais2">País</label><input id="pais2" value="Guatemala, Guatemala"></div>
+        </div>
+        <label for="editor">Cuerpo del documento</label>
+        <div class="toolbar" id="toolbar">
+          <button class="tool-btn" type="button" onclick="execCmd('bold')"><b>B</b></button>
+          <button class="tool-btn" type="button" onclick="execCmd('italic')"><i>I</i></button>
+          <button class="tool-btn" type="button" onclick="execCmd('underline')"><u>U</u></button>
+          <button class="tool-btn" type="button" onclick="execCmd('insertUnorderedList')">• Lista</button>
+          <button class="tool-btn" type="button" onclick="execCmd('insertOrderedList')">1. Lista</button>
+          <button class="tool-btn" type="button" onclick="justify()">Justificar</button>
+          <button class="tool-btn" type="button" onclick="insertTable()">Tabla 2×2</button>
+          <button class="tool-btn" type="button" onclick="insertImage()">Imagen…</button>
+        </div>
+        <div id="editor" class="editor rte" contenteditable="true" data-placeholder="Escriba o pegue aquí el contenido. Puede utilizar las herramientas de la barra."></div>
+
+        <div class="nav">
+          <div style="display:flex;gap:10px">
+            <button class="btn ghost" type="button" onclick="volverMenu()">Volver al menú principal</button>
+            <button class="btn secondary" type="button" onclick="backTo(2)">Atrás</button>
+          </div>
+          <button id="btnPaso3" class="btn primary" type="button" onclick="next3()">Siguiente</button>
+        </div>
+      </section>
+
+      <!-- PASO 4 -->
+      <section id="step4" style="display:none">
+        <div class="review" id="resumen"></div>
+        <div class="nav">
+          <div style="display:flex;gap:10px">
+            <button class="btn ghost" type="button" onclick="volverMenu()">Volver al menú principal</button>
+            <button class="btn secondary" type="button" onclick="backTo(3)">Atrás</button>
+          </div>
+          <button class="btn primary" type="button" onclick="generar()">Generar documento</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="overlay" id="overlay">
+    <div class="spinner">
+      <div class="dotspin"></div>
+      <div style="font-weight:700;color:#0b1220;margin-bottom:4px" id="overlayTitle">Procesando…</div>
+      <div style="color:#475569;font-size:13px" id="overlayText">Espere un momento</div>
+    </div>
+  </div>
+</div>
+
+<!-- El shell OGA carga primero los scripts externos y después ejecuta el script interno. -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://apis.google.com/js/api.js"></script>
+<script>
+
+    /* ==============================
+     * ESTADO Y UTILIDADES
+     * ============================== */
+    const qs = (id) => document.getElementById(id);
+    const MAX_LOCAL_BYTES = 25 * 1024 * 1024;
+    const MIME_PDF = 'application/pdf';
+
+    let state = {
+      tipo: 'OEC',
+      adjuntos: [],
+      fac078RootId: '',
+      fac078FolderId: '',
+      fac078Path: '',
+      fac078ContextFound: false
+    };
+
+    let correlativoMTO = '';
+    let ultimoRegBuscado = '';
+    let pickerApiLoaded = false;
+    let pickerBusy = false;
+    let pickerMode = 'ESTRUCTURA';
+
+    function setStep(number) {
+      ['step1', 'step2', 'step3', 'step4'].forEach((id, index) => {
+        qs(id).style.display = index === number - 1 ? '' : 'none';
+      });
+      ['st1', 'st2', 'st3', 'st4'].forEach((id, index) => {
+        qs(id).classList.toggle('active', index < number);
+      });
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function formatBytes(bytes) {
+      const value = Number(bytes || 0);
+      if (value < 1024) return `${value} B`;
+      if (value < 1024 * 1024) return `${(value / 1024).toFixed(1)} KB`;
+      return `${(value / 1024 / 1024).toFixed(2)} MB`;
+    }
+
+    function showOverlay(title, text) {
+      qs('overlayTitle').textContent = title || 'Procesando…';
+      qs('overlayText').textContent = text || 'Espere un momento';
+      qs('overlay').style.display = 'flex';
+    }
+
+    function hideOverlay() {
+      qs('overlay').style.display = 'none';
+    }
+
+    function serverError(error) {
+      return error && error.message ? error.message : String(error || 'Error desconocido');
+    }
+
+    function disableButtons(disabled) {
+      document.querySelectorAll('button').forEach((button) => {
+        button.disabled = Boolean(disabled);
+      });
+    }
+
+    function volverMenu() {
+      // APPWEB: el shell OGA es el único responsable de la navegación.
+      if (window.OGA && typeof OGA.irAlMenu === 'function') {
+        OGA.irAlMenu();
+        return;
+      }
+      if (window.OGA && typeof OGA.navegar === 'function') {
+        OGA.navegar('mostrarPanelMenu', 'Menú principal');
+        return;
+      }
+      console.warn('[Correspondencia] OGA.irAlMenu() no está disponible.');
+    }
+
+    function backTo(number) { setStep(number); }
+
+    /* ==============================
+     * PASO 1 Y DATOS OEC
+     * ============================== */
+    function next1() {
+      state.tipo = qs('tipo').value;
+      qs('formOEC').style.display = state.tipo === 'OEC' ? '' : 'none';
+      qs('formGEN').style.display = state.tipo === 'General' ? '' : 'none';
+      qs('formMTO').style.display = state.tipo === 'MTO' ? '' : 'none';
+
+      if (state.tipo !== 'MTO') {
+        state.adjuntos = [];
+        renderAttachments();
+      }
+
+      setStep(2);
+    }
+
+    function buscarOEC() {
+      const registro = (qs('registro').value || '').trim();
+      if (!registro || registro === ultimoRegBuscado) return;
+      ultimoRegBuscado = registro;
+
+      Swal.fire({ title: 'Buscando OEC…', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      google.script.run
+        .withSuccessHandler((info) => {
+          Swal.close();
+          if (!info) {
+            ['representante', 'puestoTrabajo', 'razonSocial', 'nombreComercial']
+              .forEach((id) => qs(id).value = '');
+            qs('tituloProfesionalAuto').value = '';
+            Swal.fire('No encontrado', 'No se encontró el OEC con ese registro.', 'warning');
+            return;
+          }
+
+          qs('representante').value = info.representante || info.contacto1 || '';
+          qs('puestoTrabajo').value = info.puestoTrabajo || '';
+          qs('razonSocial').value = info.razonSocial || '';
+          qs('nombreComercial').value = info.nombreComercial || '';
+          qs('tituloProfesionalAuto').value = info.tituloProfesional || '';
+        })
+        .withFailureHandler((error) => {
+          Swal.close();
+          Swal.fire('Error', serverError(error), 'error');
+        })
+        .getOECInfo(registro);
+    }
+
+    const showErr = (id, ok) => {
+      const element = qs(id);
+      if (element) element.style.display = ok ? 'none' : 'block';
+    };
+
+    const requiredVal = (id) => Boolean((qs(id).value || '').trim());
+
+    function validateGeneral() {
+      const okTit = requiredVal('tituloProf');
+      const okDest = requiredVal('destinatario');
+      const okLugar = requiredVal('lugarTrabajo');
+      const okPais = requiredVal('pais');
+      const okPue = requiredVal('puestoTrabajoGEN');
+      const okAsu = requiredVal('asuntoGEN');
+
+      showErr('errTitulo', okTit);
+      showErr('errDest', okDest);
+      showErr('errLugar', okLugar);
+      showErr('errPais', okPais);
+      showErr('errPuesto', okPue);
+      showErr('errAsuntoGEN', okAsu);
+
+      return okTit && okDest && okLugar && okPais && okPue && okAsu;
+    }
+
+    function asuntoValido() {
+      if (state.tipo === 'OEC') {
+        const ok = Boolean((qs('asuntoOEC').value || '').trim());
+        qs('errAsuntoOEC').style.display = ok ? 'none' : 'block';
+        return ok;
+      }
+      return validateGeneral();
+    }
+
+    ['asuntoOEC', 'asuntoGEN', 'tituloProf', 'destinatario', 'lugarTrabajo', 'pais', 'puestoTrabajoGEN']
+      .forEach((id) => {
+        const element = qs(id);
+        if (element) element.addEventListener('input', asuntoValido);
+      });
+
+    /* ==============================
+     * REGISTRO MTO Y CONTEXTO FAC-078
+     * ============================== */
+    function buscarRegistroMTO() {
+      const registro = (qs('registroMTO').value || '').trim();
+      const anio = (qs('anioMTO').value || '').trim();
+
+      if (!registro || !anio) {
+        Swal.fire('Faltan datos', 'Ingrese Registro y Año.', 'warning');
+        return;
+      }
+
+      showOverlay('Buscando expediente…', 'Resolviendo la carpeta FAC-078');
+      disableButtons(true);
+
+      google.script.run
+        .withSuccessHandler((datos) => {
+          if (!datos || !datos.razon) {
+            hideOverlay();
+            disableButtons(false);
+            limpiarContextoFAC078();
+            qs('nombreOECMTO').value = '';
+            qs('codigoMTO').value = '';
+            correlativoMTO = '';
+            Swal.fire('No encontrado', 'Registro no válido o sin datos de OEC.', 'error');
+            return;
+          }
+
+          qs('nombreOECMTO').value = datos.razon;
+          state.fac078RootId = datos.fac078RootId || '';
+          state.fac078FolderId = datos.fac078FolderId || '';
+          state.fac078Path = datos.fac078Path || '';
+          state.fac078ContextFound = Boolean(datos.fac078ContextFound);
+          renderContextoFAC078();
+
+          google.script.run
+            .withSuccessHandler((codigo) => {
+              hideOverlay();
+              disableButtons(false);
+              correlativoMTO = codigo || '';
+              qs('codigoMTO').value = correlativoMTO;
+              Swal.fire('Datos encontrados', 'El registro y el expediente FAC-078 están listos.', 'success');
+            })
+            .withFailureHandler((error) => {
+              hideOverlay();
+              disableButtons(false);
+              correlativoMTO = '';
+              qs('codigoMTO').value = '';
+              Swal.fire('Error', serverError(error), 'error');
+            })
+            .generarCodigoCorrespondencia(registro, datos.representante || datos.razon || '', '', anio);
+        })
+        .withFailureHandler((error) => {
+          hideOverlay();
+          disableButtons(false);
+          Swal.fire('Error', serverError(error), 'error');
+        })
+        .buscarDatosOEC_Presupuesto(registro);
+    }
+
+    function limpiarContextoFAC078() {
+      state.fac078RootId = '';
+      state.fac078FolderId = '';
+      state.fac078Path = '';
+      state.fac078ContextFound = false;
+      renderContextoFAC078();
+    }
+
+    function renderContextoFAC078() {
+      const element = qs('driveContextMTO');
+      element.classList.remove('ok', 'warn');
+
+      if (state.fac078ContextFound) {
+        element.classList.add('ok');
+        element.innerHTML = `<span>✓</span><span>Drive se abrirá en: <b>${escapeHtml(state.fac078Path)}</b></span>`;
+        return;
+      }
+
+      if (state.fac078RootId) {
+        element.classList.add('warn');
+        element.innerHTML = '<span>⚠</span><span>No se encontró una carpeta específica para el registro. Se utilizará la raíz Estructura y el servidor validará el archivo.</span>';
+        return;
+      }
+
+      element.classList.add('warn');
+      element.innerHTML = '<span>ⓘ</span><span>Primero busque el registro para cargar la estructura FAC-078.</span>';
+    }
+
+    /* ==============================
+     * BANDEJA LOCAL DE ADJUNTOS
+     * ============================== */
+    function abrirSelectorLocal() {
+      if (qs('sinNCMTO').checked) return;
+      qs('archivosMTO').click();
+    }
+
+    function archivoEsPdf(file) {
+      return Boolean(file) && (
+        String(file.type || '').toLowerCase() === MIME_PDF ||
+        /\.pdf$/i.test(String(file.name || ''))
+      );
+    }
+
+    function addLocalFiles(fileList) {
+      if (!fileList || !fileList.length) return;
+
+      const rejected = [];
+      Array.from(fileList).forEach((file) => {
+        if (!archivoEsPdf(file)) {
+          rejected.push(`${file.name}: no es PDF`);
+          return;
+        }
+        if (file.size > MAX_LOCAL_BYTES) {
+          rejected.push(`${file.name}: supera 25 MB`);
+          return;
+        }
+
+        const key = `LOCAL:${file.name}:${file.size}:${file.lastModified || 0}`;
+        if (state.adjuntos.some((item) => item.key === key)) return;
+
+        state.adjuntos.push({
+          key,
+          source: 'LOCAL',
+          name: file.name,
+          mimeType: MIME_PDF,
+          size: file.size,
+          file
+        });
+      });
+
+      renderAttachments();
+      if (rejected.length) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Algunos archivos no se agregaron',
+          html: `<ul style="text-align:left">${rejected.map(escapeHtml).map((item) => `<li>${item}</li>`).join('')}</ul>`
+        });
+      }
+    }
+
+    // Mantiene el nombre de la función de la versión anterior.
+    function validarArchivoMTO() {
+      addLocalFiles(qs('archivosMTO').files);
+      qs('archivosMTO').value = '';
+    }
+
+    function removeAttachment(index) {
+      state.adjuntos.splice(index, 1);
+      renderAttachments();
+    }
+
+    function renderAttachments() {
+      const list = qs('fileListMTO');
+      const count = qs('attachmentCount');
+      count.textContent = `${state.adjuntos.length} archivo${state.adjuntos.length === 1 ? '' : 's'}`;
+      list.innerHTML = '';
+
+      if (!state.adjuntos.length) {
+        list.innerHTML = '<div class="file-empty">Aún no se han agregado documentos.</div>';
+        return;
+      }
+
+      state.adjuntos.forEach((item, index) => {
+        const row = document.createElement('div');
+        row.className = 'file-item';
+        row.innerHTML = `
+          <div class="file-icon">📄</div>
+          <div class="file-main">
+            <div class="file-name">${escapeHtml(item.name)}<span class="source-pill ${item.source === 'LOCAL' ? 'local' : ''}">${item.source === 'LOCAL' ? 'Ordenador' : 'Drive'}</span></div>
+            <div class="file-meta">${escapeHtml(formatBytes(item.size))} · PDF</div>
+          </div>
+          <button class="remove-file" type="button" aria-label="Quitar archivo" title="Quitar archivo" onclick="removeAttachment(${index})">×</button>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function toggleAttachmentControls(disabled) {
+      const drop = qs('dropZoneMTO');
+      const buttons = document.querySelectorAll('#dropZoneMTO button');
+      drop.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+      buttons.forEach((button) => button.disabled = Boolean(disabled));
+    }
+
+    function onSinNCToggleMTO() {
+      const checked = qs('sinNCMTO').checked;
+      if (checked) {
+        state.adjuntos = [];
+        qs('archivosMTO').value = '';
+      }
+      toggleAttachmentControls(checked);
+      renderAttachments();
+    }
+
+    function initDropzone() {
+      const drop = qs('dropZoneMTO');
+
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach((eventName) => {
+        drop.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+        });
+      });
+
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        drop.addEventListener(eventName, () => drop.classList.add('dragover'));
+      });
+
+      ['dragleave', 'drop'].forEach((eventName) => {
+        drop.addEventListener(eventName, () => drop.classList.remove('dragover'));
+      });
+
+      drop.addEventListener('drop', (event) => {
+        if (qs('sinNCMTO').checked) return;
+        addLocalFiles(event.dataTransfer && event.dataTransfer.files);
+      });
+
+      drop.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          abrirSelectorLocal();
+        }
+      });
+    }
+
+    /* ==============================
+     * GOOGLE PICKER
+     * ============================== */
+    function asegurarPickerApi(callback, failure) {
+      if (window.google && google.picker && google.picker.PickerBuilder) {
+        pickerApiLoaded = true;
+        callback();
+        return;
+      }
+
+      if (!window.gapi || typeof gapi.load !== 'function') {
+        failure(new Error('La librería Google API (gapi) no está disponible.'));
+        return;
+      }
+
+      gapi.load('picker', {
+        callback: () => {
+          pickerApiLoaded = Boolean(window.google && google.picker);
+          if (!pickerApiLoaded) {
+            failure(new Error('Google Picker cargó, pero google.picker no quedó disponible.'));
+            return;
+          }
+          callback();
+        },
+        onerror: () => failure(new Error('Google no pudo cargar el módulo Picker.')),
+        timeout: 15000,
+        ontimeout: () => failure(new Error('Tiempo de espera agotado al cargar Google Picker.'))
+      });
+    }
+
+    function abrirPickerDrive(mode) {
+      if (qs('sinNCMTO').checked) return;
+
+      const registro = (qs('registroMTO').value || '').trim();
+      if (!registro) {
+        Swal.fire('Falta el registro', 'Busque primero el registro de acreditación.', 'warning');
+        return;
+      }
+      if (pickerBusy) return;
+
+      pickerMode = String(mode || 'ESTRUCTURA').toUpperCase() === 'MI_DRIVE'
+        ? 'MI_DRIVE'
+        : 'ESTRUCTURA';
+
+      pickerBusy = true;
+      showOverlay(
+        'Preparando Google Picker…',
+        pickerMode === 'MI_DRIVE'
+          ? 'Cargando los archivos accesibles de Mi Drive'
+          : 'Validando el expediente FAC-078'
+      );
+
+      asegurarPickerApi(
+        () => {
+          google.script.run
+            .withSuccessHandler((config) => {
+              hideOverlay();
+              pickerBusy = false;
+              crearPicker(config);
+            })
+            .withFailureHandler((error) => {
+              hideOverlay();
+              pickerBusy = false;
+              Swal.fire('No se pudo abrir Drive', serverError(error), 'error');
+            })
+            .obtenerBootstrapPicker(registro, pickerMode);
+        },
+        (error) => {
+          hideOverlay();
+          pickerBusy = false;
+          Swal.fire('Selector no disponible', serverError(error), 'error');
+        }
+      );
+    }
+
+    function obtenerPickerOrigin() {
+      try {
+        if (
+          window.google &&
+          google.script &&
+          google.script.host &&
+          google.script.host.origin
+        ) {
+          return google.script.host.origin;
+        }
+      } catch (_) {}
+      return window.location.origin;
+    }
+
+    function crearPicker(config) {
+      if (!config || !config.oauthToken || !config.developerKey || !config.cloudProjectNumber) {
+        Swal.fire('Configuración incompleta', 'Falta la API Key, el número del proyecto Cloud o el token OAuth.', 'error');
+        return;
+      }
+
+      const parentId = config.parentFolderId || '';
+      const view = new google.picker.DocsView(google.picker.ViewId.DOCS)
+        // Se muestran carpetas para navegar por la estructura FAC-078.
+        // La carpeta no se puede seleccionar como adjunto; solo archivos PDF.
+        .setIncludeFolders(true)
+        .setSelectFolderEnabled(false)
+        .setEnableDrives(true)
+        .setMimeTypes('application/pdf');
+
+      if (parentId) view.setParent(parentId);
+
+      const picker = new google.picker.PickerBuilder()
+        .addView(view)
+        .enableFeature(google.picker.Feature.MULTISELECT_ENABLED)
+        .hideTitleBar()
+        .setLocale('es')
+        .setOAuthToken(config.oauthToken)
+        .setDeveloperKey(config.developerKey)
+        .setAppId(String(config.cloudProjectNumber))
+        .setCallback(pickerCallback)
+        .setOrigin(obtenerPickerOrigin())
+        .build();
+
+      picker.setVisible(true);
+    }
+
+    function pickerCallback(data) {
+      const action = data && data[google.picker.Response.ACTION];
+      if (action !== google.picker.Action.PICKED) return;
+
+      const docs = data[google.picker.Response.DOCUMENTS] || [];
+      const ids = docs
+        .map((doc) => doc[google.picker.Document.ID])
+        .filter(Boolean);
+
+      if (!ids.length) return;
+      validarSeleccionDrive(ids, 0, [], pickerMode);
+    }
+
+    function validarSeleccionDrive(ids, index, errors, mode) {
+      if (index >= ids.length) {
+        renderAttachments();
+        if (errors.length) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Algunos archivos no se agregaron',
+            html: `<ul style="text-align:left">${errors.map(escapeHtml).map((item) => `<li>${item}</li>`).join('')}</ul>`
+          });
+        } else {
+          Swal.fire({ icon: 'success', title: 'Documentos agregados', timer: 1300, showConfirmButton: false });
+        }
+        return;
+      }
+
+      const registro = (qs('registroMTO').value || '').trim();
+      showOverlay('Validando documento…', `${index + 1} de ${ids.length}`);
+
+      google.script.run
+        .withSuccessHandler((file) => {
+          hideOverlay();
+          const key = `DRIVE:${file.id}`;
+          if (!state.adjuntos.some((item) => item.key === key)) {
+            state.adjuntos.push({
+              key,
+              source: 'DRIVE',
+              fileId: file.id,
+              name: file.name,
+              mimeType: file.mimeType || MIME_PDF,
+              size: Number(file.size || 0),
+              url: file.url || '',
+              driveMode: mode
+            });
+          }
+          validarSeleccionDrive(ids, index + 1, errors, mode);
+        })
+        .withFailureHandler((error) => {
+          hideOverlay();
+          errors.push(serverError(error));
+          validarSeleccionDrive(ids, index + 1, errors, mode);
+        })
+        .validarArchivoDrive(ids[index], registro, mode);
+    }
+
+    /* ==============================
+     * PASO 2 → PASO 3 / PASO 4
+     * ============================== */
+    function next2() {
+      if (state.tipo === 'OEC') {
+        if (!(qs('registro').value || '').trim()) {
+          Swal.fire('Falta registro', 'Ingrese el registro de acreditación.', 'warning');
+          return;
+        }
+        if (!asuntoValido()) return;
+
+        showOverlay('Validando OEC…', 'Espere un momento');
+        google.script.run
+          .withSuccessHandler((info) => {
+            hideOverlay();
+            if (!info) {
+              Swal.fire('No encontrado', 'No se encontró el OEC con ese registro.', 'error');
+              return;
+            }
+            qs('representante').value = info.representante || info.contacto1 || '';
+            qs('puestoTrabajo').value = info.puestoTrabajo || '';
+            qs('razonSocial').value = info.razonSocial || '';
+            qs('nombreComercial').value = info.nombreComercial || '';
+            qs('tituloProfesionalAuto').value = info.tituloProfesional || '';
+            setStep(3);
+          })
+          .withFailureHandler((error) => {
+            hideOverlay();
+            Swal.fire('Error', serverError(error), 'error');
+          })
+          .getOECInfo(qs('registro').value);
+        return;
+      }
+
+      if (state.tipo === 'General') {
+        if (!validateGeneral()) return;
+        setStep(3);
+        return;
+      }
+
+      const anio = (qs('anioMTO').value || '').trim();
+      const registro = (qs('registroMTO').value || '').trim();
+      const sinNC = qs('sinNCMTO').checked;
+
+      if (!anio || !registro) {
+        Swal.fire('Faltan datos', 'Ingrese Registro y Año.', 'warning');
+        return;
+      }
+      if (!correlativoMTO) {
+        Swal.fire('Falta generar código', 'Presione "Buscar" junto al registro.', 'info');
+        return;
+      }
+      if (!sinNC && !state.adjuntos.length) {
+        Swal.fire('Adjuntos requeridos', 'Agregue al menos un PDF o marque "Sin NC".', 'warning');
+        return;
+      }
+
+      // MTO también debe pasar por Redacción. Antes saltaba directamente
+      // al resumen y por eso el cuerpo escrito nunca podía llegar al documento.
+      setStep(3);
+    }
+
+    /* ==============================
+     * EDITOR
+     * ============================== */
+    function execCmd(command) { document.execCommand(command, false, null); }
+    function justify() { document.execCommand('justifyFull', false, null); }
+
+    function insertTable() {
+      const html = '<table><tr><th>Encabezado 1</th><th>Encabezado 2</th></tr><tr><td>&nbsp;</td><td>&nbsp;</td></tr></table>';
+      document.execCommand('insertHTML', false, html);
+    }
+
+    function insertImage() {
+      Swal.fire({ title: 'URL de la imagen', input: 'url', inputPlaceholder: 'https://...' })
+        .then((result) => {
+          if (result.isConfirmed && result.value) {
+            document.execCommand('insertHTML', false, `<p><img src="${escapeHtml(result.value)}"></p>`);
+          }
+        });
+    }
+
+    function lockEditor(lock) {
+      const toolbar = qs('toolbar');
+      const editor = qs('editor');
+      const button = qs('btnPaso3');
+      [...toolbar.getElementsByTagName('button')].forEach((item) => item.disabled = Boolean(lock));
+      editor.contentEditable = lock ? 'false' : 'true';
+      button.disabled = Boolean(lock);
+      if (lock) showOverlay('Analizando redacción…', 'Espere un momento');
+      else hideOverlay();
+    }
+
+    function next3() {
+      lockEditor(true);
+      const textoPlano = qs('editor').innerText || '';
+
+      google.script.run
+        .withSuccessHandler((tips) => {
+          lockEditor(false);
+          const summary = [];
+          const val = (id) => qs(id) ? (qs(id).value || '—') : '—';
+
+          summary.push(kv('Tipo', state.tipo === 'MTO' ? 'Carta de mantenimiento' : state.tipo));
+          if (state.tipo === 'OEC') {
+            summary.push(kv('Registro', val('registro')));
+            summary.push(kv('Título profesional', val('tituloProfesionalAuto')));
+            summary.push(kv('Contacto 1', val('representante')));
+            summary.push(kv('Puesto', val('puestoTrabajo')));
+            summary.push(kv('Razón Social', val('razonSocial')));
+            summary.push(kv('Nombre Comercial', val('nombreComercial')));
+            summary.push(kv('Asunto', val('asuntoOEC')));
+          } else if (state.tipo === 'General') {
+            summary.push(kv('Título profesional', val('tituloProf')));
+            summary.push(kv('Destinatario', val('destinatario')));
+            summary.push(kv('Lugar de trabajo', val('lugarTrabajo')));
+            summary.push(kv('País', val('pais')));
+            summary.push(kv('Puesto', val('puestoTrabajoGEN')));
+            summary.push(kv('Asunto', val('asuntoGEN')));
+          } else {
+            const sinNC = qs('sinNCMTO').checked;
+            summary.push(kv('Registro', val('registroMTO')));
+            summary.push(kv('Año', val('anioMTO')));
+            summary.push(kv('Nombre OEC', val('nombreOECMTO')));
+            summary.push(kv('Código', correlativoMTO || val('codigoMTO')));
+            summary.push(kv('Sin NC', sinNC ? 'Sí' : 'No'));
+            summary.push(kv('Archivos', sinNC ? '—' : `${state.adjuntos.length} PDF`));
+            if (!sinNC) {
+              summary.push(kv('Documentos', state.adjuntos.map((item) => item.name).join(', ')));
+            }
+          }
+
+          let paisPlant = val('pais2');
+          if (paisPlant === '—') paisPlant = val('pais');
+          summary.push(kv('País (plantilla)', paisPlant));
+          summary.push(kv('Redacción', textoPlano.trim().length ? `${textoPlano.trim().length} caracteres guardados` : 'Sin texto'));
+          qs('resumen').innerHTML = summary.join('');
+          setStep(4);
+
+          if (tips && tips.length) {
+            Swal.fire({
+              icon: 'info',
+              title: 'Sugerencias de redacción',
+              html: `<ul style="text-align:left;margin:0 0 0 18px">${tips.map(escapeHtml).map((item) => `<li>${item}</li>`).join('')}</ul>`
+            });
+          }
+        })
+        .withFailureHandler((error) => {
+          lockEditor(false);
+          Swal.fire('Error', serverError(error), 'error');
+        })
+        .getSugerenciasRedaccion(textoPlano);
+    }
+
+    function kv(key, value) {
+      return `<div class="kv"><b>${escapeHtml(key)}</b><div>${escapeHtml(value || '—')}</div></div>`;
+    }
+
+    /* ==============================
+     * GENERACIÓN
+     * ============================== */
+    function generar() {
+      if (state.tipo === 'MTO') {
+        generarMTO();
+        return;
+      }
+
+      let paisVal = 'Guatemala';
+      if (qs('pais2') && qs('pais2').value) paisVal = qs('pais2').value;
+      else if (qs('pais') && qs('pais').value) paisVal = qs('pais').value;
+
+      const payload = {
+        tipo: qs('tipo').value,
+        draft: qs('editor').innerText || '',
+        htmlDraft: qs('editor').innerHTML || '',
+        pais: paisVal,
+        asunto: ''
+      };
+
+      if (payload.tipo === 'OEC') {
+        payload.registro = qs('registro').value || '';
+        payload.asunto = qs('asuntoOEC').value || '';
+      } else {
+        payload.tituloProfesional = qs('tituloProf').value || '';
+        payload.destinatario = qs('destinatario').value || '';
+        payload.lugarTrabajo = qs('lugarTrabajo').value || '';
+        payload.puestoTrabajo = qs('puestoTrabajoGEN').value || '';
+        payload.asunto = qs('asuntoGEN').value || '';
+      }
+
+      Swal.fire({ title: 'Generando…', text: 'Creando documento desde plantilla', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      google.script.run
+        .withSuccessHandler((result) => {
+          Swal.close();
+          if (result && result.ok) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Documento generado',
+              html: `<p><b>Código:</b> ${escapeHtml(result.codigo)}</p><p><a href="${escapeHtml(result.folderUrl || '#')}" target="_blank" rel="noopener">Abrir carpeta destino</a></p>`,
+              confirmButtonText: 'OK'
+            }).then(() => volverMenu());
+          } else {
+            Swal.fire('Error', 'No se pudo generar el documento.', 'error');
+          }
+        })
+        .withFailureHandler((error) => {
+          Swal.close();
+          Swal.fire('Error', serverError(error), 'error');
+        })
+        .generarCorrespondencia(payload);
+    }
+
+    function leerBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const value = String(event.target.result || '');
+          resolve(value.split(',')[1] || '');
+        };
+        reader.onerror = () => reject(new Error(`No se pudo leer ${file.name}.`));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function prepararAdjuntosParaServidor() {
+      const result = [];
+
+      for (const item of state.adjuntos) {
+        if (item.source === 'DRIVE') {
+          result.push({
+            source: 'DRIVE',
+            fileId: item.fileId,
+            name: item.name,
+            mimeType: item.mimeType,
+            size: item.size,
+            driveMode: item.driveMode || 'ESTRUCTURA'
+          });
+          continue;
+        }
+
+        const base64 = await leerBase64(item.file);
+        result.push({
+          source: 'LOCAL',
+          nombre: item.name,
+          mimeType: MIME_PDF,
+          contenidoBase64: base64,
+          size: item.size
+        });
+      }
+
+      return result;
+    }
+
+    async function generarMTO() {
+      const registro = (qs('registroMTO').value || '').trim();
+      const anio = (qs('anioMTO').value || '').trim();
+      const sinNC = qs('sinNCMTO').checked;
+
+      if (!registro || !anio) {
+        Swal.fire('Faltan datos', 'Ingrese Registro y Año.', 'warning');
+        return;
+      }
+      if (!correlativoMTO) {
+        Swal.fire('Falta generar código', 'Presione "Buscar" junto al registro.', 'info');
+        return;
+      }
+      if (!sinNC && !state.adjuntos.length) {
+        Swal.fire('Adjuntos requeridos', 'Agregue al menos un PDF o marque "Sin NC".', 'warning');
+        return;
+      }
+
+      disableButtons(true);
+      showOverlay('Preparando documentos…', 'Convirtiendo archivos locales y validando Drive');
+
+      try {
+        const adjuntos = sinNC ? [] : await prepararAdjuntosParaServidor();
+        const payload = {
+          registro,
+          anio,
+          codigo: correlativoMTO,
+          sinNC,
+          adjuntos,
+          nombreOEC: (qs('nombreOECMTO').value || '').trim(),
+          pais: (qs('pais2').value || 'Guatemala, Guatemala').trim(),
+          // Enviar SIEMPRE ambas representaciones. htmlDraft conserva el formato
+          // del editor y draft sirve como respaldo de texto plano.
+          draft: qs('editor').innerText || '',
+          htmlDraft: qs('editor').innerHTML || ''
+        };
+
+        google.script.run
+          .withSuccessHandler((result) => {
+            hideOverlay();
+            disableButtons(false);
+
+            const links = [];
+            if (result && result.docUrl) {
+              links.push(`<p><a href="${escapeHtml(result.docUrl)}" target="_blank" rel="noopener">Abrir carta generada</a></p>`);
+            }
+            if (result && result.attachmentsFolderUrl) {
+              links.push(`<p><a href="${escapeHtml(result.attachmentsFolderUrl)}" target="_blank" rel="noopener">Abrir carpeta de adjuntos</a></p>`);
+            }
+
+            Swal.fire({
+              icon: 'success',
+              title: 'Documento generado',
+              html: `<p><b>Código:</b> ${escapeHtml(result.codigo || correlativoMTO)}</p>${links.join('')}`,
+              confirmButtonText: 'OK'
+            }).then(() => volverMenu());
+          })
+          .withFailureHandler((error) => {
+            hideOverlay();
+            disableButtons(false);
+            Swal.fire('Error', serverError(error), 'error');
+          })
+          .crearCartaMantenimientoConAdjuntos(payload);
+      } catch (error) {
+        hideOverlay();
+        disableButtons(false);
+        Swal.fire('Error al preparar archivos', serverError(error), 'error');
+      }
+    }
+
+    /* ==============================
+     * EXPOSICIÓN Y ARRANQUE
+     * ============================== */
+    window.next1 = next1;
+    window.next2 = next2;
+    window.next3 = next3;
+    window.generar = generar;
+    window.generarMTO = generarMTO;
+    window.buscarOEC = buscarOEC;
+    window.buscarRegistroMTO = buscarRegistroMTO;
+    window.volverMenu = volverMenu;
+    window.backTo = backTo;
+    window.execCmd = execCmd;
+    window.justify = justify;
+    window.insertTable = insertTable;
+    window.insertImage = insertImage;
+    window.abrirSelectorLocal = abrirSelectorLocal;
+    window.validarArchivoMTO = validarArchivoMTO;
+    window.abrirPickerDrive = abrirPickerDrive;
+    window.removeAttachment = removeAttachment;
+    window.onSinNCToggleMTO = onSinNCToggleMTO;
+    let correspondenciaActiva = true;
+
+    function initCorrespondenciaAppWeb() {
+      correspondenciaActiva = true;
+      initDropzone();
+      renderAttachments();
+
+      // Precarga no bloqueante: api.js ya fue cargado por el shell antes
+      // de ejecutar este script. Aquí cargamos el módulo "picker".
+      asegurarPickerApi(
+        () => console.info('[Correspondencia] Google Picker listo.'),
+        (error) => console.warn('[Correspondencia] Picker pendiente:', serverError(error))
+      );
+
+      if (window.OGA && typeof OGA.onUnmount === 'function') {
+        OGA.onUnmount(() => {
+          correspondenciaActiva = false;
+          pickerBusy = false;
+          hideOverlay();
+        });
+      }
+    }
+
+    initCorrespondenciaAppWeb();
+
+</script>

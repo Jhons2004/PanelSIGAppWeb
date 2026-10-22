@@ -1,0 +1,818 @@
+<!-- ✅ Librería SweetAlert2 
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h2 { text-align: center; margin-bottom: 25px; }
+
+    .seccion {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    input[readonly] {
+      background-color: #f0f0f0;
+      color: #444;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-primario {
+      background-color: #4285F4;
+      color: white;
+    }
+
+    .btn-primario:hover {
+      background-color: #3367d6;
+    }
+
+    .btn-secundario {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secundario:hover {
+      background-color: #5a6268;
+    }
+
+    #cargando {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: #555;
+      display: none;
+    }
+
+    #toast {
+      visibility: hidden;
+      max-width: 400px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 20px;
+      position: fixed;
+      z-index: 9999;
+      bottom: 30px;
+      right: 30px;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 3.5s;
+    }
+
+    @keyframes fadein {
+      from { bottom: 0; opacity: 0; }
+      to { bottom: 30px; opacity: 1; }
+    }
+
+    @keyframes fadeout {
+      from { bottom: 30px; opacity: 1; }
+      to { bottom: 0; opacity: 0; }
+    }
+
+    .bloqueado {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Carta de Mantenimiento</h2>
+
+<div class="seccion">
+  <label for="anio">Año de Evaluación:</label>
+  <input type="text" id="anio" placeholder="Ej. 2025">
+
+  <label for="registro">Registro de Acreditación:</label>
+  <input type="text" id="registro" placeholder="Ej. OGA-LC-123-45"
+         style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();">
+
+  <button id="btnBuscar" class="btn-secundario" onclick="buscarRegistro()">🔍 Buscar registro OEC</button>
+
+  </button>
+  <button class="btn-secundario" onclick="regresarMenu()">🔙 Regresar al Menú Principal</button>
+
+  <label for="nombreOEC">Nombre del OEC:</label>
+  <input type="text" id="nombreOEC" readonly>
+
+  <label for="codigo">Código de Correspondencia:</label>
+  <input type="text" id="codigo" readonly placeholder="(Se generará automáticamente)">
+</div>
+
+<div style="margin-top:6px">
+  <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+    <input type="checkbox" id="sinNC" onchange="onSinNCToggle()">
+    No se detectaron No Conformidades (no es necesario adjuntar OGA-FAC-078)
+  </label>
+  <small style="color:#666;display:block;margin-top:6px;">
+    Si marcas esta casilla, puedes generar la carta sin adjuntar el OGA-FAC-078.
+  </small>
+</div>
+
+
+<div class="seccion bloqueado" id="seccionArchivo">
+  <label for="archivos">Subir OGA-FAC-078 - PDF -:</label>
+  <input type="file" id="archivos" accept="application/pdf" multiple onchange="validarArchivo()">
+
+  <button class="btn-primario" id="btnGenerar" onclick="generarCarta()" disabled>
+    📄 Generar Carta de Mantenimiento
+  </button>
+  <button class="btn-secundario" onclick="regresarMenu()">🔙 Regresar al Menú Principal</button>
+
+  <div id="cargando">🔄 Procesando, por favor espere...</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let usuarioActivo = "";
+  let correlativoGenerado = "";
+
+/*  function mostrarToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.className = "show";
+    setTimeout(() => toast.className = toast.className.replace("show", ""), 4000);
+  }
+
+  function activarCargaArchivo() {
+    document.getElementById("seccionArchivo").classList.remove("bloqueado");
+  }
+
+  function validarArchivo() {
+    const archivos = document.getElementById("archivos").files;
+    document.getElementById("btnGenerar").disabled = !(archivos && archivos.length > 0);
+  }
+
+  function buscarRegistro() {
+    const registro = document.getElementById("registro").value.trim();
+    const anio = document.getElementById("anio").value.trim();
+    const btnBuscar = document.getElementById("btnBuscar");
+
+    if (!registro || !anio) {
+      return mostrarToast("⚠️ Debes ingresar el Registro de Acreditación y el Año.");
+    }
+
+    btnBuscar.disabled = true;
+    btnBuscar.textContent = "🔄 Buscando...";
+
+    google.script.run
+      .withSuccessHandler(datos => {
+        if (datos && datos.razon) {
+          document.getElementById("nombreOEC").value = datos.razon;
+
+          google.script.run
+            .withSuccessHandler(codigo => {
+              correlativoGenerado = codigo;
+              document.getElementById("codigo").value = codigo;
+              mostrarToast("✅ Código generado: " + codigo);
+              activarCargaArchivo();
+              btnBuscar.disabled = false;
+              btnBuscar.textContent = "🔍 Buscar registro OEC";
+            })
+            .withFailureHandler(error => {
+              mostrarToast("❌ " + error.message);
+              document.getElementById("codigo").value = "";
+              correlativoGenerado = "";
+              btnBuscar.disabled = false;
+              btnBuscar.textContent = "🔍 Buscar registro OEC";
+            })
+            .generarCodigoCorrespondencia(registro, datos.representante || datos.razon || "", usuarioActivo, anio);
+        } else {
+          mostrarToast("❌ Registro no válido o sin datos de OEC.");
+          document.getElementById("nombreOEC").value = "";
+          document.getElementById("codigo").value = "";
+          btnBuscar.disabled = false;
+          btnBuscar.textContent = "🔍 Buscar registro OEC";
+        }
+      })
+      .withFailureHandler(error => {
+        mostrarToast("❌ Error al buscar datos: " + error.message);
+        btnBuscar.disabled = false;
+        btnBuscar.textContent = "🔍 Buscar registro OEC";
+      })
+      .buscarDatosOEC_Presupuesto(registro);
+  }
+
+  function generarCarta() {
+    const registro = document.getElementById("registro").value.trim();
+    const anio = document.getElementById("anio").value.trim();
+    const archivos = document.getElementById("archivos").files;
+    const btnGenerar = document.getElementById("btnGenerar");
+
+    if (!registro || !anio) return mostrarToast("⚠️ Completa el Registro y Año.");
+    if (!correlativoGenerado) return mostrarToast("⚠️ Primero debes buscar el registro y generar el código.");
+    if (!archivos.length) return mostrarToast("⚠️ Debes subir al menos un documento PDF.");
+
+    for (let archivo of archivos) {
+      if (archivo.type !== "application/pdf") {
+        mostrarToast(`❌ El archivo "${archivo.name}" no es un PDF.`);
+        return;
+      }
+    }
+
+    document.getElementById("cargando").style.display = "block";
+    btnGenerar.disabled = true;
+    btnGenerar.textContent = "🕐 Generando...";
+
+    const archivosProcesados = [];
+    let cargados = 0;
+
+    for (let archivo of archivos) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        archivosProcesados.push({
+          nombre: archivo.name,
+          contenido: e.target.result.split(",")[1]
+        });
+        cargados++;
+        if (cargados === archivos.length) {
+
+          // Primero: guardar archivos
+          google.script.run
+            .withSuccessHandler(() => {
+              // Segundo: generar la carta
+              google.script.run
+                .withSuccessHandler(res => {
+                  mostrarToast("📄 Documento generado exitosamente.");
+                  document.getElementById("cargando").style.display = "none";
+                  setTimeout(() => regresarMenu(), 3000);
+                })
+                .withFailureHandler(error => {
+                  mostrarToast("❌ Error al generar la carta: " + error.message);
+                  document.getElementById("cargando").style.display = "none";
+                  btnGenerar.disabled = false;
+                  btnGenerar.textContent = "📄 Generar Carta de Mantenimiento";
+                })
+                .generarDocumentoCartaMantenimiento(registro, anio, correlativoGenerado);
+            })
+            .withFailureHandler(error => {
+              mostrarToast("❌ Error al guardar archivos: " + error.message);
+              document.getElementById("cargando").style.display = "none";
+              btnGenerar.disabled = false;
+              btnGenerar.textContent = "📄 Generar Carta de Mantenimiento";
+            })
+            .guardarArchivosCartaMantenimiento(archivosProcesados, correlativoGenerado);
+        }
+      };
+      reader.readAsDataURL(archivo);
+    }
+  }
+
+  function regresarMenu() {
+    google.script.run.mostrarPanelMenu();
+  }
+
+  window.onload = () => {
+    google.script.run.withSuccessHandler(usuario => {
+      usuarioActivo = usuario;
+    }).getUsuarioActivo();
+  };*/
+
+</script>
+
+
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h2 { text-align: center; margin-bottom: 25px; }
+
+    .seccion {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      max-width: 600px;
+      margin: 0 auto 20px auto;
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+
+    /* Mejorado: Estados más claros para el input de archivos */
+    input[type="file"]:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      background-color: #f0f0f0;
+      border-color: #ddd;
+    }
+
+    input[type="file"]:enabled {
+      border-color: #4285F4;
+      background-color: #fff;
+    }
+
+    input[readonly] {
+      background-color: #f0f0f0;
+      color: #444;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 18px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .btn-primario {
+      background-color: #4285F4;
+      color: white;
+    }
+
+    .btn-primario:hover:not(:disabled) {
+      background-color: #3367d6;
+    }
+
+    .btn-primario:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-secundario {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .btn-secundario:hover {
+      background-color: #5a6268;
+    }
+
+    #cargando {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: #555;
+      display: none;
+    }
+
+    #toast {
+      visibility: hidden;
+      max-width: 400px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 6px;
+      padding: 20px;
+      position: fixed;
+      z-index: 9999;
+      bottom: 30px;
+      right: 30px;
+      font-size: 18px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 3.5s;
+    }
+
+    @keyframes fadein {
+      from { bottom: 0; opacity: 0; }
+      to { bottom: 30px; opacity: 1; }
+    }
+
+    @keyframes fadeout {
+      from { bottom: 30px; opacity: 1; }
+      to { bottom: 0; opacity: 0; }
+    }
+
+    /* Mejorado: La clase bloqueado ahora no afecta inputs específicamente habilitados */
+    .bloqueado {
+      opacity: 0.5;
+    }
+
+    .bloqueado > *:not(.siempre-habilitado) {
+      pointer-events: none;
+    }
+
+    /* Nuevo: Clase para elementos que deben permanecer interactivos */
+    .siempre-habilitado {
+      pointer-events: auto !important;
+      opacity: 1 !important;
+    }
+
+    /* Nuevo: Indicador visual para casilla de sin NC */
+    .checkbox-container {
+      background-color: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+
+    .checkbox-container label {
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .checkbox-container input[type="checkbox"] {
+      width: auto;
+      margin-right: 8px;
+      transform: scale(1.2);
+    }
+
+    /* Nuevo: Indicador de estado del archivo */
+    .archivo-estado {
+      margin-top: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .archivo-estado.info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+      display: block;
+    }
+
+    .archivo-estado.warning {
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeaa7;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Carta de Mantenimiento</h2>
+
+<div class="seccion">
+  <label for="anio">Año de Evaluación:</label>
+  <input type="text" id="anio" placeholder="Ej. 2025">
+
+  <label for="registro">Registro de Acreditación:</label>
+  <input type="text" id="registro" placeholder="Ej. OGA-LC-123-45"
+         style="text-transform: uppercase;" oninput="this.value = this.value.toUpperCase();">
+
+  <button id="btnBuscar" class="btn-secundario" onclick="buscarRegistro()">🔍 Buscar registro OEC</button>
+  <button class="btn-secundario" onclick="regresarMenu()">🔙 Regresar al Menú Principal</button>
+
+  <label for="nombreOEC">Nombre del OEC:</label>
+  <input type="text" id="nombreOEC" readonly>
+
+  <label for="codigo">Código de Correspondencia:</label>
+  <input type="text" id="codigo" readonly placeholder="(Se generará automáticamente)">
+</div>
+
+<div class="checkbox-container">
+  <label style="display:flex;align-items:center;gap:8px;font-weight:600;">
+    <input type="checkbox" id="sinNC" onchange="onSinNCToggle()">
+    No se detectaron No Conformidades (no es necesario adjuntar OGA-FAC-078)
+  </label>
+  <small style="color:#666;display:block;margin-top:6px;">
+    Si marcas esta casilla, puedes generar la carta sin adjuntar el OGA-FAC-078.
+  </small>
+</div>
+
+<div class="seccion bloqueado" id="seccionArchivo">
+  <label for="archivos">Subir OGA-FAC-078 - PDF -:</label>
+  <input type="file" id="archivos" accept="application/pdf" multiple onchange="validarArchivo()">
+  
+  <div id="archivoEstado" class="archivo-estado">
+    ℹ️ Primero busca el registro OEC para habilitar la carga de archivos
+  </div>
+
+  <button class="btn-primario" id="btnGenerar" onclick="generarCarta()" disabled>
+    📄 Generar Carta de Mantenimiento
+  </button>
+  <button class="btn-secundario" onclick="regresarMenu()">🔙 Regresar al Menú Principal</button>
+
+  <div id="cargando">🔄 Procesando, por favor espere...</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  let usuarioActivo = "";
+  let correlativoGenerado = "";
+
+  function mostrarToast(msg) {
+    const toast = document.getElementById("toast");
+    toast.textContent = msg;
+    toast.className = "show";
+    setTimeout(() => toast.className = toast.className.replace("show", ""), 4000);
+  }
+
+  // Mejorado: Activa la sección y actualiza estados visuales
+  function activarCargaArchivo() {
+    const seccion = document.getElementById("seccionArchivo");
+    const archivoEstado = document.getElementById("archivoEstado");
+    
+    seccion.classList.remove("bloqueado");
+    archivoEstado.className = "archivo-estado info";
+    archivoEstado.textContent = "✅ Ahora puedes subir archivos PDF o marcar 'Sin No Conformidades'";
+    
+    updateGenerarState();
+  }
+
+  // Mejorado: Actualiza el estado del botón Generar y feedback visual
+  function updateGenerarState() {
+    const sinNC = document.getElementById("sinNC").checked;
+    const archivos = document.getElementById("archivos").files;
+    const btnGenerar = document.getElementById("btnGenerar");
+    const archivoEstado = document.getElementById("archivoEstado");
+    const seccionActiva = !document.getElementById("seccionArchivo").classList.contains("bloqueado");
+    
+    if (!seccionActiva) {
+      btnGenerar.disabled = true;
+      return;
+    }
+
+    const puedeGenerar = sinNC || (archivos && archivos.length > 0);
+    btnGenerar.disabled = !puedeGenerar;
+
+    // Actualizar mensaje de estado
+    if (sinNC) {
+      archivoEstado.className = "archivo-estado info";
+      archivoEstado.textContent = "✅ Modalidad: Sin No Conformidades - No se requieren archivos";
+    } else if (archivos && archivos.length > 0) {
+      archivoEstado.className = "archivo-estado info";
+      archivoEstado.textContent = `✅ ${archivos.length} archivo(s) PDF seleccionado(s)`;
+    } else {
+      archivoEstado.className = "archivo-estado warning";
+      archivoEstado.textContent = "⚠️ Selecciona al menos un archivo PDF o marca 'Sin No Conformidades'";
+    }
+  }
+
+  // Mejorado: Mejor manejo de estados del input de archivos
+  function onSinNCToggle() {
+    const chk = document.getElementById("sinNC");
+    const inp = document.getElementById("archivos");
+    const seccionActiva = !document.getElementById("seccionArchivo").classList.contains("bloqueado");
+    
+    if (chk.checked) {
+      // Deshabilitar selector y limpiar archivos
+      inp.value = "";
+      inp.disabled = true;
+    } else {
+      // Habilitar selector solo si la sección está activa
+      inp.disabled = !seccionActiva;
+    }
+    
+    updateGenerarState();
+  }
+
+  // Mantiene la función original
+  function validarArchivo() {
+    updateGenerarState();
+  }
+
+  function buscarRegistro() {
+    const registro = document.getElementById("registro").value.trim();
+    const anio = document.getElementById("anio").value.trim();
+    const btnBuscar = document.getElementById("btnBuscar");
+
+    if (!registro || !anio) {
+      return mostrarToast("⚠️ Debes ingresar el Registro de Acreditación y el Año.");
+    }
+
+    btnBuscar.disabled = true;
+    btnBuscar.textContent = "🔄 Buscando...";
+
+    google.script.run
+      .withSuccessHandler(datos => {
+        if (datos && datos.razon) {
+          document.getElementById("nombreOEC").value = datos.razon;
+
+          google.script.run
+            .withSuccessHandler(codigo => {
+              correlativoGenerado = codigo;
+              document.getElementById("codigo").value = codigo;
+              mostrarToast("✅ Código generado: " + codigo);
+              activarCargaArchivo();
+              
+              // Reactivar el input de archivos si no está marcado "sin NC"
+              const sinNC = document.getElementById("sinNC").checked;
+              if (!sinNC) {
+                document.getElementById("archivos").disabled = false;
+              }
+              
+              btnBuscar.disabled = false;
+              btnBuscar.textContent = "🔍 Buscar registro OEC";
+            })
+            .withFailureHandler(error => {
+              mostrarToast("❌ " + error.message);
+              document.getElementById("codigo").value = "";
+              correlativoGenerado = "";
+              btnBuscar.disabled = false;
+              btnBuscar.textContent = "🔍 Buscar registro OEC";
+            })
+            .generarCodigoCorrespondencia(registro, datos.representante || datos.razon || "", usuarioActivo, anio);
+        } else {
+          mostrarToast("❌ Registro no válido o sin datos de OEC.");
+          document.getElementById("nombreOEC").value = "";
+          document.getElementById("codigo").value = "";
+          btnBuscar.disabled = false;
+          btnBuscar.textContent = "🔍 Buscar registro OEC";
+        }
+      })
+      .withFailureHandler(error => {
+        mostrarToast("❌ Error al buscar datos: " + error.message);
+        btnBuscar.disabled = false;
+        btnBuscar.textContent = "🔍 Buscar registro OEC";
+      })
+      .buscarDatosOEC_Presupuesto(registro);
+  }
+
+  // Mantiene la lógica original
+  function generarCarta() {
+    const registro = document.getElementById("registro").value.trim();
+    const anio = document.getElementById("anio").value.trim();
+    const archivos = document.getElementById("archivos").files;
+    const btnGenerar = document.getElementById("btnGenerar");
+    const sinNC = document.getElementById("sinNC").checked;
+
+    if (!registro || !anio) return mostrarToast("⚠️ Completa el Registro y Año.");
+    if (!correlativoGenerado) return mostrarToast("⚠️ Primero debes buscar el registro y generar el código.");
+
+    // Si la casilla NO está marcada, exigimos al menos un PDF
+    if (!sinNC && (!archivos || !archivos.length)) {
+      return mostrarToast("⚠️ Debes subir al menos un documento PDF o marcar 'No se detectaron No Conformidades'.");
+    }
+
+    // Validar tipo solo cuando haya archivos
+    if (!sinNC) {
+      for (let archivo of archivos) {
+        if (archivo.type !== "application/pdf") {
+          mostrarToast(`❌ El archivo "${archivo.name}" no es un PDF.`);
+          return;
+        }
+      }
+    }
+
+    document.getElementById("cargando").style.display = "block";
+    btnGenerar.disabled = true;
+    btnGenerar.textContent = "🕐 Generando...";
+
+    // Rama A: SIN NC → generar directo (no se suben archivos)
+    if (sinNC) {
+      google.script.run
+        .withSuccessHandler(() => {
+          google.script.run
+            .withSuccessHandler(res => {
+              mostrarToast("📄 Documento generado exitosamente.");
+              document.getElementById("cargando").style.display = "none";
+              setTimeout(() => regresarMenu(), 3000);
+            })
+            .withFailureHandler(error => {
+              mostrarToast("❌ Error al generar la carta: " + error.message);
+              document.getElementById("cargando").style.display = "none";
+              btnGenerar.disabled = false;
+              btnGenerar.textContent = "📄 Generar Carta de Mantenimiento";
+            })
+            .generarDocumentoCartaMantenimiento(registro, anio, correlativoGenerado);
+        })
+        .withFailureHandler(error => {
+          mostrarToast("❌ No se pudo registrar el estado: " + error.message);
+          document.getElementById("cargando").style.display = "none";
+          btnGenerar.disabled = false;
+          btnGenerar.textContent = "📄 Generar Carta de Mantenimiento";
+        })
+        .registrarEstadoNCEnEgreso(correlativoGenerado, true);
+      return;
+    }
+
+    // Rama B: CON NC → subir PDFs y luego generar
+    const archivosProcesados = [];
+    let cargados = 0;
+
+    for (let archivo of archivos) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        archivosProcesados.push({
+          nombre: archivo.name,
+          contenido: e.target.result.split(",")[1]
+        });
+        cargados++;
+        if (cargados === archivos.length) {
+
+          // Primero: guardar archivos
+          google.script.run
+            .withSuccessHandler(() => {
+              // Registrar estado en Egreso (Con OGA-FAC-078)
+              google.script.run
+                .withSuccessHandler(() => {
+                  // Segundo: generar la carta
+                  google.script.run
+                    .withSuccessHandler(res => {
+                      mostrarToast("📄 Documento generado exitosamente.");
+                      document.getElementById("cargando").style.display = "none";
+                      setTimeout(() => regresarMenu(), 3000);
+                    })
+                    .withFailureHandler(error => {
+                      mostrarToast("❌ Error al generar la carta: " + error.message);
+                      document.getElementById("cargando").style.display = "none";
+                      btnGenerar.disabled = false;
+                      btnGenerar.textContent = "📄 Generar Carta de Mantenimiento";
+                    })
+                    .generarDocumentoCartaMantenimiento(registro, anio, correlativoGenerado);
+                })
+                .withFailureHandler(error => {
+                  mostrarToast("❌ No se pudo registrar el estado: " + error.message);
+                  document.getElementById("cargando").style.display = "none";
+                  btnGenerar.disabled = false;
+                  btnGenerar.textContent = "📄 Generar Carta de Mantenimiento";
+                })
+                .registrarEstadoNCEnEgreso(correlativoGenerado, false);
+            })
+            .withFailureHandler(error => {
+              mostrarToast("❌ Error al guardar archivos: " + error.message);
+              document.getElementById("cargando").style.display = "none";
+              btnGenerar.disabled = false;
+              btnGenerar.textContent = "📄 Generar Carta de Mantenimiento";
+            })
+            .guardarArchivosCartaMantenimiento(archivosProcesados, correlativoGenerado);
+        }
+      };
+      reader.readAsDataURL(archivo);
+    }
+  }
+
+  function regresarMenu() {
+    google.script.run.mostrarPanelMenu();
+  }
+
+  // Inicialización mejorada
+  window.onload = () => {
+    google.script.run.withSuccessHandler(usuario => {
+      usuarioActivo = usuario;
+    }).getUsuarioActivo();
+    
+    updateGenerarState();
+    
+    // Mostrar estado inicial
+    const archivoEstado = document.getElementById("archivoEstado");
+    archivoEstado.className = "archivo-estado info";
+    archivoEstado.style.display = "block";
+  };
+</script>
+
+</body>
+</html>

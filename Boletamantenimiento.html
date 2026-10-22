@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      font-family:'Segoe UI',sans-serif;
+      background:#f4f6f8;
+      padding:20px;
+    }
+    h2 { text-align:center; margin-bottom:20px; }
+    label {
+      display:block;
+      margin-top:10px;
+      font-weight:bold;
+    }
+    input, select {
+      width:100%; padding:8px; margin-top:4px;
+      border-radius:6px; border:1px solid #ccc;
+      font-size:14px;
+    }
+    .readonly { background:#eee; }
+    .botones {
+      text-align:center; margin-top:20px;
+    }
+    .btn {
+      padding:10px 20px; font-size:16px;
+      border:none; border-radius:6px;
+      margin:5px; cursor:pointer;
+    }
+    .btn-red { background:#dc3545; color:#fff; }
+    .btn-green { background:#28a745; color:#fff; }
+
+    #toast {
+      display:none; position:fixed; bottom:30px; left:50%;
+      transform:translateX(-50%);
+      background:#323232; color:white;
+      padding:10px 20px; border-radius:6px;
+      font-size:14px; z-index:1001;
+    }
+
+    #overlayLoader {
+      display:none; position:fixed; top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.4); z-index:1000;
+      display:flex; align-items:center; justify-content:center;
+      color:white; font-size:22px; font-weight:bold;
+    }
+  </style>
+</head>
+<body>
+
+<div style="text-align:right; font-size:14px; color:#555; margin-bottom:10px;">
+  Tasa de cambio vigente: <strong id="tasaCambioLabel">Cargando...</strong>
+</div>
+
+<h2>Generar Boleta de Pago</h2>
+
+<label>Registro de Acreditación</label><input id="registro" style="text-transform: uppercase;" disabled>
+
+<label>Norma</label><input id="norma" class="readonly" disabled>
+<label>Esquema de Acreditación</label><input id="esquema" class="readonly" disabled>
+<label>Razón Social</label><input id="razon" class="readonly" disabled>
+<label>Nombre Comercial</label><input id="nombre" class="readonly" disabled>
+
+<label>Concepto Pagado</label>
+<select id="concepto" onchange="actualizarMonto()">
+  <option value="">Seleccione...</option>
+  <option value="100">Aplicación y evaluación general de la documentación</option>
+  <option value="500">Tarifa Anual</option>
+  <option value="800">Concesión de Acreditación</option>
+</select>
+
+<label>Pago por</label><select id="pagoPor" disabled></select>
+
+<label>Monto USD</label><input id="montoUSD" class="readonly" disabled>
+<label>Monto Quetzales</label><input id="montoQ" class="readonly" disabled>
+<label>Responsable de Elaboración</label><input id="responsable" class="readonly" disabled>
+
+<div class="botones">
+  <button class="btn btn-red" onclick="google.script.host.close()">Regresar</button>
+  <button id="btnContinuar" class="btn btn-green" onclick="enviarBoleta()" disabled>Continuar</button>
+</div>
+
+<div id="overlayLoader">⏳ Procesando...</div>
+<div id="toast">Mensaje</div>
+
+<script>
+  let tasaCambio = 0;
+  let nitDelCliente = '';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    mostrarOverlay("Cargando información...");
+    cargarDatosOECEnSesion();
+    cargarDatosBasicos();
+  });
+
+  function cargarDatosOECEnSesion() {
+    google.script.run.withSuccessHandler(d => {
+      if (d && d.registro) {
+        document.getElementById('registro').value = d.registro;
+        buscarDatos();
+      } else {
+        ocultarOverlay();
+      }
+    }).getDatosOECDesdeSesion();
+  }
+
+  function cargarDatosBasicos() {
+  // Paso 1: obtener correo del usuario en sesión
+  google.script.run.withSuccessHandler(function(correo) {
+    
+    if (!correo) {
+      console.warn("⚠️ No se encontró correo de usuario activo.");
+      document.getElementById('responsable').value = "Usuario no identificado";
+      return;
+    }
+
+    // Paso 2: usar el correo para obtener el nombre completo
+    google.script.run.withSuccessHandler(function(nombre) {
+      const valorResponsable = nombre || correo;
+      document.getElementById('responsable').value = valorResponsable;
+    }).obtenerNombreUsuarioPorCorreo(correo);
+
+  }).getUsuarioActivo();
+
+  // Paso 3: obtener y mostrar la tasa de cambio
+  google.script.run.withSuccessHandler(mostrarTasa).obtenerTipoCambioBanguat();
+}
+
+
+  function mostrarTasa(valor) {
+    if (!isNaN(valor)) {
+      tasaCambio = Number(valor);
+      document.getElementById('tasaCambioLabel').textContent = 'Q' + tasaCambio.toFixed(4);
+      mostrarToast("💱 Tasa de cambio cargada");
+    } else {
+      document.getElementById('tasaCambioLabel').textContent = 'Error al obtener';
+    }
+    ocultarOverlay();
+  }
+
+  function buscarDatos() {
+    const registro = document.getElementById("registro").value.trim();
+    if (!registro) return;
+
+    mostrarOverlay("Buscando datos del OEC...");
+
+    google.script.run.withSuccessHandler(datos => {
+      ocultarOverlay();
+      if (!datos) return Swal.fire("⚠️", "Registro no encontrado", "warning");
+      ['razon','nombre','norma','esquema'].forEach(k => {
+        document.getElementById(k).value = datos[k] || '';
+      });
+      nitDelCliente = datos.nit || '';
+      google.script.run.setDatosOECEnSesion(datos);
+      document.getElementById("btnContinuar").disabled = false;
+    }).buscarDatosOEC_Presupuesto(registro);
+  }
+
+  function actualizarMonto() {
+    const usd = parseFloat(document.getElementById('concepto').value);
+    if (isNaN(usd) || tasaCambio <= 0) {
+      document.getElementById('montoUSD').value = '';
+      document.getElementById('montoQ').value = '';
+      return;
+    }
+    document.getElementById('montoUSD').value = usd.toFixed(2);
+    const montoQ = usd * tasaCambio;
+    document.getElementById('montoQ').value = montoQ.toLocaleString('es-GT', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
+  function enviarBoleta() {
+    const sel = document.getElementById('concepto');
+    if (sel.selectedIndex === 0) {
+      Swal.fire("⚠️", "Selecciona un concepto pagado", "warning");
+      return;
+    }
+
+    const datos = {
+      registro: document.getElementById('registro').value.trim(),
+      razon: document.getElementById('razon').value.trim(),
+      nombre: document.getElementById('nombre').value.trim(),
+      norma: document.getElementById('norma').value.trim(),
+      esquema: document.getElementById('esquema').value.trim(),
+      concepto: sel.options[sel.selectedIndex].text,
+      montoUSD: parseFloat(document.getElementById('montoUSD').value),
+      responsable: document.getElementById('responsable').value.trim(),
+      tasaCambio: tasaCambio,
+      nit: nitDelCliente,
+      pagoPor: ""
+    };
+
+    Swal.fire({
+      title: '¿Confirmar generación?',
+      html: `Se generará la boleta por <b>US$ ${datos.montoUSD.toFixed(2)}</b>.<br>¿Deseas continuar?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, generar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#28a745'
+    }).then(result => {
+      if (result.isConfirmed) {
+        const btn = document.getElementById('btnContinuar');
+        btn.disabled = true;
+        mostrarOverlay("Generando boleta...");
+
+        google.script.run.withSuccessHandler(r => {
+          ocultarOverlay();
+          if (r && r.exito) {
+            Swal.fire("✅ Boleta generada con éxito", "Regresando al menú...", "success");
+            setTimeout(() => {
+              google.script.run.mostrarPanelMenu();
+              google.script.host.close();
+            }, 2500);
+          } else {
+            Swal.fire("❌", "Hubo un problema al generar la boleta.", "error");
+            btn.disabled = false;
+          }
+        }).withFailureHandler(e => {
+          ocultarOverlay();
+          Swal.fire("❌ Error", (e.message || e), "error");
+          btn.disabled = false;
+        }).registrarBoletaPago(datos);
+      }
+    });
+  }
+
+  function mostrarOverlay(msg = "Procesando...") {
+    const overlay = document.getElementById("overlayLoader");
+    overlay.textContent = "⏳ " + msg;
+    overlay.style.display = "flex";
+  }
+
+  function ocultarOverlay() {
+    document.getElementById("overlayLoader").style.display = "none";
+  }
+
+  function mostrarToast(msg, duracion = 2500) {
+    const toast = document.getElementById('toast');
+    toast.textContent = msg;
+    toast.style.display = 'block';
+    setTimeout(() => {
+      toast.style.display = 'none';
+    }, duracion);
+  }
+
+</script>
+</body>
+</html>

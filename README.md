@@ -14,3 +14,6 @@ No almacenar credenciales, cookies, tokens ni archivos `.clasp.json` aquí. Este
 
 ## Estado
 Integración inicial para QA, no validada contra datos reales de Google Workspace. Los usuarios deben existir y estar autorizados en el padrón.
+
+## Nota de seguridad de OAuth
+La versión de origen contenía un secreto OAuth escrito directamente en dos archivos JavaScript. Esta versión lo obtiene de `GOOGLE_OAUTH_CLIENT_SECRET` en Script Properties. **Rotar el secreto en Google Cloud Console y actualizar la propiedad** antes de operar, porque esa credencial fue incluida en archivos compartidos anteriormente. No copiar credenciales al repositorio.

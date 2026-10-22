@@ -1,0 +1,1268 @@
+<!-- FAC078.html · parcial SPA para cargarVista('FAC078') · no contiene <html>, <head> ni <body> -->
+<!-- OGA-FAC-078 · PARCIAL APPWEB / SPA -->
+<style>
+    #fac078Root, #fac078Root *{box-sizing:border-box;margin:0;padding:0}
+    #fac078Root{
+      --azul:#0B4F71;
+      --azul2:#1277A8;
+      --verde:#10B981;
+      --verde2:#059669;
+      --celeste:#EAF7FF;
+      --fondo:#F5FAFF;
+      --card:#FFFFFF;
+      --texto:#12263A;
+      --muted:#64748B;
+      --linea:#D8E7F3;
+      --warn:#F59E0B;
+      --err:#DC2626;
+      --ok:#16A34A;
+      --shadow:0 18px 42px rgba(11,79,113,.18);
+      --shadow2:0 8px 22px rgba(15,23,42,.12);
+    }
+#fac078Root{
+      font-family:Segoe UI,Roboto,Arial,sans-serif;
+      width:100%;
+      min-height:0;
+      background:
+        radial-gradient(circle at 18% 10%,rgba(16,185,129,.26),transparent 24%),
+        radial-gradient(circle at 82% 0%,rgba(18,119,168,.28),transparent 28%),
+        linear-gradient(135deg,#EAF7FF 0%,#F6FFFB 48%,#EEF6FF 100%);
+      padding:16px;
+      color:var(--texto);
+      overflow-x:hidden;
+    }
+    #fac078Root .shell{
+      max-width:1180px;
+      margin:0 auto;
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(216,231,243,.9);
+      border-radius:26px;
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(14px);
+    }
+    #fac078Root .hero{
+      position:relative;
+      overflow:hidden;
+      padding:28px 26px 24px;
+      color:#fff;
+      background:
+        linear-gradient(135deg,rgba(11,79,113,.98),rgba(18,119,168,.94) 52%,rgba(16,185,129,.90));
+    }
+    #fac078Root .hero:before, #fac078Root .hero:after{
+      content:"";
+      position:absolute;
+      width:300px;height:300px;border-radius:999px;
+      background:rgba(255,255,255,.12);
+      filter:blur(2px);
+      animation:float 8s ease-in-out infinite;
+    }
+    #fac078Root .hero:before{right:-90px;top:-150px}
+    #fac078Root .hero:after{left:-130px;bottom:-210px;animation-delay:1.8s}
+    @keyframes float{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(18px) scale(1.04)}}
+    #fac078Root .hero-content{position:relative;z-index:2;display:flex;gap:18px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    #fac078Root .brand{display:flex;gap:15px;align-items:center}
+    #fac078Root .logo-ai{
+      width:70px;height:70px;border-radius:22px;
+      display:grid;place-items:center;
+      background:rgba(255,255,255,.16);
+      border:1px solid rgba(255,255,255,.25);
+      box-shadow:inset 0 0 24px rgba(255,255,255,.12);
+      position:relative;
+    }
+    #fac078Root .logo-ai:before{
+      content:"";position:absolute;inset:10px;border-radius:18px;
+      border:2px solid rgba(255,255,255,.45);
+      border-top-color:#fff;
+      animation:spin 2.6s linear infinite;
+    }
+    #fac078Root .logo-ai span{font-size:30px;position:relative;z-index:2;animation:pulse 1.8s ease-in-out infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    @keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.08);opacity:.82}}
+    #fac078Root .hero h1{font-size:2rem;font-weight:1000;letter-spacing:-.5px;margin-bottom:5px}
+    #fac078Root .hero p{opacity:.92;font-size:.98rem;max-width:760px;line-height:1.45}
+    #fac078Root .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    #fac078Root .pill{
+      border:1px solid rgba(255,255,255,.28);
+      background:rgba(255,255,255,.14);
+      color:#fff;
+      padding:7px 11px;
+      border-radius:999px;
+      font-size:.78rem;
+      font-weight:900;
+      white-space:nowrap;
+    }
+    #fac078Root .main{padding:22px;display:grid;gap:18px}
+    #fac078Root .grid-top{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:stretch}
+    #fac078Root .card{
+      background:var(--card);
+      border:1px solid var(--linea);
+      border-radius:22px;
+      box-shadow:var(--shadow2);
+      overflow:hidden;
+    }
+    #fac078Root .card-head{
+      padding:16px 18px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      border-bottom:1px solid var(--linea);
+      background:linear-gradient(180deg,#FFFFFF,#F8FCFF);
+    }
+    #fac078Root .card-title{font-weight:1000;color:var(--azul);display:flex;gap:8px;align-items:center}
+    #fac078Root .card-body{padding:18px}
+    #fac078Root .upload{
+      border:2px dashed rgba(18,119,168,.45);
+      background:linear-gradient(135deg,#F0FAFF,#F5FFFA);
+      border-radius:22px;
+      min-height:228px;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      padding:22px;
+      transition:.25s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    #fac078Root .upload:before{
+      content:"";
+      position:absolute;
+      top:0;left:-120%;width:80%;height:100%;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+      transform:skewX(-18deg);
+      animation:shimmer 4.8s infinite;
+    }
+    @keyframes shimmer{0%{left:-120%}45%,100%{left:130%}}
+    #fac078Root .upload.drag{border-color:var(--verde);background:#ECFDF5;transform:scale(1.01)}
+    #fac078Root .upload-inner{position:relative;z-index:2}
+    #fac078Root .upload-icon{font-size:54px;margin-bottom:10px;animation:bounceSoft 2.2s ease-in-out infinite}
+    @keyframes bounceSoft{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    #fac078Root .upload h3{font-size:1.28rem;color:var(--azul);margin-bottom:6px}
+    #fac078Root .hint{color:var(--muted);line-height:1.45;margin-bottom:14px}
+    #fac078Root .file-input{display:none}
+    #fac078Root .btn{
+      border:none;
+      border-radius:14px;
+      padding:11px 16px;
+      font-weight:1000;
+      cursor:pointer;
+      transition:.18s ease;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    #fac078Root .btn:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,.14)}
+    #fac078Root .btn:active{transform:translateY(0)}
+    #fac078Root .btn-primary{background:linear-gradient(135deg,var(--azul2),var(--verde));color:#fff}
+    #fac078Root .btn-secondary{background:#EAF7FF;color:var(--azul);border:1px solid #CBEAFE}
+    #fac078Root .btn-dark{background:#0F172A;color:#fff}
+    #fac078Root .btn-danger{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA}
+    #fac078Root .btn:disabled{background:#CBD5E1;color:#64748B;cursor:not-allowed;box-shadow:none;transform:none}
+    #fac078Root .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    #fac078Root .field{display:flex;flex-direction:column;gap:6px}
+    #fac078Root .label{font-size:.82rem;font-weight:1000;color:#31546B}
+    #fac078Root .input{
+      width:100%;
+      border:1px solid var(--linea);
+      background:#F8FCFF;
+      color:var(--texto);
+      border-radius:12px;
+      padding:11px 12px;
+      font-weight:800;
+      min-height:42px;
+    }
+    #fac078Root .status{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:#EAF7FF;
+      border:1px solid #CBEAFE;
+      color:var(--azul);
+      font-weight:1000;
+      line-height:1.35;
+    }
+    #fac078Root .status .dot{
+      width:12px;height:12px;border-radius:999px;background:var(--azul2);
+      box-shadow:0 0 0 6px rgba(18,119,168,.12);
+      animation:pulseDot 1.4s ease-in-out infinite;
+      flex:none;
+    }
+    @keyframes pulseDot{0%,100%{transform:scale(.9);opacity:.75}50%{transform:scale(1.12);opacity:1}}
+    #fac078Root .status.ok{background:#ECFDF5;border-color:#B7F2D6;color:#047857}#fac078Root .status.ok .dot{background:var(--ok);box-shadow:0 0 0 6px rgba(22,163,74,.12)}
+    #fac078Root .status.warn{background:#FFFBEB;border-color:#FDE68A;color:#92400E}#fac078Root .status.warn .dot{background:var(--warn);box-shadow:0 0 0 6px rgba(245,158,11,.12)}
+    #fac078Root .status.err{background:#FEF2F2;border-color:#FECACA;color:#991B1B}#fac078Root .status.err .dot{background:var(--err);box-shadow:0 0 0 6px rgba(220,38,38,.12)}
+    #fac078Root .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+    #fac078Root .stat{
+      background:linear-gradient(180deg,#FFFFFF,#F7FCFF);
+      border:1px solid var(--linea);
+      border-radius:18px;
+      padding:15px;
+      box-shadow:0 6px 16px rgba(15,23,42,.06);
+      position:relative;
+      overflow:hidden;
+    }
+    #fac078Root .stat:after{content:"";position:absolute;right:-28px;top:-28px;width:80px;height:80px;border-radius:999px;background:rgba(16,185,129,.10)}
+    #fac078Root .stat-num{font-size:1.7rem;font-weight:1000;color:var(--azul);position:relative;z-index:1}
+    #fac078Root .stat-label{font-size:.78rem;color:var(--muted);font-weight:800;position:relative;z-index:1}
+    #fac078Root .pipeline{
+      display:grid;
+      gap:10px;
+    }
+    #fac078Root .step{
+      display:grid;
+      grid-template-columns:38px 1fr auto;
+      gap:10px;
+      align-items:center;
+      padding:12px;
+      border-radius:16px;
+      background:#F8FCFF;
+      border:1px solid var(--linea);
+      transition:.25s ease;
+      position:relative;
+      overflow:hidden;
+    }
+    #fac078Root .step.active{
+      border-color:#7DD3FC;
+      background:linear-gradient(135deg,#EAF7FF,#F0FDF4);
+      transform:translateX(2px);
+      box-shadow:0 9px 22px rgba(18,119,168,.12);
+    }
+    #fac078Root .step.active:before{
+      content:"";position:absolute;inset:0;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+      animation:scan 1.7s infinite;
+    }
+    @keyframes scan{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+    #fac078Root .step.ok{border-color:#B7F2D6;background:#ECFDF5}
+    #fac078Root .step.err{border-color:#FECACA;background:#FEF2F2}
+    #fac078Root .step.warn{border-color:#FDE68A;background:#FFFBEB}
+    #fac078Root .step-ico{
+      width:38px;height:38px;border-radius:14px;
+      display:grid;place-items:center;
+      background:#E2F3FF;
+      color:var(--azul);
+      font-weight:1000;
+      position:relative;z-index:1;
+    }
+    #fac078Root .step.active .step-ico{background:linear-gradient(135deg,var(--azul2),var(--verde));color:#fff;animation:pulse 1.2s infinite}
+    #fac078Root .step.ok .step-ico{background:#D1FAE5;color:#047857}#fac078Root .step.err .step-ico{background:#FEE2E2;color:#991B1B}#fac078Root .step.warn .step-ico{background:#FEF3C7;color:#92400E}
+    #fac078Root .step-title{font-weight:1000;color:#123;position:relative;z-index:1}#fac078Root .step-text{font-size:.82rem;color:var(--muted);margin-top:2px;line-height:1.3;position:relative;z-index:1}
+    #fac078Root .step-tag{font-size:.72rem;font-weight:1000;border-radius:999px;padding:5px 8px;color:#476375;background:#EAF7FF;position:relative;z-index:1}
+    #fac078Root .step.active .step-tag{background:#DBEAFE;color:#1D4ED8}#fac078Root .step.ok .step-tag{background:#D1FAE5;color:#047857}#fac078Root .step.err .step-tag{background:#FEE2E2;color:#991B1B}#fac078Root .step.warn .step-tag{background:#FEF3C7;color:#92400E}
+    #fac078Root .progress-wrap{height:13px;background:#E2E8F0;border-radius:999px;overflow:hidden;border:1px solid #D8E7F3}
+    #fac078Root .progress-bar{height:100%;width:0%;background:linear-gradient(90deg,var(--azul2),var(--verde));border-radius:999px;transition:width .35s ease;position:relative;overflow:hidden}
+    #fac078Root .progress-bar:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:scan 1.4s infinite}
+    #fac078Root .controls{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+    #fac078Root .tabs{display:flex;gap:8px;flex-wrap:wrap;padding:12px 18px;border-bottom:1px solid var(--linea);background:#F8FCFF}
+    #fac078Root .tab{padding:9px 12px;border-radius:999px;border:1px solid #CBEAFE;background:#fff;color:var(--azul);font-weight:1000;cursor:pointer;transition:.18s ease}
+    #fac078Root .tab.active{background:linear-gradient(135deg,var(--azul2),var(--verde));color:#fff;border-color:transparent;box-shadow:0 8px 18px rgba(18,119,168,.18)}
+    #fac078Root .search{display:flex;gap:8px;align-items:center;margin-bottom:12px;background:#F8FCFF;border:1px solid var(--linea);border-radius:14px;padding:9px 12px}
+    #fac078Root .search input{border:none;outline:none;background:transparent;flex:1;color:var(--texto);font-weight:700}
+    #fac078Root .panel{display:none}#fac078Root .panel.active{display:block;animation:fadeUp .25s ease}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    #fac078Root .chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:.75rem;font-weight:1000;background:#EAF7FF;color:var(--azul);border:1px solid #CBEAFE;margin:2px 4px 2px 0;max-width:100%;word-break:break-word}
+    #fac078Root .chip.ok{background:#ECFDF5;color:#047857;border-color:#B7F2D6}#fac078Root .chip.warn{background:#FFFBEB;color:#92400E;border-color:#FDE68A}#fac078Root .chip.bad{background:#FEF2F2;color:#991B1B;border-color:#FECACA}#fac078Root .chip.dark{background:#0F172A;color:#fff;border-color:#0F172A}
+    #fac078Root details{background:#fff;border:1px solid var(--linea);border-radius:18px;padding:12px;margin-bottom:10px;box-shadow:0 5px 15px rgba(15,23,42,.04)}
+    #fac078Root summary{cursor:pointer;font-weight:1000;color:var(--azul)}
+    #fac078Root summary::-webkit-details-marker{display:none}
+    #fac078Root .nc-card{background:#F8FCFF;border:1px solid var(--linea);border-radius:16px;padding:12px;margin:9px 0}
+    #fac078Root .nc-title{font-weight:1000;color:#153E5A}#fac078Root .nc-desc{margin-top:8px;color:#27384A;line-height:1.42;white-space:pre-wrap;font-size:.9rem;max-height:112px;overflow:hidden;position:relative}#fac078Root .nc-desc.open{max-height:none}#fac078Root .toggle{margin-top:6px;color:var(--azul2);font-weight:1000;font-size:.82rem;cursor:pointer;display:inline-block}
+    #fac078Root .result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}#fac078Root .result-card{border:1px solid var(--linea);border-radius:18px;padding:14px;background:#F8FCFF}#fac078Root .result-card h4{color:var(--azul);margin-bottom:8px}#fac078Root .link-list{display:grid;gap:8px}#fac078Root .file-link{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:10px;border-radius:14px;background:#fff;border:1px solid var(--linea);text-decoration:none;color:var(--texto);font-weight:850;transition:.18s ease}#fac078Root .file-link:hover{border-color:#7DD3FC;transform:translateY(-1px)}
+    #fac078Root .mini{font-size:.82rem;color:var(--muted);line-height:1.4}#fac078Root .divider{height:1px;background:var(--linea);margin:12px 0}#fac078Root .empty{padding:18px;border:1px dashed #CBEAFE;border-radius:16px;background:#F8FCFF;color:var(--muted);text-align:center;font-weight:850}
+    #fac078Root .overlay{display:none;position:fixed;inset:0;background:rgba(2,20,31,.74);z-index:99999;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(9px)}
+    #fac078Root .overlay.show{display:flex}
+    #fac078Root .modal{
+      width:min(760px,96vw);
+      max-height:92vh;
+      overflow:auto;
+      border-radius:28px;
+      background:#fff;
+      box-shadow:0 28px 80px rgba(0,0,0,.35);
+      border:1px solid rgba(255,255,255,.5);
+      animation:modalIn .25s ease;
+    }
+    @keyframes modalIn{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:none}}
+    #fac078Root .modal-head{padding:20px 22px;color:#fff;background:linear-gradient(135deg,var(--azul),var(--azul2),var(--verde));position:relative;overflow:hidden}#fac078Root .modal-head:after{content:"";position:absolute;right:-60px;top:-80px;width:210px;height:210px;border-radius:999px;background:rgba(255,255,255,.14);animation:float 6s infinite}
+    #fac078Root .modal-title{font-size:1.35rem;font-weight:1000;position:relative;z-index:1}#fac078Root .modal-sub{margin-top:5px;opacity:.9;position:relative;z-index:1;line-height:1.35}#fac078Root .modal-body{padding:18px 22px;display:grid;gap:14px}#fac078Root .modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:0 22px 20px;flex-wrap:wrap}#fac078Root .console{background:#071827;color:#D8F7FF;border-radius:18px;padding:12px;min-height:90px;max-height:160px;overflow:auto;font-family:Consolas,monospace;font-size:.78rem;line-height:1.42}#fac078Root .console div{margin:2px 0}#fac078Root .console .ok{color:#A7F3D0}#fac078Root .console .err{color:#FECACA}#fac078Root .console .warn{color:#FDE68A}#fac078Root .console .info{color:#BAE6FD}
+    @media(max-width:920px){#fac078Root .grid-top{grid-template-columns:1fr}#fac078Root .stats{grid-template-columns:repeat(2,1fr)}#fac078Root .result-grid{grid-template-columns:1fr}}
+    @media(max-width:580px){#fac078Root{padding:8px}#fac078Root .hero{padding:22px 16px}#fac078Root .main{padding:14px}#fac078Root .form-grid{grid-template-columns:1fr}#fac078Root .stats{grid-template-columns:1fr}#fac078Root .hero h1{font-size:1.55rem}#fac078Root .card-head{align-items:flex-start;flex-direction:column}#fac078Root .step{grid-template-columns:34px 1fr}#fac078Root .step-tag{grid-column:2}#fac078Root .controls .btn{width:100%}}
+  
+
+    /* ── APPWEB / SPA INTEGRATION ─────────────────────────────── */
+    #fac078Root{
+      width:100%;
+      min-height:0;
+      padding:0;
+      background:transparent;
+      color:var(--texto);
+      overflow:visible;
+    }
+    #fac078Root .shell{
+      max-width:none;
+      width:100%;
+      margin:0;
+      border-radius:20px;
+    }
+    #fac078Root .hero{
+      border-radius:20px 20px 0 0;
+    }
+    #fac078Root .overlay{
+      position:fixed;
+      inset:0;
+      z-index:8500;
+    }
+    #fac078Root .fac078-appweb-note{
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      margin-top:10px;
+      padding:6px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.2);
+      color:#fff;
+      font-size:.74rem;
+      font-weight:900;
+    }
+
+</style>
+
+<div id="fac078Root">
+  <div class="shell">
+    <header class="hero">
+      <div class="hero-content">
+        <div class="brand">
+          <div class="logo-ai"><span>🤖</span></div>
+          <div>
+            <h1>OGA-FAC-078 con IA · SIGA</h1>
+            <p>Extracción de evaluadores, no conformidades, generación del título oficial y guardado paralelo en carpeta general y carpeta del OEC.</p>
+            <div class="pill-row">
+              <span class="pill">SPA compatible con Code.gs</span>
+              <span class="pill">Backend FAC-078 v8.4</span>
+              <span class="pill" id="serverPill">Servidor IA listo</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-dark" onclick="f78_volverMenu()">← Menú principal</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="grid-top">
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">📎 Carga del informe FAC-014</div>
+            <span class="chip dark" id="fileNameChip">Sin archivo</span>
+          </div>
+          <div class="card-body">
+            <div class="upload" id="uploadZone">
+              <div class="upload-inner">
+                <div class="upload-icon">📄</div>
+                <h3>Subir PDF de evaluación</h3>
+                <p class="hint">Arrastra el PDF aquí o selecciónalo manualmente. El sistema irá mostrando cada fase del proceso.</p>
+                <input type="file" id="archivoPDF" class="file-input" accept="application/pdf" onchange="f78_leerPDF()" />
+                <button class="btn btn-primary" onclick="document.getElementById('archivoPDF').click()">Seleccionar FAC-014</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">⚙️ Secuencia del proceso</div>
+            <span class="chip" id="progressText">0%</span>
+          </div>
+          <div class="card-body" style="display:grid;gap:14px;">
+            <div class="progress-wrap"><div class="progress-bar" id="progressBar"></div></div>
+            <div class="pipeline" id="pipelineMain"></div>
+          </div>
+        </div>
+      </section>
+
+      <div class="status" id="statusBox"><span class="dot"></span><span id="statusText">Esperando FAC-014 para iniciar el análisis...</span></div>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">🧾 Datos extraídos del informe</div>
+          <button class="btn btn-secondary" onclick="f78_consultarServidor()">🛰️ Estado servidor</button>
+        </div>
+        <div class="card-body" style="display:grid;gap:16px;">
+          <div class="form-grid">
+            <div class="field"><div class="label">Registro de Acreditación</div><input id="registro" class="input" readonly /></div>
+            <div class="field"><div class="label">Nombre del OEC</div><input id="oec" class="input" readonly /></div>
+            <div class="field"><div class="label">Fecha de evaluación / inicio</div><input id="fecha" class="input" readonly /></div>
+            <div class="field"><div class="label">Tipo de evaluación</div><input id="tipo" class="input" readonly /></div>
+          </div>
+
+          <div class="form-grid">
+            <div class="field"><div class="label">Título base que generará el sistema</div><input id="tituloBase" class="input" readonly /></div>
+            <div class="field"><div class="label">Ejemplo con siglas</div><input id="tituloEjemplo" class="input" readonly /></div>
+          </div>
+
+          <div class="stats">
+            <div class="stat"><div class="stat-num" id="statEvaluadores">0</div><div class="stat-label">Evaluadores detectados</div></div>
+            <div class="stat"><div class="stat-num" id="statDocs">0</div><div class="stat-label">FAC-078 a generar</div></div>
+            <div class="stat"><div class="stat-num" id="statNCs">0</div><div class="stat-label">NCs detectadas</div></div>
+            <div class="stat"><div class="stat-num" id="statTiempo">0s</div><div class="stat-label">Tiempo extracción</div></div>
+          </div>
+
+          <div class="controls">
+            <button class="btn btn-primary" id="btnGenerar" onclick="f78_generarDocumentos()" disabled>🚀 Generar y guardar FAC-078</button>
+            <button class="btn btn-secondary" onclick="f78_limpiarTodo()">🧹 Limpiar</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" id="previewCard" style="display:none;">
+        <div class="card-head">
+          <div class="card-title">🔍 Vista previa completa</div>
+          <span class="chip" id="previewCounter">Sin datos</span>
+        </div>
+        <div class="tabs">
+          <button class="tab active" id="tabEval" onclick="f78_setTab('eval')">👤 Por evaluador</button>
+          <button class="tab" id="tabGlobal" onclick="f78_setTab('global')">🧾 Global</button>
+          <button class="tab" id="tabNoAsig" onclick="f78_setTab('noasig')">❗ No asignadas</button>
+          <button class="tab" id="tabTokens" onclick="f78_setTab('tokens')">🏷️ Tokens / alertas</button>
+          <button class="tab" id="tabHistorial" onclick="f78_setTab('historial')">📁 FAC-078 existentes</button>
+        </div>
+        <div class="card-body">
+          <div class="search">🔎 <input id="searchInput" placeholder="Buscar NC, requisito, descripción, estado o siglas..." oninput="f78_renderPreview()" /><span class="mini" id="searchHint">Sin filtro</span></div>
+          <div class="panel active" id="panelEval"></div>
+          <div class="panel" id="panelGlobal"></div>
+          <div class="panel" id="panelNoAsig"></div>
+          <div class="panel" id="panelTokens"></div>
+          <div class="panel" id="panelHistorial"></div>
+        </div>
+      </section>
+
+      <section class="card" id="resultCard" style="display:none;">
+        <div class="card-head">
+          <div class="card-title">✅ Resultado del guardado paralelo</div>
+          <span class="chip ok" id="resultChip">Finalizado</span>
+        </div>
+        <div class="card-body" id="resultBody"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="overlay" id="workOverlay">
+    <div class="modal">
+      <div class="modal-head">
+        <div class="modal-title" id="modalTitle">Procesando...</div>
+        <div class="modal-sub" id="modalSub">El sistema está trabajando.</div>
+      </div>
+      <div class="modal-body">
+        <div class="progress-wrap"><div class="progress-bar" id="modalProgress"></div></div>
+        <div class="pipeline" id="pipelineModal"></div>
+        <div class="console" id="consoleBox"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="btnModalClose" onclick="f78_cerrarWorkOverlay()" style="display:none;">Entendido</button>
+      </div>
+    </div>
+  </div>
+
+  
+</div>
+
+<script>
+    var f78_datosExtraidos = null;
+    var f78_resultadoGeneracion = null;
+    var f78_historialOEC = null;
+    var f78_activeTab = 'eval';
+    var f78_currentMode = 'idle';
+    var f78_currentSteps = [];
+    var f78_heartbeatTimer = null;
+    var f78_fakeTimer = null;
+    var f78_activo = true;
+
+    var F78_PIPELINES = {
+      analysis: [
+        {key:'pdf', icon:'PDF', title:'PDF recibido', text:'Validando archivo y preparando lectura'},
+        {key:'ia', icon:'IA', title:'Extracción con IA', text:'Enviando el FAC-014 al servidor Python'},
+        {key:'datos', icon:'DAT', title:'Datos estructurados', text:'Registro, OEC, tipo, fecha, evaluadores y NCs'},
+        {key:'titulo', icon:'TIT', title:'Título del documento', text:'Previsualizando nombre oficial del FAC-078'},
+        {key:'historial', icon:'OEC', title:'Carpeta del OEC', text:'Consultando Acciones Correctivas y FAC-078 existentes'}
+      ],
+      generate: [
+        {key:'general', icon:'1', title:'Carpeta general', text:'Guardando primero en la carpeta OGA-FAC-078'},
+        {key:'oec', icon:'2', title:'Carpeta del OEC', text:'Buscando la carpeta con el registro de acreditación'},
+        {key:'docs', icon:'3', title:'Generación por evaluador', text:'Creando documentos desde la plantilla y llenando NCs'},
+        {key:'paralelo', icon:'4', title:'Guardado paralelo', text:'Copiando a Acciones Correctivas del OEC'},
+        {key:'lista', icon:'5', title:'Listado final', text:'Cargando FAC-078 existentes en Acciones Correctivas'}
+      ]
+    };
+
+    function f78_init(){
+      f78_activo = true;
+      f78_setPipeline('analysis');
+      f78_setProgress(0);
+      f78_bindDragDrop();
+      f78_setStatus('Esperando FAC-014 para iniciar el análisis...', 'info');
+
+      // Integración con el ciclo de vida del App Shell.
+      if(window.OGA && typeof OGA.onUnmount === 'function'){
+        OGA.onUnmount(function(){
+          f78_activo = false;
+          f78_stopHeartbeat();
+          f78_stopFakeGeneration();
+          try{ f78_cerrarWorkOverlay(); }catch(_e){}
+        });
+      }
+    }
+
+    function f78_bindDragDrop(){
+      var up = document.getElementById('uploadZone');
+      ['dragenter','dragover','dragleave','drop'].forEach(function(ev){
+        up.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); }, false);
+        var root = document.getElementById('fac078Root');
+        if(root) root.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); }, false);
+      });
+      ['dragenter','dragover'].forEach(function(ev){
+        up.addEventListener(ev, function(){ up.classList.add('drag'); }, false);
+      });
+      ['dragleave','drop'].forEach(function(ev){
+        up.addEventListener(ev, function(){ up.classList.remove('drag'); }, false);
+      });
+      up.addEventListener('drop', function(e){
+        var files = e.dataTransfer && e.dataTransfer.files ? e.dataTransfer.files : [];
+        if(!files.length) return;
+        f78_procesarArchivo(files[0]);
+      }, false);
+    }
+
+    function f78_setPipeline(mode){
+      f78_currentMode = mode;
+      f78_currentSteps = F78_PIPELINES[mode].map(function(s){
+        return {key:s.key, icon:s.icon, title:s.title, text:s.text, state:'pending', detail:''};
+      });
+      f78_renderSteps();
+    }
+
+    function f78_renderSteps(){
+      var html = f78_currentSteps.map(function(s){
+        var tag = s.state === 'ok' ? 'Completado' : s.state === 'active' ? 'Ejecutando' : s.state === 'err' ? 'Error' : s.state === 'warn' ? 'Alerta' : 'Pendiente';
+        var ico = s.state === 'ok' ? '✓' : s.state === 'err' ? '!' : s.state === 'warn' ? '⚠' : s.icon;
+        return '<div class="step '+s.state+'">' +
+          '<div class="step-ico">'+f78_escapeHtml(ico)+'</div>' +
+          '<div><div class="step-title">'+f78_escapeHtml(s.title)+'</div><div class="step-text">'+f78_escapeHtml(s.detail || s.text)+'</div></div>' +
+          '<div class="step-tag">'+tag+'</div>' +
+        '</div>';
+      }).join('');
+      document.getElementById('pipelineMain').innerHTML = html;
+      document.getElementById('pipelineModal').innerHTML = html;
+    }
+
+    function f78_markStep(key, state, detail){
+      for(var i=0;i<f78_currentSteps.length;i++){
+        if(f78_currentSteps[i].key === key){
+          f78_currentSteps[i].state = state;
+          if(detail) f78_currentSteps[i].detail = detail;
+        }
+      }
+      f78_renderSteps();
+    }
+
+    function f78_resetFutureFrom(key){
+      var found = false;
+      for(var i=0;i<f78_currentSteps.length;i++){
+        if(f78_currentSteps[i].key === key) found = true;
+        if(found && f78_currentSteps[i].key !== key){
+          f78_currentSteps[i].state = 'pending';
+          f78_currentSteps[i].detail = '';
+        }
+      }
+      f78_renderSteps();
+    }
+
+    function f78_setProgress(n){
+      n = Math.max(0, Math.min(100, Math.round(n || 0)));
+      document.getElementById('progressBar').style.width = n + '%';
+      document.getElementById('modalProgress').style.width = n + '%';
+      document.getElementById('progressText').textContent = n + '%';
+    }
+
+    function f78_setStatus(text, type){
+      var box = document.getElementById('statusBox');
+      box.className = 'status ' + (type === 'ok' ? 'ok' : type === 'warn' ? 'warn' : type === 'err' ? 'err' : '');
+      document.getElementById('statusText').textContent = text;
+    }
+
+    function f78_openWorkOverlay(title, sub){
+      document.getElementById('modalTitle').textContent = title || 'Procesando...';
+      document.getElementById('modalSub').textContent = sub || 'El sistema está trabajando.';
+      document.getElementById('btnModalClose').style.display = 'none';
+      document.getElementById('consoleBox').innerHTML = '';
+      document.getElementById('workOverlay').classList.add('show');
+    }
+
+    function f78_cerrarWorkOverlay(){
+      document.getElementById('workOverlay').classList.remove('show');
+    }
+
+    function f78_allowOverlayClose(){
+      document.getElementById('btnModalClose').style.display = 'inline-flex';
+    }
+
+    function f78_logLine(text, cls){
+      var c = document.getElementById('consoleBox');
+      var div = document.createElement('div');
+      div.className = cls || 'info';
+      div.textContent = '[' + new Date().toLocaleTimeString() + '] ' + text;
+      c.appendChild(div);
+      c.scrollTop = c.scrollHeight;
+    }
+
+    function f78_startHeartbeat(lines){
+      f78_stopHeartbeat();
+      var i = 0;
+      f78_heartbeatTimer = setInterval(function(){
+        f78_logLine(lines[i % lines.length], 'info');
+        i++;
+      }, 1800);
+    }
+
+    function f78_stopHeartbeat(){
+      if(f78_heartbeatTimer){ clearInterval(f78_heartbeatTimer); f78_heartbeatTimer = null; }
+    }
+
+    function f78_startFakeGeneration(){
+      f78_stopFakeGeneration();
+      var order = ['general','oec','docs','paralelo','lista'];
+      var pct = [16,34,58,78,92];
+      var i = 0;
+      f78_markStep(order[0], 'active', 'Validando acceso a carpeta general OGA-FAC-078...');
+      f78_setProgress(pct[0]);
+      f78_fakeTimer = setInterval(function(){
+        if(i < order.length - 1){
+          f78_markStep(order[i], 'ok');
+          i++;
+          f78_markStep(order[i], 'active');
+          f78_setProgress(pct[i]);
+        } else {
+          f78_markStep(order[i], 'active', 'Finalizando operación en Drive...');
+        }
+      }, 2200);
+    }
+
+    function f78_stopFakeGeneration(){
+      if(f78_fakeTimer){ clearInterval(f78_fakeTimer); f78_fakeTimer = null; }
+    }
+
+    function f78_leerPDF(){
+      var input = document.getElementById('archivoPDF');
+      if(!input.files || !input.files.length){
+        f78_setStatus('Selecciona un archivo PDF para continuar.', 'warn');
+        return;
+      }
+      f78_procesarArchivo(input.files[0]);
+    }
+
+    function f78_procesarArchivo(file){
+      if(!file){ return; }
+      var isPdf = file.type === 'application/pdf' || String(file.name || '').toLowerCase().slice(-4) === '.pdf';
+      if(!isPdf){
+        f78_setStatus('Solo se permite cargar archivo PDF.', 'err');
+        return;
+      }
+      if(file.size > 25 * 1024 * 1024){
+        f78_setStatus('El archivo supera 25 MB. Reduce el PDF o divídelo antes de procesarlo.', 'err');
+        return;
+      }
+
+      f78_datosExtraidos = null;
+      f78_resultadoGeneracion = null;
+      f78_historialOEC = null;
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('previewCard').style.display = 'none';
+      document.getElementById('btnGenerar').disabled = true;
+      document.getElementById('fileNameChip').textContent = file.name;
+
+      f78_setPipeline('analysis');
+      f78_setProgress(5);
+      f78_openWorkOverlay('Analizando FAC-014', 'Primero se valida el PDF y luego se envía al servidor IA.');
+      f78_setStatus('Validando archivo PDF...', 'info');
+      f78_markStep('pdf','active','Leyendo archivo local y preparando base64...');
+      f78_logLine('Archivo recibido: ' + file.name, 'info');
+
+      var reader = new FileReader();
+      reader.onerror = function(){
+        f78_markStep('pdf','err','No se pudo leer el archivo en el navegador.');
+        f78_setStatus('No se pudo leer el archivo PDF.', 'err');
+        f78_logLine('Error de FileReader al leer PDF.', 'err');
+        f78_allowOverlayClose();
+      };
+      reader.onload = function(e){
+        var result = e.target.result || '';
+        var base64 = String(result).split(',')[1] || '';
+        if(base64.length < 50){
+          f78_markStep('pdf','err','El PDF no generó base64 válido.');
+          f78_setStatus('PDF inválido o vacío.', 'err');
+          f78_logLine('Base64 inválido.', 'err');
+          f78_allowOverlayClose();
+          return;
+        }
+
+        f78_markStep('pdf','ok','PDF listo para análisis.');
+        f78_markStep('ia','active','Enviando documento al servidor Python...');
+        f78_setProgress(25);
+        f78_setStatus('Extrayendo datos con IA...', 'info');
+        f78_logLine('Enviando PDF al servidor IA mediante extraerDatosFAC078Optimizado...', 'info');
+        f78_startHeartbeat([
+          'Servidor IA procesando texto, evaluadores y NCs...',
+          'Buscando registro de acreditación, tipo y fecha...',
+          'Asignando no conformidades por siglas de evaluador...',
+          'Validando tokens, warnings y datos estructurados...'
+        ]);
+
+        google.script.run
+          .withSuccessHandler(function(datos){
+            f78_stopHeartbeat();
+            f78_markStep('ia','ok','Extracción recibida correctamente.');
+            f78_markStep('datos','ok','Datos estructurados listos para vista previa.');
+            f78_setProgress(58);
+            f78_logLine('Extracción completada. Preparando vista previa.', 'ok');
+            f78_recibirDatosExtraidos(datos);
+          })
+          .withFailureHandler(function(err){
+            f78_stopHeartbeat();
+            var msg = f78_errorToText(err);
+            f78_markStep('ia','err',msg);
+            f78_resetFutureFrom('ia');
+            f78_setProgress(25);
+            f78_setStatus('Error durante la extracción IA: ' + msg, 'err');
+            f78_logLine(msg, 'err');
+            f78_allowOverlayClose();
+          })
+          .extraerDatosFAC078Optimizado(base64, file.name);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function f78_recibirDatosExtraidos(datos){
+      if(!f78_sigueMontado()) return;
+      f78_datosExtraidos = datos || {};
+      f78_pintarDatosBasicos();
+      f78_renderPreview();
+      document.getElementById('previewCard').style.display = 'block';
+
+      f78_markStep('titulo','active','Construyendo título oficial del documento...');
+      f78_setStatus('Construyendo título y consultando carpeta del OEC...', 'info');
+      f78_logLine('Solicitando previsualización del título oficial...', 'info');
+
+      google.script.run
+        .withSuccessHandler(function(titulo){
+          document.getElementById('tituloBase').value = titulo && titulo.titulo_base ? titulo.titulo_base : '';
+          document.getElementById('tituloEjemplo').value = titulo && titulo.ejemplo_con_siglas ? titulo.ejemplo_con_siglas : '';
+          f78_markStep('titulo','ok','Título listo: ' + (titulo && titulo.titulo_base ? titulo.titulo_base : 'generado'));
+          f78_setProgress(72);
+          f78_logLine('Título previsualizado correctamente.', 'ok');
+          f78_consultarHistorialOEC(false);
+        })
+        .withFailureHandler(function(err){
+          var msg = f78_errorToText(err);
+          f78_markStep('titulo','warn','No se pudo previsualizar título: ' + msg);
+          f78_setProgress(68);
+          f78_logLine('Alerta título: ' + msg, 'warn');
+          f78_consultarHistorialOEC(false);
+        })
+        .previsualizarTituloFAC078(f78_datosExtraidos);
+    }
+
+    function f78_consultarHistorialOEC(manual){
+      if(!f78_datosExtraidos || !f78_datosExtraidos.registro){
+        f78_markStep('historial','warn','No hay registro para buscar carpeta del OEC.');
+        f78_finalizarAnalisis('Análisis completado con alerta: no hay registro.', 'warn');
+        return;
+      }
+      f78_markStep('historial','active','Buscando carpeta del OEC por registro: ' + f78_datosExtraidos.registro);
+      if(manual){
+        f78_openWorkOverlay('Consultando carpeta del OEC', 'Buscando FAC-078 existentes en Acciones Correctivas.');
+        f78_logLine('Registro: ' + f78_datosExtraidos.registro, 'info');
+      }
+      google.script.run
+        .withSuccessHandler(function(res){
+          f78_historialOEC = res || null;
+          f78_markStep('historial','ok','Historial localizado en Acciones Correctivas.');
+          f78_setProgress(100);
+          f78_logLine('Carpeta del OEC localizada y listado recibido.', 'ok');
+          f78_renderHistorial();
+          f78_finalizarAnalisis('FAC-014 procesado correctamente. Puedes generar los FAC-078.', 'ok');
+        })
+        .withFailureHandler(function(err){
+          var msg = f78_errorToText(err);
+          f78_historialOEC = { error: msg };
+          f78_markStep('historial','warn','No se pudo listar carpeta del OEC: ' + msg);
+          f78_setProgress(90);
+          f78_logLine('Alerta carpeta OEC: ' + msg, 'warn');
+          f78_renderHistorial();
+          f78_finalizarAnalisis('Extracción lista, pero revisar carpeta del OEC: ' + msg, 'warn');
+        })
+        .listarFAC078AccionesCorrectivasPorRegistro(f78_datosExtraidos.registro);
+    }
+
+    function f78_finalizarAnalisis(texto, tipo){
+      f78_pintarDatosBasicos();
+      f78_renderPreview();
+
+      var docsGenerables = f78_getDocsGenerablesPreview();
+      var sinDocs = docsGenerables.length === 0;
+
+      document.getElementById('btnGenerar').disabled = sinDocs;
+
+      if(sinDocs){
+        texto = 'Extracción lista, pero no hay evaluadores con NC asignadas. No se generará ningún FAC-078 vacío.';
+        tipo = 'warn';
+      }
+
+      f78_setStatus(texto, tipo || 'ok');
+      document.getElementById('modalTitle').textContent = tipo === 'warn' ? 'Análisis finalizado con alerta' : 'Análisis finalizado';
+      document.getElementById('modalSub').textContent = texto;
+      f78_allowOverlayClose();
+    }
+
+    function f78_pintarDatosBasicos(){
+      if(!f78_sigueMontado()) return;
+      var d = f78_datosExtraidos || {};
+      document.getElementById('registro').value = d.registro || 'No encontrado';
+      document.getElementById('oec').value = d.oec || 'No encontrado';
+      document.getElementById('fecha').value = d.fecha || 'No encontrada';
+      document.getElementById('tipo').value = d.tipo || 'No especificado';
+      if(!document.getElementById('tituloBase').value){
+        document.getElementById('tituloBase').value = 'Pendiente de previsualización...';
+      }
+      if(!document.getElementById('tituloEjemplo').value){
+        document.getElementById('tituloEjemplo').value = 'Pendiente...';
+      }
+      var evaluadores = Array.isArray(d.evaluadores) ? d.evaluadores : [];
+      var evalValidos = f78_getEvaluadoresValidos();
+      var docsGenerables = f78_getDocsGenerablesPreview();
+      var ncs = Array.isArray(d.ncs) ? d.ncs : [];
+      var omitidos = Math.max(evalValidos.length - docsGenerables.length, 0);
+
+      document.getElementById('statEvaluadores').textContent = evaluadores.length;
+      document.getElementById('statDocs').textContent = docsGenerables.length;
+      document.getElementById('statNCs').textContent = ncs.length;
+      document.getElementById('statTiempo').textContent = ((d.stats && d.stats.tiempo_total_seg) ? d.stats.tiempo_total_seg : 0) + 's';
+      document.getElementById('previewCounter').textContent = ncs.length + ' NCs • ' + docsGenerables.length + ' documentos • ' + omitidos + ' omitidos';
+      if(d.req_id){ document.getElementById('serverPill').textContent = 'req_id ' + String(d.req_id).slice(0,8); }
+    }
+
+    function f78_getEvaluadoresValidos(){
+      var evaluadores = f78_datosExtraidos && Array.isArray(f78_datosExtraidos.evaluadores) ? f78_datosExtraidos.evaluadores : [];
+      return evaluadores.filter(function(ev){ return String(ev.rol || '').toLowerCase().indexOf('representante del oec') === -1; });
+    }
+
+    function f78_getNCsAsignadasPreview(ev){
+      var asig = f78_datosExtraidos && f78_datosExtraidos.asignacion ? f78_datosExtraidos.asignacion : {};
+      var porEval = asig.porEvaluador || {};
+      var sigRaw = String((ev && ev.siglas) || '').toUpperCase().trim();
+      var tokens = sigRaw ? sigRaw.split(/[\/;,|]+/).map(function(x){ return x.trim(); }).filter(Boolean) : [];
+      var arr = [];
+
+      if(sigRaw && Array.isArray(porEval[sigRaw])) arr = arr.concat(porEval[sigRaw]);
+
+      tokens.forEach(function(t){
+        if(Array.isArray(porEval[t])) arr = arr.concat(porEval[t]);
+      });
+
+      var seen = {};
+      return arr.filter(function(nc){
+        var tieneContenido = [nc && nc.nc, nc && nc.requisito, nc && nc.descripcion, nc && nc.estado, nc && nc.evaluador_siglas]
+          .some(function(v){ return String(v || '').trim() !== ''; });
+        if(!tieneContenido) return false;
+        var key = String((nc && nc.nc) || '').toUpperCase() + '|' + String((nc && nc.descripcion) || '').slice(0,160).toLowerCase();
+        if(seen[key]) return false;
+        seen[key] = true;
+        return true;
+      });
+    }
+
+    function f78_getDocsGenerablesPreview(){
+      var evalValidos = f78_getEvaluadoresValidos();
+      var vistos = {};
+      return evalValidos.filter(function(ev){
+        var sig = String((ev && ev.siglas) || '').toUpperCase().trim();
+        var key = sig || String((ev && ev.nombre) || '').toUpperCase().trim();
+        if(key && vistos[key]) return false;
+        if(key) vistos[key] = true;
+        return f78_getNCsAsignadasPreview(ev).length > 0;
+      });
+    }
+
+    function f78_setTab(tab){
+      f78_activeTab = tab;
+      ['Eval','Global','NoAsig','Tokens','Historial'].forEach(function(x){
+        document.getElementById('tab' + x).classList.remove('active');
+      });
+      ['panelEval','panelGlobal','panelNoAsig','panelTokens','panelHistorial'].forEach(function(id){
+        document.getElementById(id).classList.remove('active');
+      });
+      if(tab === 'eval'){ document.getElementById('tabEval').classList.add('active'); document.getElementById('panelEval').classList.add('active'); }
+      if(tab === 'global'){ document.getElementById('tabGlobal').classList.add('active'); document.getElementById('panelGlobal').classList.add('active'); }
+      if(tab === 'noasig'){ document.getElementById('tabNoAsig').classList.add('active'); document.getElementById('panelNoAsig').classList.add('active'); }
+      if(tab === 'tokens'){ document.getElementById('tabTokens').classList.add('active'); document.getElementById('panelTokens').classList.add('active'); }
+      if(tab === 'historial'){ document.getElementById('tabHistorial').classList.add('active'); document.getElementById('panelHistorial').classList.add('active'); }
+      f78_renderPreview();
+    }
+
+    function f78_renderPreview(){
+      if(!f78_sigueMontado()) return;
+      if(!f78_datosExtraidos) return;
+      var q = String(document.getElementById('searchInput').value || '').trim().toLowerCase();
+      document.getElementById('searchHint').textContent = q ? 'Filtro activo' : 'Sin filtro';
+      f78_renderPorEvaluador(q);
+      f78_renderGlobal(q);
+      f78_renderNoAsignadas(q);
+      f78_renderTokens();
+      f78_renderHistorial();
+    }
+
+    function f78_matchesNC(nc, q){
+      if(!q) return true;
+      var text = [nc.nc,nc.requisito,nc.descripcion,nc.estado,nc.evaluador_siglas].join(' ').toLowerCase();
+      return text.indexOf(q) !== -1;
+    }
+
+    function f78_renderPorEvaluador(q){
+      var evalValidos = f78_getEvaluadoresValidos();
+      var html = evalValidos.map(function(ev, idx){
+        var sig = String(ev.siglas || '').toUpperCase().trim();
+        var arrAll = f78_getNCsAsignadasPreview(ev);
+        var arr = arrAll.filter(function(nc){ return f78_matchesNC(nc, q); });
+        var seGenera = arrAll.length > 0;
+        var list = arr.length ? arr.slice(0,80).map(function(nc, i){ return f78_ncCard(nc, 'ev_'+idx+'_'+i); }).join('') : '<div class="empty">Sin NCs para este evaluador. Este FAC-078 se omitirá para evitar documentos vacíos.</div>';
+        return '<details '+(seGenera ? 'open' : '')+'><summary>'+f78_escapeHtml(ev.nombre || 'Sin nombre')+' • '+f78_escapeHtml(sig)+' • '+arrAll.length+' NCs '+(seGenera ? '✅ Generable' : '⚠️ Omitido')+'</summary>'+
+          '<div style="margin:10px 0"><span class="chip '+(seGenera ? 'ok' : 'warn')+'">'+(seGenera ? 'Se generará' : 'No se generará')+'</span><span class="chip">'+f78_escapeHtml(sig)+'</span><span class="chip">Asignadas: '+arrAll.length+'</span><span class="chip">Rol: '+f78_escapeHtml(ev.rol || 'N/D')+'</span></div>'+list+'</details>';
+      }).join('');
+      document.getElementById('panelEval').innerHTML = html || '<div class="empty">No hay evaluadores válidos.</div>';
+    }
+
+    function f78_renderGlobal(q){
+      var ncs = Array.isArray(f78_datosExtraidos.ncs) ? f78_datosExtraidos.ncs : [];
+      var arr = ncs.filter(function(nc){ return f78_matchesNC(nc, q); });
+      var html = '<div style="margin-bottom:10px"><span class="chip">Global: '+arr.length+'</span></div>' +
+        (arr.length ? arr.slice(0,160).map(function(nc, i){ return f78_ncCard(nc, 'gl_'+i); }).join('') : '<div class="empty">No hay NCs con el filtro actual.</div>');
+      document.getElementById('panelGlobal').innerHTML = html;
+    }
+
+    function f78_renderNoAsignadas(q){
+      var asig = f78_datosExtraidos.asignacion || {};
+      var noAsignadas = Array.isArray(asig.noAsignadas) ? asig.noAsignadas : [];
+      var sinSiglas = Array.isArray(asig.sinSiglas) ? asig.sinSiglas : [];
+      var arr = noAsignadas.filter(function(nc){ return f78_matchesNC(nc, q); });
+      var html = '<div style="margin-bottom:10px"><span class="chip bad">No asignadas: '+arr.length+'</span><span class="chip warn">Sin siglas: '+sinSiglas.length+'</span></div>'+
+        (arr.length ? arr.map(function(nc, i){ return f78_ncCard(nc, 'na_'+i); }).join('') : '<div class="empty">No hay NCs no asignadas.</div>');
+      document.getElementById('panelNoAsig').innerHTML = html;
+    }
+
+    function f78_renderTokens(){
+      var asig = f78_datosExtraidos.asignacion || {};
+      var tokens = Array.isArray(asig.tokensNoEvaluador) ? asig.tokensNoEvaluador : [];
+      var warnings = Array.isArray(f78_datosExtraidos.warnings) ? f78_datosExtraidos.warnings : [];
+      var inferidos = Array.isArray(asig.evaluadores_inferidos) ? asig.evaluadores_inferidos : [];
+      var html = '<div><span class="chip '+(tokens.length?'bad':'ok')+'">Tokens sin evaluador: '+tokens.length+'</span><span class="chip '+(warnings.length?'warn':'ok')+'">Warnings: '+warnings.length+'</span><span class="chip">Inferidos: '+inferidos.length+'</span></div><div class="divider"></div>';
+      html += '<h4 style="color:var(--azul);margin-bottom:8px">Tokens detectados sin evaluador</h4>';
+      html += tokens.length ? tokens.map(function(t){ return '<span class="chip bad">'+f78_escapeHtml(t)+'</span>'; }).join('') : '<span class="chip ok">Ninguno</span>';
+      html += '<div class="divider"></div><h4 style="color:var(--azul);margin-bottom:8px">Warnings del servidor</h4>';
+      html += warnings.length ? warnings.map(function(w){ return '<div class="chip warn">'+f78_escapeHtml(w)+'</div>'; }).join('') : '<span class="chip ok">Sin warnings</span>';
+      document.getElementById('panelTokens').innerHTML = html;
+    }
+
+    function f78_renderHistorial(){
+      if(!f78_sigueMontado()) return;
+      var panel = document.getElementById('panelHistorial');
+      if(!f78_historialOEC){
+        panel.innerHTML = '<div class="empty">Aún no se ha consultado la carpeta del OEC.</div>';
+        return;
+      }
+      if(f78_historialOEC.error){
+        panel.innerHTML = '<div class="empty">⚠️ '+f78_escapeHtml(f78_historialOEC.error)+'</div>';
+        return;
+      }
+      var carpetaOec = f78_historialOEC.carpeta_oec || {};
+      var carpetaAcc = f78_historialOEC.carpeta_acciones_correctivas || {};
+      var archivos = Array.isArray(f78_historialOEC.archivos) ? f78_historialOEC.archivos : [];
+      var html = '<div style="margin-bottom:12px">'+
+        '<span class="chip ok">OEC: '+f78_escapeHtml(carpetaOec.nombre || '')+'</span>'+
+        '<span class="chip ok">Acciones Correctivas: '+f78_escapeHtml(carpetaAcc.nombre || '')+'</span>'+
+        '<span class="chip">FAC-078 existentes: '+archivos.length+'</span></div>';
+      if(carpetaOec.url || carpetaAcc.url){
+        html += '<div class="controls" style="justify-content:flex-start;margin-bottom:12px">';
+        if(carpetaOec.url) html += '<a class="btn btn-secondary" target="_blank" href="'+f78_escapeAttr(carpetaOec.url)+'">Abrir carpeta OEC</a>';
+        if(carpetaAcc.url) html += '<a class="btn btn-secondary" target="_blank" href="'+f78_escapeAttr(carpetaAcc.url)+'">Abrir Acciones Correctivas</a>';
+        html += '</div>';
+      }
+      html += archivos.length ? '<div class="link-list">'+archivos.map(function(f){
+        return '<a class="file-link" target="_blank" href="'+f78_escapeAttr(f.url)+'"><span>📄 '+f78_escapeHtml(f.nombre)+'</span><span class="chip">Abrir</span></a>';
+      }).join('')+'</div>' : '<div class="empty">No hay FAC-078 existentes en Acciones Correctivas.</div>';
+      panel.innerHTML = html;
+    }
+
+    function f78_ncCard(nc, id){
+      var descId = 'desc_' + String(id).replace(/[^a-zA-Z0-9_]/g,'_');
+      var desc = String(nc.descripcion || '');
+      var toggle = desc.length > 260 ? '<span class="toggle" onclick="f78_toggleDesc(\''+descId+'\', this)">Ver más</span>' : '';
+      return '<div class="nc-card"><div class="nc-title">'+f78_escapeHtml(nc.nc || 'NC')+'</div>'+
+        '<div style="margin-top:6px">'+
+        (nc.evaluador_siglas ? '<span class="chip">'+f78_escapeHtml(nc.evaluador_siglas)+'</span>' : '<span class="chip warn">Sin siglas</span>')+
+        (nc.requisito ? '<span class="chip">Req: '+f78_escapeHtml(String(nc.requisito).slice(0,120))+'</span>' : '')+
+        (nc.estado ? '<span class="chip '+(String(nc.estado).toLowerCase().indexOf('no')>=0?'bad':'ok')+'">'+f78_escapeHtml(nc.estado)+'</span>' : '')+
+        '</div><div class="nc-desc" id="'+descId+'">'+f78_escapeHtml(desc)+'</div>'+toggle+'</div>';
+    }
+
+    function f78_toggleDesc(id, btn){
+      var el = document.getElementById(id);
+      if(!el) return;
+      var open = el.classList.toggle('open');
+      btn.textContent = open ? 'Ver menos' : 'Ver más';
+    }
+
+    function f78_generarDocumentos(){
+      if(!f78_datosExtraidos){
+        f78_setStatus('Primero debes procesar un FAC-014.', 'warn');
+        return;
+      }
+
+      var docsGenerables = f78_getDocsGenerablesPreview();
+      if(!docsGenerables.length){
+        f78_setStatus('No hay evaluadores con NC asignadas. Se evita generar FAC-078 vacíos.', 'warn');
+        f78_renderPreview();
+        return;
+      }
+
+      document.getElementById('btnGenerar').disabled = true;
+      document.getElementById('resultCard').style.display = 'none';
+      f78_setPipeline('generate');
+      f78_setProgress(10);
+      f78_openWorkOverlay('Generando FAC-078', 'Se guardará primero en carpeta general y luego en Acciones Correctivas del OEC.');
+      f78_setStatus('Generando documentos FAC-078 y guardando en paralelo...', 'info');
+      f78_logLine('Iniciando generarFAC078Optimizado con Code.gs v8.4...', 'info');
+      f78_startFakeGeneration();
+      f78_startHeartbeat([
+        'Drive está creando copias desde la plantilla...',
+        'El sistema está llenando marcadores y tabla de NCs...',
+        'Buscando carpeta del OEC por registro de acreditación...',
+        'Copiando documentos a Acciones Correctivas...',
+        'Preparando listado final de FAC-078 existentes...'
+      ]);
+
+      google.script.run
+        .withSuccessHandler(function(res){
+          f78_stopHeartbeat();
+          f78_stopFakeGeneration();
+          f78_resultadoGeneracion = res || {};
+          f78_aplicarProcesoBackend(f78_resultadoGeneracion.proceso || []);
+          f78_markStep('lista','ok','Listado final cargado.');
+          f78_setProgress(100);
+          f78_logLine('Generación y guardado paralelo completados.', 'ok');
+          f78_setStatus(f78_resultadoGeneracion.mensaje || 'Documentos generados correctamente.', 'ok');
+          f78_renderResultadoGeneracion(f78_resultadoGeneracion);
+          document.getElementById('modalTitle').textContent = 'Proceso finalizado correctamente';
+          document.getElementById('modalSub').textContent = f78_resultadoGeneracion.mensaje || 'Los FAC-078 fueron generados y guardados.';
+          f78_allowOverlayClose();
+          document.getElementById('btnGenerar').disabled = false;
+        })
+        .withFailureHandler(function(err){
+          f78_stopHeartbeat();
+          f78_stopFakeGeneration();
+          var msg = f78_errorToText(err);
+          f78_marcarPasoActivoComoError(msg);
+          f78_setStatus('Error generando FAC-078: ' + msg, 'err');
+          f78_logLine(msg, 'err');
+          document.getElementById('modalTitle').textContent = 'Error en generación';
+          document.getElementById('modalSub').textContent = msg;
+          f78_allowOverlayClose();
+          document.getElementById('btnGenerar').disabled = false;
+        })
+        .generarFAC078Optimizado(f78_datosExtraidos);
+    }
+
+    function f78_aplicarProcesoBackend(proceso){
+      // El Code.gs v8.3 devuelve pasos 1 a 4 dentro de res.proceso.
+      var map = {1:'general',2:'oec',3:'docs',4:'paralelo'};
+      for(var i=0;i<f78_currentSteps.length;i++) f78_currentSteps[i].state = 'pending';
+      if(Array.isArray(proceso) && proceso.length){
+        proceso.forEach(function(p){
+          var key = map[p.paso];
+          if(!key) return;
+          f78_markStep(key, String(p.estado || '').toUpperCase() === 'OK' ? 'ok' : 'err', p.mensaje || p.detalle || 'Paso procesado');
+        });
+      } else {
+        f78_markStep('general','ok');
+        f78_markStep('oec','ok');
+        f78_markStep('docs','ok');
+        f78_markStep('paralelo','ok');
+      }
+      f78_renderSteps();
+    }
+
+    function f78_marcarPasoActivoComoError(msg){
+      var marked = false;
+      for(var i=0;i<f78_currentSteps.length;i++){
+        if(f78_currentSteps[i].state === 'active'){
+          f78_currentSteps[i].state = 'err';
+          f78_currentSteps[i].detail = msg;
+          marked = true;
+          break;
+        }
+      }
+      if(!marked && f78_currentSteps.length){
+        f78_currentSteps[Math.min(1,f78_currentSteps.length-1)].state = 'err';
+        f78_currentSteps[Math.min(1,f78_currentSteps.length-1)].detail = msg;
+      }
+      f78_renderSteps();
+    }
+
+    function f78_renderResultadoGeneracion(res){
+      if(!f78_sigueMontado()) return;
+      var archivos = Array.isArray(res.archivos) ? res.archivos : [];
+      var omitidos = Array.isArray(res.omitidos) ? res.omitidos : [];
+      var guardado = res.guardado || {};
+      var general = guardado.carpeta_general || {};
+      var oec = guardado.carpeta_oec || {};
+      var acciones = guardado.carpeta_acciones_correctivas || {};
+      var existentes = Array.isArray(guardado.fac078_en_acciones_correctivas) ? guardado.fac078_en_acciones_correctivas : [];
+
+      var html = '<div class="result-grid">' +
+        '<div class="result-card"><h4>📁 Carpetas utilizadas</h4>'+
+          '<div class="link-list">'+
+          (general.url ? '<a class="file-link" target="_blank" href="'+f78_escapeAttr(general.url)+'"><span>Carpeta general: '+f78_escapeHtml(general.nombre || 'OGA-FAC-078')+'</span><span class="chip">Abrir</span></a>' : '')+
+          (oec.url ? '<a class="file-link" target="_blank" href="'+f78_escapeAttr(oec.url)+'"><span>Carpeta OEC: '+f78_escapeHtml(oec.nombre || '')+'</span><span class="chip">Abrir</span></a>' : '')+
+          (acciones.url ? '<a class="file-link" target="_blank" href="'+f78_escapeAttr(acciones.url)+'"><span>Acciones Correctivas: '+f78_escapeHtml(acciones.nombre || '')+'</span><span class="chip">Abrir</span></a>' : '')+
+          '</div></div>'+
+        '<div class="result-card"><h4>🧾 Resumen</h4>'+
+          '<span class="chip ok">Generados: '+archivos.length+'</span>'+
+          '<span class="chip warn">Omitidos: '+omitidos.length+'</span>'+
+          '<span class="chip ok">Existentes en Acciones: '+existentes.length+'</span>'+
+          '<span class="chip">Título base: '+f78_escapeHtml(res.titulo_base || '')+'</span>'+
+        '</div></div>';
+
+      html += '<div class="divider"></div><h4 style="color:var(--azul);margin-bottom:10px">Documentos generados</h4>';
+      html += archivos.length ? '<div class="link-list">'+archivos.map(function(a){
+        return '<div class="result-card"><b>'+f78_escapeHtml(a.titulo || a.evaluador || 'FAC-078')+'</b><div style="margin-top:8px">'+
+          '<span class="chip">'+f78_escapeHtml(a.evaluador || '')+'</span><span class="chip ok">NCs: '+f78_escapeHtml(a.ncs_asignadas || 0)+'</span></div>'+ 
+          '<div class="controls" style="justify-content:flex-start;margin-top:10px">'+
+          (a.url_general ? '<a class="btn btn-secondary" target="_blank" href="'+f78_escapeAttr(a.url_general)+'">Abrir general</a>' : '')+
+          (a.url_oec ? '<a class="btn btn-primary" target="_blank" href="'+f78_escapeAttr(a.url_oec)+'">Abrir OEC</a>' : '')+
+          '</div></div>';
+      }).join('')+'</div>' : '<div class="empty">No se generó ningún documento porque no había NC asignadas a evaluadores.</div>';
+
+      if(omitidos.length){
+        html += '<div class="divider"></div><h4 style="color:var(--azul);margin-bottom:10px">Evaluadores omitidos</h4>';
+        html += '<div class="link-list">'+omitidos.map(function(o){
+          return '<div class="result-card"><b>'+f78_escapeHtml(o.evaluador || 'Evaluador')+'</b><div style="margin-top:8px">'+
+            '<span class="chip warn">'+f78_escapeHtml(o.siglas || '')+'</span>'+
+            '<span class="chip warn">'+f78_escapeHtml(o.motivo || 'Sin NC asignadas')+'</span>'+
+            '</div></div>';
+        }).join('')+'</div>';
+      }
+
+      html += '<div class="divider"></div><h4 style="color:var(--azul);margin-bottom:10px">FAC-078 existentes en Acciones Correctivas</h4>';
+      html += existentes.length ? '<div class="link-list">'+existentes.map(function(f){
+        return '<a class="file-link" target="_blank" href="'+f78_escapeAttr(f.url)+'"><span>📄 '+f78_escapeHtml(f.nombre)+'</span><span class="chip">Abrir</span></a>';
+      }).join('')+'</div>' : '<div class="empty">No se reportaron FAC-078 existentes.</div>';
+
+      document.getElementById('resultBody').innerHTML = html;
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('resultCard').scrollIntoView({behavior:'smooth', block:'start'});
+
+      f78_historialOEC = {
+        carpeta_oec: oec,
+        carpeta_acciones_correctivas: acciones,
+        archivos: existentes
+      };
+      f78_renderHistorial();
+    }
+
+    function f78_consultarServidor(){
+      f78_openWorkOverlay('Consultando servidor IA', 'Validando health, review queue y regresión.');
+      f78_logLine('Solicitando obtenerSnapshotServidorFAC078...', 'info');
+      f78_setStatus('Consultando estado del servidor IA...', 'info');
+      f78_setProgress(35);
+      google.script.run
+        .withSuccessHandler(function(res){
+          f78_setProgress(100);
+          var health = res && res.health ? res.health : {};
+          var ok = health.status || health.ok || 'ok';
+          f78_logLine('Respuesta servidor recibida.', 'ok');
+          document.getElementById('modalTitle').textContent = 'Servidor consultado';
+          document.getElementById('modalSub').textContent = 'Estado: ' + ok;
+          f78_setStatus('Servidor IA consultado correctamente.', 'ok');
+          f78_allowOverlayClose();
+        })
+        .withFailureHandler(function(err){
+          var msg = f78_errorToText(err);
+          f78_setProgress(40);
+          f78_logLine(msg, 'err');
+          document.getElementById('modalTitle').textContent = 'Error consultando servidor';
+          document.getElementById('modalSub').textContent = msg;
+          f78_setStatus('No se pudo consultar servidor: ' + msg, 'err');
+          f78_allowOverlayClose();
+        })
+        .obtenerSnapshotServidorFAC078(f78_datosExtraidos && f78_datosExtraidos.req_id ? f78_datosExtraidos.req_id : '', 8);
+    }
+
+    function f78_limpiarTodo(){
+      f78_datosExtraidos = null;
+      f78_resultadoGeneracion = null;
+      f78_historialOEC = null;
+      document.getElementById('archivoPDF').value = '';
+      document.getElementById('fileNameChip').textContent = 'Sin archivo';
+      ['registro','oec','fecha','tipo','tituloBase','tituloEjemplo'].forEach(function(id){ document.getElementById(id).value = ''; });
+      ['statEvaluadores','statDocs','statNCs'].forEach(function(id){ document.getElementById(id).textContent = '0'; });
+      document.getElementById('statTiempo').textContent = '0s';
+      document.getElementById('btnGenerar').disabled = true;
+      document.getElementById('previewCard').style.display = 'none';
+      document.getElementById('resultCard').style.display = 'none';
+      f78_setPipeline('analysis');
+      f78_setProgress(0);
+      f78_setStatus('Esperando FAC-014 para iniciar el análisis...', 'info');
+    }
+
+    function f78_volverMenu(){
+      f78_stopHeartbeat();
+      f78_stopFakeGeneration();
+      f78_activo = false;
+      if(window.OGA && typeof OGA.irAlMenu === 'function'){
+        OGA.irAlMenu();
+        return;
+      }
+      try{ google.script.host.close(); }catch(e){}
+    }
+
+    // Alias por compatibilidad con versiones anteriores del HTML.
+    function f78_cerrarModalActual(){ f78_volverMenu(); }
+
+    function f78_sigueMontado(){
+      return f78_activo && !!document.getElementById('fac078Root');
+    }
+
+    function f78_errorToText(err){
+      if(!err) return 'Error desconocido';
+      if(typeof err === 'string') return err;
+      if(err.message) return err.message;
+      if(err.details) return err.details;
+      try{ return JSON.stringify(err); }catch(e){ return String(err); }
+    }
+
+    function f78_escapeHtml(s){
+      return String(s == null ? '' : s)
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+    function f78_escapeAttr(s){ return f78_escapeHtml(s).replace(/`/g,'&#96;'); }
+
+    // En AppWeb el parcial se inyecta después de que window.onload ya ocurrió.
+    f78_init();
+  
+</script>

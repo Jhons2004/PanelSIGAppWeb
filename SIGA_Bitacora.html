@@ -1,0 +1,25 @@
+<style>
+#sigaAuditRoot{font-family:system-ui,sans-serif;color:var(--text);padding:22px}
+#sigaAuditRoot .a-table{width:100%;border-collapse:collapse;font-size:12px}
+#sigaAuditRoot td,#sigaAuditRoot th{padding:10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+#sigaAuditRoot th{font-weight:800;color:var(--text-2)}
+#sigaAuditRoot .a-scroll{overflow:auto;max-height:68vh}
+#sigaAuditRoot button{padding:9px 16px;border-radius:9px;border:1px solid var(--line);background:var(--panel-2);color:var(--text);cursor:pointer}
+</style>
+<section id="sigaAuditRoot"><h2>Bitácora institucional SIGA</h2><p>Últimos eventos registrados: acceso, generación documental y operaciones.</p>
+<div style="display:flex;gap:10px;margin:14px 0"><button id="sigaAuditRefresh">Actualizar</button><button id="sigaAuditBack">Volver al menú</button></div>
+<p id="sigaAuditState" role="status">Cargando…</p><div class="a-scroll"><table class="a-table"><thead><tr><th>Fecha</th><th>Usuario</th><th>Tipo</th><th>Módulo</th><th>Estado</th><th>OEC</th><th>Solicitud</th></tr></thead><tbody id="sigaAuditRows"></tbody></table></div>
+</section>
+<script>
+(function(){
+ const scope=document.getElementById('sigaAuditRoot'); if(!scope)return;
+ const state=scope.querySelector('#sigaAuditState'),tbody=scope.querySelector('#sigaAuditRows');
+ function cargar(){state.textContent='Consultando…';tbody.textContent='';
+ google.script.run.withSuccessHandler(r=>{state.textContent=(r.filas||[]).length+' eventos';
+ (r.filas||[]).forEach(x=>{const tr=document.createElement('tr');
+ [x.fecha,x.usuario,x.tipo,x.modulo,x.estado,x.registro,x.solicitudId].forEach(v=>{const td=document.createElement('td');td.textContent=String(v||'');tr.appendChild(td)});tbody.appendChild(tr)})
+ }).withFailureHandler(e=>{state.textContent='Error: '+(e.message||String(e))}).SIGA_AUDIT_consultar(100)}
+ scope.querySelector('#sigaAuditRefresh').addEventListener('click',cargar);
+ scope.querySelector('#sigaAuditBack').addEventListener('click',()=>{if(window.OGA) OGA.irAlMenu()});cargar();
+})();
+</script>
