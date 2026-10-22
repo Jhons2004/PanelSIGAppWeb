@@ -57,3 +57,12 @@ clasp open
 ```
 
 Probar `/dev` o actualizar una implementación `/exec` versionada después de `clasp push`. Al solicitar una evaluación adicional válida, el código llega a jefatura y el solicitante solo recibe el correo enmascarado.
+
+## Prevención de duplicados en CLASP (22-10-2026)
+
+El error `SyntaxError: Identifier 'WAPP_DUP_AUTH_KEY' has already been declared` se produjo porque se dejó una carpeta `RESPALDO_OTP_...` **dentro** del proyecto local con una segunda copia de `PRES_18_Duplicate_Evaluation_Service.js`. Con `skipSubdirectories=false` CLASP también procesó ese respaldo.
+
+Se incorporó `.claspignore` para excluir carpetas `RESPALDO_*`, `BACKUP_*`, `RESPALDOS_*`, carpetas auxiliares y dependencias, conservando el código normal y el manifiesto. **Siempre guardar los respaldos fuera del directorio CLASP.**
+
+Para corregir el proyecto local existente: mover las carpetas `RESPALDO_*` fuera de `OGA_APPSCRIPTWEBAPP`, ejecutar `clasp status`, comprobar que NO se enumeren `RESPALDO_*/...`, y hacer `clasp push` sin forzar. CLASP reemplazará el contenido remoto con los archivos locales seleccionados; no se debe restaurar el respaldo dentro del proyecto.
+
