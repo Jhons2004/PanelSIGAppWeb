@@ -1,12 +1,32 @@
 const WAPP_DUP_AUTH_KEY = 'WAPP_DUPLICATE_AUTH_V1';
 const WAPP_DUP_AUDIT_SHEET = 'Autorizaciones_Duplicados';
-const WAPP_DUP_ADMIN_EMAILS = [
-  'carchila@oga.org.gt'
-];
+/**
+ * Lista de jefatura para el token de autorización de evaluaciones adicionales.
+ * Fuente única: WAPP_CONFIG[APP_ENV].DUPLICADOS.ADMIN_EMAILS.
+ * Si no existe una dirección institucional válida, fallar cerrado.
+ */
+function WAPP_DUP_adminEmails_() {
+  const cfg = WAPP_cfg_();
+  const configured = cfg && cfg.DUPLICADOS && cfg.DUPLICADOS.ADMIN_EMAILS;
+  if (!Array.isArray(configured)) {
+    throw new Error('Configure DUPLICADOS.ADMIN_EMAILS antes de solicitar token.');
+  }
+
+  const emails = configured.map(function(value) {
+    return String(value || '').trim().toLowerCase();
+  }).filter(function(email) {
+    return WAPP_emailOk_(email) && email.endsWith('@oga.org.gt');
+  });
+  const unique = [...new Set(emails)];
+  if (!unique.length) {
+    throw new Error('No existe jefatura institucional válida en DUPLICADOS.ADMIN_EMAILS.');
+  }
+  return unique;
+}
 
 function WAPP_DUP_isAdmin_(email) {
   const e = String(email || '').trim().toLowerCase();
-  return WAPP_DUP_ADMIN_EMAILS.includes(e);
+  return WAPP_DUP_adminEmails_().includes(e);
 }
 
 /**
