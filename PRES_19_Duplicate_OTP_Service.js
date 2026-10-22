@@ -73,8 +73,6 @@ function WAPP_DUP_OTP_solicitar_(payload, requester) {
     filasAntecedentes: check.duplicates.map(x => x.rowNumber)
   };
 
-  props.setProperty(WAPP_DUP_OTP_KEY, JSON.stringify(record));
-
   const adminName = WAPP_DUP_adminName_(adminEmail);
   const expiresText = Utilities.formatDate(
     new Date(expiresAtMs),
@@ -137,13 +135,28 @@ function WAPP_DUP_OTP_solicitar_(payload, requester) {
         ' intentos. Vigencia: 10 minutos.</p>' +
     '</div>';
 
-  MailApp.sendEmail({
-    to: adminEmail,
-    subject: subject,
-    body: plainBody,
-    htmlBody: htmlBody,
-    name: 'OGA · Presupuestos y Evaluaciones'
-  });
+  // El OTP sólo debe quedar habilitado cuando MailApp confirme el envío.
+  // Si falla la entrega, no se debe consumir el cooldown ni retener un token
+  // que jefatura nunca recibió. No exponer el código en logs ni errores.
+  props.setProperty(WAPP_DUP_OTP_KEY, JSON.stringify(record));
+  try {
+    MailApp.sendEmail({
+      to: adminEmail,
+      subject: subject,
+      body: plainBody,
+      htmlBody: htmlBody,
+      name: 'OGA · Presupuestos y Evaluaciones'
+    });
+  } catch (mailError) {
+    const saved = WAPP_DUP_OTP_getPending_();
+    if (saved && saved.hash === record.hash && saved.signature === record.signature) {
+      props.deleteProperty(WAPP_DUP_OTP_KEY);
+    }
+    throw new Error(
+      'No fue posible enviar el token a jefatura. Revise permisos de MailApp, ' +
+      'cuota de correo y cuenta institucional remitente. Puede intentar nuevamente.'
+    );
+  }
 
   return {
     ok: true,
