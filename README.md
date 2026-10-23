@@ -66,3 +66,30 @@ Se incorporó `.claspignore` para excluir carpetas `RESPALDO_*`, `BACKUP_*`, `RE
 
 Para corregir el proyecto local existente: mover las carpetas `RESPALDO_*` fuera de `OGA_APPSCRIPTWEBAPP`, ejecutar `clasp status`, comprobar que NO se enumeren `RESPALDO_*/...`, y hacer `clasp push` sin forzar. CLASP reemplazará el contenido remoto con los archivos locales seleccionados; no se debe restaurar el respaldo dentro del proyecto.
 
+
+## URL central de listas de asistencia (23-10-2026)
+
+**URL canónica:**
+`https://script.google.com/a/oga.org.gt/macros/s/AKfycbxRxDzS--es6vI6j8HMTeHx7d8TEkB5S08vXQzlDe65d8wk_fIQLHx5dQ-q-5SlaWs/exec`
+
+El módulo `PRES_52_Asistencia_Publica.js` construye ahora:
+```text
+<URL_CANONICA>?modo=asistencia&token=<TOKEN_EXISTENTE_O_NUEVO>
+```
+No usa `ScriptApp.getService().getUrl()` para crear enlaces. Preserva el mismo `Token`, `ID_Evento`, reunión y registro histórico. En nuevas reuniones escribe `URL_Captura` con el enlace central. Al reutilizar una reunión existente, actualiza únicamente la URL almacenada junto con la metadata de agenda habitual. En `PRES_50_Asistencia_Adapter.js`, los eventos existentes **se presentan** con enlace central aunque todavía contengan una URL antigua en Sheets; esa lectura no reescribe filas masivamente.
+
+**Importante:** los enlaces incrustados en documentos de Agenda **ya generados** no cambian automáticamente. No se han editado documentos ni se ha ejecutado una migración masiva de datos en QA/PROD. Confirmar que la implementación pública indicada tiene acceso a la misma hoja `Eventos_Asistencia` de cada entorno, antes de compartir tokens de QA por un enlace de producción.
+
+### Despliegue sin duplicar Apps Script
+```powershell
+$repo = "C:\Users\WINDOWS\Documents\PanelSIGAppWeb_GIT"
+$app = "C:\Users\WINDOWS\Documents\OGA_APPSCRIPTWEBAPP"
+git -C $repo pull --ff-only origin main
+Copy-Item "$repo\PRES_52_Asistencia_Publica.js" "$app\" -Force
+Copy-Item "$repo\PRES_50_Asistencia_Adapter.js" "$app\" -Force
+Set-Location $app
+clasp status
+clasp push
+clasp open-script
+```
+Para la URL `/exec` publicada de SIGA, editar la implementación y seleccionar una nueva versión; `clasp push` actualiza el código de desarrollo, pero no modifica automáticamente un despliegue versionado.
