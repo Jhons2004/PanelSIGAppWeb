@@ -19,7 +19,10 @@ function WAPP_ASIST_obtenerLinksActuales_() {
     tipoActividad: String(r.Tipo_Actividad || ''),
     tipoEvaluacion: String(r.Tipo_Evaluacion || ''),
     estado: String(r.Estado_Evento || ''),
-    url: String(r.URL_Captura || ''),
+    // Reutilizar el Token, no el dominio del deployment anterior.
+    url: WAPP_limpiarToken_(r.Token)
+      ? WAPP_ASISTV16_construirUrl_(r.Token)
+      : '',
     urlPdf: String(r.URL_PDF || ''),
     fechaReunion: WAPP_dateText_(r.Fecha_Reunion)
   }));
