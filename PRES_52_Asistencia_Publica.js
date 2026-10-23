@@ -1,5 +1,24 @@
 const WAPP_ASISTV16_DIAS_CIERRE = 3;
 
+// URL institucional canónica. No usar ScriptApp.getService().getUrl():
+// la implementación que genera documentos podría tener otro deployment.
+const WAPP_ASISTV16_URL_CENTRAL =
+  'https://script.google.com/a/oga.org.gt/macros/s/AKfycbxRxDzS--es6vI6j8HMTeHx7d8TEkB5S08vXQzlDe65d8wk_fIQLHx5dQ-q-5SlaWs/exec';
+
+/**
+ * Reutiliza el Token ya persistido en Eventos_Asistencia.
+ * Nunca genera uno nuevo para eventos existentes; mantiene el enrutador
+ * central ?modo=asistencia&token=...
+ */
+function WAPP_ASISTV16_construirUrl_(token) {
+  const clean = WAPP_limpiarToken_(token);
+  if (!clean) {
+    throw new Error('El evento no tiene un token de asistencia válido.');
+  }
+  return WAPP_ASISTV16_URL_CENTRAL + '?modo=asistencia&token=' +
+    encodeURIComponent(clean);
+}
+
 function WAPP_ASISTV16_prepararAgenda_(c) {
   const inicial = WAPP_ASISTV16_getOrCreate_(
     c,
@@ -65,6 +84,9 @@ function WAPP_ASISTV16_getOrCreate_(c, actividad, fechaReunion) {
   });
 
   if (found) {
+    // Si se creó en Presupuesto_Web, conservar ID y token y migrar solo
+    // URL_Captura cuando la agenda vuelve a utilizar ese evento.
+    const urlCentral = WAPP_ASISTV16_construirUrl_(found.Token);
     WAPP_ASISTV16_actualizarMetadataEvento_(
       sh,
       found,
@@ -76,27 +98,14 @@ function WAPP_ASISTV16_getOrCreate_(c, actividad, fechaReunion) {
     return {
       idEvento: String(found.ID_Evento || ''),
       token: String(found.Token || ''),
-      url: String(found.URL_Captura || ''),
+      url: urlCentral,
       reutilizado: true
     };
   }
 
   const token = Utilities.getUuid().replace(/-/g, '');
   const idEvento = Utilities.getUuid();
-  const urlBase = String(
-    ScriptApp.getService().getUrl() || ''
-  ).replace(/\?.*$/, '');
-
-  if (!urlBase) {
-    throw new Error(
-      'No fue posible obtener la URL de la WebApp para la lista de asistencia.'
-    );
-  }
-
-  const url =
-    urlBase +
-    '?modo=asistencia&token=' +
-    encodeURIComponent(token);
+  const url = WAPP_ASISTV16_construirUrl_(token);
 
   const fechaFinal = WAPP_DOCV16_parseDate_(
     c.evaluacion.fechaFinal
@@ -188,6 +197,7 @@ function WAPP_ASISTV16_actualizarMetadataEvento_(
 
   const updates = {
     Key_Evento: keyCompatible,
+    URL_Captura: WAPP_ASISTV16_construirUrl_(row.Token),
     Oficial_Asignado: oficial,
     Fecha_Reunion: fechaReunion,
     Fecha_Apertura_Programada: fechaReunion,
